@@ -7,6 +7,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
 ## Submappen
 
+- [[.idea/index|.idea]]
 - [[dagboek/index|dagboek]]
 - [[data/index|data]]
 - [[gebieden/index|gebieden]]
@@ -16,5 +17,6 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
 ## Notities
 
+- [[2026-11-07]]
 - [[CLAUDE]]
 - [[README]]

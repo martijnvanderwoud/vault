@@ -26,3 +26,6 @@ __pycache__/
 
 # Office-lockbestanden (ontstaan terwijl de xlsx open staat)
 ~$*
+
+# IDE
+.idea/
