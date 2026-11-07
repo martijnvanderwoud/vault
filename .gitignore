@@ -1,5 +1,28 @@
+# Obsidian
 .obsidian/workspace*.json
 .obsidian/cache
+.trash/
+
+# Claude Code: persoonlijke lokale instellingen
+.claude/settings.local.json
+
+# Geheimen
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
 __pycache__/
+.venv/
+
+# Afgeleide data
 .search-index/
+
+# OS en editors
+.DS_Store
+*.swp
+
+# Office-lockbestanden (ontstaan terwijl de xlsx open staat)
+~$*
