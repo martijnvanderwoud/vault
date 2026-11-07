@@ -1,0 +1,5 @@
+.obsidian/workspace*.json
+.obsidian/cache
+.env
+__pycache__/
+.search-index/
