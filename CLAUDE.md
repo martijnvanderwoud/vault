@@ -13,6 +13,8 @@ taken, lijsten en kennis. Claude Code werkt hier als assistent.
 - `scripts/` deterministische helpers
 - `.claude/skills/` skills (komen later)
 
+Achtergrond, beslissingen en roadmap van de vault: `gebieden/vault/`.
+
 ## Conventies
 
 - Elke notitie heeft YAML-frontmatter met minimaal `description` (één regel) en
@@ -29,7 +31,8 @@ taken, lijsten en kennis. Claude Code werkt hier als assistent.
 - `index.md` in elke map is gegenereerd door `scripts/build_index.py`.
   Nooit met de hand bewerken: het script overschrijft ze.
 - Hooks (`.claude/settings.json`): na elke Write/Edit wordt `build_index.py`
-  gedraaid; bij Stop wordt automatisch gecommit (geen push).
+  gedraaid; bij SessionEnd worden de indexen herbouwd en wordt automatisch
+  gecommit (geen push).
 
 ## Geheimen
 

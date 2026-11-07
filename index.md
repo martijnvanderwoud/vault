@@ -17,6 +17,5 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
 ## Notities
 
-- [[2026-11-07]]
 - [[CLAUDE]]
 - [[README]]
