@@ -7,4 +7,5 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
 ## Notities
 
+- [[dependabot-routine]] — Werknotitie van mijn Dependabot-routine, als basis voor een projectoverstijgende skill
 - [[urenregistratie]] — Urenregistratie in LogMyTime, de logica van de Excel-urenstand en de LogMyTime API
