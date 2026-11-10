@@ -13,7 +13,8 @@ de notitie volgt alleen mijn stappen en beslissingen.
 
 ### Stappen
 
-De actuele stappen staan in `.claude/skills/dependabot-routine/SKILL.md`.
+De actuele stappen staan in `.claude/skills/dependabot-routine/SKILL.md`. Het plan om de
+routine autonoom te laten draaien staat in [[dependabot-routine-autonoom-plan]].
 
 ### Beslissingen van mij
 

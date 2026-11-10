@@ -1,0 +1,255 @@
+---
+description: Plan om de Dependabot-routine autonoom te laten draaien, opgedeeld in stappen van één sessie per stap
+tags: [dependabot, routine, plan]
+---
+
+# Plan: Dependabot-routine autonoom
+
+Doel: de routine uit [[dependabot-routine]] draait zonder dat ik een sessie start. Waar hij
+mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat comment kan
+ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
+zijn afgelopen.
+
+Vastgelegd op 2026-11-10. Er is nog niets van gebouwd.
+
+## Zo werken we dit af
+
+Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open stap uit
+[[dependabot-routine-autonoom-plan]]". Aan het eind van de sessie:
+
+- vink je de stap af in de voortgang hieronder
+- zet je onder `Bevindingen` wat afweek van het plan of wat een latere stap verandert
+- pas je latere stappen aan als dat nodig is
+
+## Voortgang
+
+- [ ] 1. Stoppunten indelen in de skill
+- [ ] 2. Pauzeren en hervatten in de skill
+- [ ] 3. Handmatige headless-run zonder pauze
+- [ ] 4. Handmatige headless-run met pauze en hervatting
+- [ ] 5. Runner: repo's selecteren (dry-run)
+- [ ] 6. Runner: eigen clones en omgeving
+- [ ] 7. Runner: run starten en status vastleggen
+- [ ] 8. Schedule met launchd op één repo
+- [ ] 9. Dashboard in Obsidian
+- [ ] 10. Uitrollen naar alle repo's
+
+## Beslissingen
+
+- **Groen is groen, ook zonder toezicht en ook bij een major.** We mergen naar `develop`, en
+  in sommige projecten ook naar `master`, maar die komen niet zomaar automatisch in
+  productie. Fouten die hieruit komen zie ik snel in mijn development-omgeving, en dat is
+  juist wat ik wil. De projectstappen, zoals een release-PR, draaien dus ook autonoom.
+- **Twee klassen stoppunten:** stoppen en rapporteren, of in het eindverslag opnemen en
+  doorgaan.
+- **Geen hook:** hooks reageren alleen op gebeurtenissen binnen een sessie, niet op GitHub.
+- **Lokale schedule die GitHub pollt, geen PR-trigger.** Eén launchd-job kijkt elk half uur
+  met `gh` of er per repo PR's zijn waarvan alle checks klaar zijn, en start alleen dan de
+  routine, per repo één tegelijk. Bij "PR opened" lopen de checks nog, en meerdere PR's
+  zouden meerdere runs tegelijk starten.
+- **Niet in de cloud:** een cloud-routine heeft standaard alleen Java 21 en geen sbt, mag
+  alleen naar `claude/`-branches pushen (botst met `feature/` en de GitFlow-validator) en
+  kan niet bij de skill in de vault. Een GitHub Action moet per repo, en runs met Dependabot
+  als trigger krijgen standaard geen gewone Actions-secrets.
+- **Eigen clones:** de run werkt in `~/dependabot-runs/<repo>`, nooit in mijn working copies
+  in `~/IdeaProjects`.
+- **Geen `bypassPermissions`:** een vaste lijst toegestane commando's en
+  `--permission-prompts none`. De run leest CI-logs en die zijn niet te vertrouwen.
+- **De runner schrijft de status, niet het model,** zodat een vastgelopen run ook zichtbaar
+  is als `failed`.
+- **De agent heet Debbie,** vanwege Dependabot. De naam staat in de sessienaam, in de
+  run-notities en boven de comments. Die comments komen onder mijn YouTrack-account te staan,
+  dus zo is ook te zien dat ze van de agent zijn.
+
+## Stappen
+
+### 1. Stoppunten indelen in de skill
+
+Doel: `SKILL.md` kent een autonome modus, en bij elk stoppunt staat wat er dan gebeurt.
+
+- Autonome modus via een argument: `/dependabot-routine autonoom`. Zonder argument blijft
+  de skill vragen zoals nu.
+- Neem de indeling hieronder door en verwerk hem in de stappen van `SKILL.md`.
+- Pas de inleiding aan: een situatie zonder regel is autonoom `stoppen`, tenzij hij maar één
+  PR raakt en de rest gewoon door kan.
+- Controleer de projectbestanden op eigen stoppunten. Bij een eerste grep had geen enkel
+  bestand er een, maar de grep zocht alleen op vaste zinnen.
+
+Klaar als: elk stoppunt een klasse heeft en de interactieve werking niet is veranderd.
+
+Voorstel voor de indeling:
+
+| Stap | Situatie | Klasse |
+| --- | --- | --- |
+| 0 | YouTrack-gegevens ontbreken | stoppen, nog geen issue |
+| 0 | Meer dan één parent, of een ander jaar in de titel | stoppen, nog geen issue |
+| 0 | Subtask in een andere state dan `In Progress` of `Done` | stoppen |
+| 0 | Op het board zetten mislukt | verslag, plus aandachtspunt (zie stap 2) |
+| 1 | `mergeable=UNKNOWN` blijft na een paar pogingen | verslag |
+| 1 | PR niet groen, `CONFLICTING`, of merge mislukt | verslag |
+| 1 | Run met 0 jobs zonder incident, of na herstart nog rood | verslag |
+| 1 | Rode PR met een andere oorzaak dan `ERESOLVE`, met voorstel | verslag |
+| 1 | PR's met verschillende base branches | stoppen |
+| 2 | Andere branch, vuile working copy, of geen fast-forward | stoppen |
+| 4 | Buildtool niet te bepalen | stoppen |
+| 4 | Build-errors, of 0 tests terwijl er tests zijn | stoppen |
+| 4 | Warnings | verslag |
+| 5 | Fix alleen in een nieuwere major, of alleen een breaking fix | verslag |
+| 5 | `npm audit fix` zet een versie omlaag | stoppen |
+| 6 | Base branch anders dan `develop` | stoppen |
+| 6 | Eigen PR niet groen of `CONFLICTING` | stoppen |
+| 6 | `git branch -d` weigert | verslag |
+| 8 | Geen run op de base branch na een paar pogingen | stoppen |
+| 8 | Build op de base branch rood, of hij loopt niet af | stoppen |
+
+### 2. Pauzeren en hervatten in de skill
+
+Doel: een gepauzeerde run is vanuit het issue voort te zetten.
+
+- Beschrijf in `SKILL.md` het pauze-comment, in het Engels, in de subtask:
+
+  ```text
+  Debbie (Dependabot routine) PAUSED at step 6
+  Seen: PR #171 build red (...)
+  Decision needed: ...  Proposal: ...
+  State: merged #168 #169, branch feature/..., base abc123
+  Resume: cd ~/dependabot-runs/cata && claude --resume <uuid>
+  ```
+
+- Voeg hervatten toe: `/dependabot-routine <issue-id>` leest het laatste pauze-comment en
+  de stand in GitHub en git, en gaat verder bij de genoemde stap. Dit is de terugval als
+  `--resume` niet kan (de transcripts blijven standaard 30 dagen op deze machine).
+- Laat de run in autonome modus eindigen met een regel die de runner kan lezen, bijvoorbeeld
+  `RUN_STATUS: paused step=6 issue=PCATA-617`. Mogelijke statussen: `done`, `paused`.
+- Laat de run elk verslagpunt waar ik iets mee moet ook apart melden, per punt een regel
+  `RUN_ATTENTION: <korte tekst>`. Bijvoorbeeld: op het board zetten mislukt, een rode PR met
+  een voorstel, een PR die niet gemerged kon worden. Zo valt een run met status `done` die
+  toch iets van mij nodig heeft op in het dashboard, ook als het issue niet op het bord staat.
+- Stoppen vóór de subtask bestaat: geen comment, alleen de statusregel met de reden.
+- Stap 9: in autonome modus geen chatverslag nodig, het comment is het verslag.
+
+Klaar als: de teksten staan in de skill en de interactieve werking niet is veranderd.
+
+### 3. Handmatige headless-run zonder pauze
+
+Doel: de routine loopt één keer van begin tot eind via `claude -p`, door mij gestart, in
+een repo met open Dependabot-PR's.
+
+- Maak met de hand de clone in `~/dependabot-runs/<repo>`.
+- Bepaal het commando, ongeveer:
+  `claude -p "/dependabot-routine autonoom" --add-dir ~/vault --session-id <uuid>
+  --permission-prompts none --allowedTools ... --output-format stream-json --verbose`
+- Stel de lijst `--allowedTools` samen uit de commando's in de skill en de YouTrack-tools.
+- Lees na afloop `permission_denials` uit de output en vul de lijst aan.
+- Controleer de punten onder `Nog te verifiëren`.
+
+Klaar als: de run `done` geeft zonder geweigerde tools, en het commando in dit plan staat.
+
+### 4. Handmatige headless-run met pauze en hervatting
+
+Doel: het hervatten werkt echt.
+
+- Lok een pauze uit: zet een onschuldig ongecommit bestand in de clone, zodat stap 2 stopt.
+- Controleer het comment in YouTrack en de statusregel.
+- Haal het bestand weg en hervat met `claude --resume <uuid>`, interactief.
+- Herhaal met de terugval: een nieuwe sessie met `/dependabot-routine <issue-id>`.
+
+Klaar als: beide manieren op de juiste stap verdergaan en niets dubbel doen.
+
+### 5. Runner: repo's selecteren (dry-run)
+
+Doel: `scripts/dependabot_runner.py --dry-run` toont welke repo's nu een run zouden krijgen,
+zonder iets te wijzigen.
+
+- De repo's komen uit `projecten/*.md`. Daarin staat nog geen GitHub-owner (bijvoorbeeld
+  `Flow-Cloud-Systems/roep`), dus voeg die toe als regel in elk bestand, of bepaal hem
+  eenmalig uit de `origin` van de bestaande working copies. Mapnamen wijken soms af van de
+  repo-naam (`pk-react-notifications`).
+- Een repo komt in aanmerking als er open PR's zijn van `app/dependabot`, in `notifications`
+  ook van Scala Steward, en alle checks klaar zijn.
+- Een repo met een lopende of gepauzeerde run, of een run die deze week al klaar is met
+  dezelfde PR's, slaat de runner over.
+
+Klaar als: de dry-run op alle repo's klopt met wat ik op GitHub zie.
+
+### 6. Runner: eigen clones en omgeving
+
+Doel: de runner maakt een clone klaar en draait daarin de juiste tools, ook buiten mijn shell.
+
+- Clone aanmaken als die ontbreekt, anders `fetch`, en controleren dat hij schoon is. Een
+  vuile clone na een run is een reden om te stoppen, niet om op te ruimen.
+- SDKMAN (`.sdkmanrc`) en Node (`.nvmrc`) opzetten binnen het script, want launchd laadt
+  mijn zsh-profiel niet.
+- Testen met een lege omgeving (`env -i`): `java`, `mvn` of `gradle`, `node`, `gh` en
+  `claude` zijn er in de juiste versie, en `gh` en `claude` zijn ingelogd.
+
+Klaar als: dit werkt in `env -i` voor één Maven-, één Gradle- en één npm-repo.
+
+### 7. Runner: run starten en status vastleggen
+
+Doel: de runner start één run en legt de uitkomst vast.
+
+- `session_id` vooraf maken en meegeven, de sessie een naam geven met
+  `-n debbie-<repo>-w<week>`, de output bewaren in een logbestand buiten de vault.
+- Per run een notitie in `gebieden/werk/dependabot-runs/<jaar>-w<week>-<repo>.md`, met
+  frontmatter `description`, `agent` (`debbie`), `status`, `repo`, `issue`, `step`, `session_id`, `started`,
+  `ended`, `resume`, `aandacht`. Status: `running`, `done`, `paused`, `failed`. `aandacht` is
+  de lijst met `RUN_ATTENTION`-regels, leeg als er niets is.
+- `status` volgt uit de `RUN_STATUS`-regel. Geen regel of een fout in de exitcode: `failed`.
+- Daarna `build_index.py` draaien, want de hooks van de vault draaien niet mee.
+- Bij `paused` of `failed` een macOS-melding sturen. Een comment op mijn eigen issue levert
+  waarschijnlijk geen notificatie op.
+- Per repo één run tegelijk, en een lock zodat twee runner-processen niet overlappen.
+
+Klaar als: een echte run via de runner de juiste notitie oplevert, ook bij een afgebroken run.
+
+### 8. Schedule met launchd op één repo
+
+Doel: de runner draait vanzelf, voorlopig voor één repo.
+
+- `~/Library/LaunchAgents/nl.crimsoncricket.dependabot-runner.plist`, elk half uur,
+  met een allowlist van één repo.
+- De Mac moet aan staan: een gemist interval tijdens slaap wordt bij het wakker worden
+  ingehaald, staat de Mac uit dan niet. Omdat de runner pollt, is dat geen probleem.
+- Eén Dependabot-ronde meekijken.
+
+Klaar als: een run zonder mijn tussenkomst is gestart en goed is afgelopen.
+
+### 9. Dashboard in Obsidian
+
+Doel: één overzicht van alle runs.
+
+- `gebieden/werk/dependabot-runs/dashboard.base`, een tabel per status met links naar het
+  issue en een kolom `aandacht`, plus een aparte weergave van runs met aandachtspunten.
+  De kernplugin Bases staat al aan, dus geen community-plugin nodig. Controleer of
+  mijn Obsidian-versie het aankan (vanaf 1.9).
+- Bepaal of de run-notities in git moeten. Bij elke run komen er commits bij.
+
+Klaar als: lopende, gepauzeerde en afgeronde runs goed zichtbaar zijn.
+
+### 10. Uitrollen naar alle repo's
+
+Doel: alle 21 repo's uit `projecten/` draaien autonoom.
+
+- In groepjes: eerst npm, dan Maven en Gradle, als laatste `notifications` (sbt, Scala
+  Steward) en de projecten met eigen stappen (`react-notifications`,
+  `profile-presentation-design`, `rostering-api`).
+- Controleer per groepje of de eigen stappen zonder vragen kunnen.
+- Allowlist weghalen zodra een groepje goed is gelopen.
+
+Klaar als: de allowlist weg is en een hele ronde is gedraaid.
+
+## Nog te verifiëren
+
+Deze punten staan niet of niet duidelijk in de documentatie. Controleren in stap 3.
+
+- Of de skill uit `--add-dir ~/vault` via `/dependabot-routine` start in `-p`-modus.
+- Of de YouTrack-MCP uit `~/.claude.json` beschikbaar is in `-p`-modus.
+- Wat er gebeurt als het model toch om input vraagt. Met `--permission-prompts none` is
+  `AskUserQuestion` weggehaald, en de run moet dan de pauzeregel volgen.
+- Of `--allowedTools` opnieuw moet bij hervatten. Interactief keur ik zelf goed, bij een
+  hervatting met `-p` moeten de flags er wel opnieuw bij.
+
+## Bevindingen
+
+Nog geen.
