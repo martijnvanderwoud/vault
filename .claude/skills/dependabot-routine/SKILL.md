@@ -1,6 +1,6 @@
 ---
 name: dependabot-routine
-description: Voert mijn Dependabot-routine uit in het huidige project - groene Dependabot-PR's squash-mergen, de oorzaak van rode PR's uitzoeken, de lokale base branch bijwerken, `.sdkmanrc` bijwerken, een schone install draaien, audit-fixes zonder breaking changes doorvoeren, alle wijzigingen in één PR samenbrengen en de build op de base branch controleren. Gebruik deze skill zodra ik vraag om de Dependabot-routine, om Dependabot-PR's af te handelen of weg te werken, of om de wekelijkse dependency-updates te mergen, ook als ik het woord skill of routine niet gebruik. Niet voor vragen over de Dependabot-configuratie of voor het beoordelen van één losse dependency-update.
+description: Voert mijn Dependabot-routine uit in het huidige project - groene Dependabot-PR's squash-mergen, de oorzaak van rode PR's uitzoeken, de lokale base branch bijwerken, `.sdkmanrc` bijwerken, een schone build draaien, kwetsbaarheden zonder breaking changes patchen, alle wijzigingen in één PR samenbrengen en de build op de base branch controleren. Gebruik deze skill zodra ik vraag om de Dependabot-routine, om Dependabot-PR's af te handelen of weg te werken, of om de wekelijkse dependency-updates te mergen, ook als ik het woord skill of routine niet gebruik. Niet voor vragen over de Dependabot-configuratie of voor het beoordelen van één losse dependency-update.
 ---
 
 # Dependabot-routine
@@ -57,16 +57,54 @@ gh pr merge <n> --squash
   mij pas als het na een paar pogingen nog zo is.
 - Direct na een merge kan `gh pr list` de PR nog even als open tonen. Kijk dan per
   PR met `gh pr view <n> --json state`.
-- Leg aan mij voor: een PR die niet groen is en niet onder `Rode PR's` valt (ook bij
-  lopende, overgeslagen, neutrale, afgebroken of ontbrekende checks),
-  `mergeable=CONFLICTING`, en een merge die mislukt. Merge de overige groene PR's wel.
+- Toont een PR `0/0` checks, kijk dan eerst naar de runs van de head branch. Rode runs
+  zonder jobs staan niet in `statusCheckRollup`. Die vallen onder `Storing in CI`:
+  `gh run list --branch <head-branch> --json databaseId,name,status,conclusion`.
+- Leg aan mij voor: een PR die niet groen is en niet onder `Storing in CI` of
+  `Rode PR's` valt (ook bij lopende, overgeslagen, neutrale, afgebroken of ontbrekende
+  checks), `mergeable=CONFLICTING`, en een merge die mislukt. Merge de overige groene
+  PR's wel.
 - Zijn er helemaal geen open Dependabot-PR's, of hebben de PR's verschillende base
   branches, vraag dan hoe ik verder wil.
 
+### Storing in CI
+
+Een rode run is een storing als de log geen compile-, test- of dependencyfout toont en
+een van deze twee geldt:
+
+- De log toont een 5xx van GitHub, een registry of een andere externe dienst.
+- De run heeft 0 jobs, en er is dus geen log. Bevestig dat met een incident rond de
+  starttijd van de run. Is er geen incident, leg het mij dan voor.
+
+```bash
+gh api repos/{owner}/{repo}/actions/runs/<run-id>/jobs --jq .total_count
+curl -fsS https://www.githubstatus.com/api/v2/incidents.json
+```
+
+`gh run view` kan een 404 geven bij een workflow uit een ruleset van de organisatie.
+Gebruik dan `gh api repos/{owner}/{repo}/actions/runs/<run-id>`.
+
+Start de run opnieuw en wacht op het resultaat, maximaal twee keer per run:
+
+```bash
+gh run rerun <run-id> --failed
+```
+
+Heeft de run 0 jobs, weigert GitHub met `cannot be retried`, of geeft `gh run rerun` een
+404 (workflow uit een ruleset van de organisatie), start dan de hele run opnieuw:
+
+```bash
+gh api -X POST repos/{owner}/{repo}/actions/runs/<run-id>/rerun
+```
+
+Groen daarna: ga verder zoals bij elke groene PR. Nog steeds rood: behandel de PR als
+rode PR en leg hem aan mij voor. Gebruik geen `@dependabot recreate`: Dependabot reageerde
+daar binnen enkele minuten niet op.
+
 ### Rode PR's
 
-Een PR met een mislukte check (`FAILURE`) merge en wijzig je niet. Zoek de oorzaak op
-en maak de routine af:
+Een PR met een mislukte check (`FAILURE`) die geen storing is, merge en wijzig je niet.
+Zoek de oorzaak op en maak de routine af:
 
 ```bash
 gh pr view <n> --json statusCheckRollup \
@@ -76,9 +114,9 @@ gh run view --job <job-id> --log-failed
 
 Het job-id is het laatste deel van de URL.
 
-Een major-update die een andere dependency nog niet ondersteunt, handel je zelf af. Dat
-is het geval als de log een peer-conflict toont (`ERESOLVE`) en ook de nieuwste versie
-van die dependency de update niet toestaat:
+Alleen bij npm-projecten: een major-update die een andere dependency nog niet
+ondersteunt, handel je zelf af. Dat is het geval als de log een peer-conflict toont
+(`ERESOLVE`) en ook de nieuwste versie van die dependency de update niet toestaat:
 
 ```bash
 npm view <package> peerDependencies
@@ -124,23 +162,95 @@ curl -fsS "https://api.sdkman.io/2/candidates/<sdk>/darwinarm64/versions/list?in
 ```
 
 - Behoud de vendor-suffix van de huidige versie, bijvoorbeeld `-tem`.
+- Pre-releases (`-rc`, `-alpha`, `-beta`, `-M`) tellen niet mee als nieuwste versie.
 - Een nieuwere major voer je niet door. Die noem je alleen in het verslag.
 - De wijziging gaat mee in de PR van stap 6.
 
 ## 4. Schone install
 
-Bij een npm-project (`package-lock.json` aanwezig):
+Kijk in de root van het project welk buildbestand er staat:
 
-```bash
-npm ci
-```
+| Bestand | Commando |
+| --- | --- |
+| `pom.xml` | `mvn clean package` |
+| `build.gradle` of `build.gradle.kts` | `./gradlew clean build` |
+| `package-lock.json` | `npm ci` |
+
+Staan er meerdere, volg dan het projectbestand. Staat het daar niet in, of staat er geen
+van deze, vraag het mij dan.
 
 Kijk of er errors of warnings zijn. Leg die aan mij voor voordat je verder gaat. Een
 melding over vulnerabilities is geen reden om te stoppen: die is voor stap 5.
 
-Is het geen npm-project, vraag dan wat in dit project de tegenhanger van stap 4 en 5 is.
+## 5. Kwetsbaarheden patchen zonder breaking changes
 
-## 5. Audit fix zonder breaking changes
+### JVM-projecten
+
+De scripts staan in `~/vault/.claude/skills/dependabot-routine/scripts/`, naast deze
+`SKILL.md`. Draai ze met `/usr/bin/python3 -I`,
+want niet elke pyenv-Python heeft SSL. Sla de dependency-lijst op in de scratchpad en sluit
+met `--exclude` de eigen groupIds uit en alles wat het projectbestand noemt.
+
+Maven:
+
+```bash
+rm -f <scratchpad>/deps.txt
+mvn -q -o dependency:list -DoutputFile=<scratchpad>/deps.txt -DappendOutput=true -DoutputAbsoluteArtifactFilename=false
+/usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/osv_jvm.py <scratchpad>/deps.txt --exclude <groupId-prefix>
+```
+
+Gradle:
+
+```bash
+(echo dependencies; ./gradlew -q projects | grep -oE "Project '[^']+'" | sed -E "s/Project '([^']+)'/\1:dependencies/") \
+  | xargs ./gradlew -q > <scratchpad>/tree.txt
+/usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/osv_jvm.py <scratchpad>/tree.txt --exclude <groupId-prefix>
+```
+
+Het script toont per bevinding `doel=<versie>`, de laagste versie binnen de huidige major
+(bij 0.x dezelfde minor) die alle advisories dekt.
+
+- **Doel bekend en hoger dan de huidige versie:** patch, zonder te vragen.
+  - Directe dependency: pas de versie of de property aan.
+  - Beheerd door een BOM: overschrijf de property, met
+    `<!-- Override Spring Boot managed version to fix <artifact> <CVE> -->`.
+  - Transitief: voeg een entry toe aan `dependencyManagement`, met
+    `<!-- Override transitive dep from <bron> to fix <artifact> <CVE> -->`.
+  - Gradle: de tegenhanger via de version catalog of `constraints`, met
+    `because("<CVE>")`.
+- **`doel=GEEN-BINNEN-MAJOR`:** is er wel een fix in een nieuwere major, vraag het mij dan.
+  Is er geen fix, of alleen een downgrade, noem het dan alleen in het verslag.
+
+Controleer na het patchen: de dependency-tree toont de nieuwe versie
+(`mvn dependency:tree -Dincludes=<groupId>:<artifactId>`), de build uit stap 4 is groen en
+een nieuwe scan vindt de bevinding niet meer. Faalt de build, draai die patch dan terug
+en noem hem in het verslag. De patches gaan mee in de PR van stap 6.
+
+Controleer ook of bestaande overrides verouderd zijn. Een override geldt alleen als
+weg te halen als de BOM of alle paden in de dependency-boom minstens even hoog zijn:
+
+```bash
+# Maven
+rm -f <scratchpad>/tree.txt
+mvn -q -o dependency:tree -Dverbose -DoutputFile=<scratchpad>/tree.txt -DappendOutput=true
+/usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/check_overrides.py pom.xml --tree <scratchpad>/tree.txt
+
+# Gradle, met de boom van de scan hierboven
+/usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/check_overrides.py --gradle . --tree <scratchpad>/tree.txt
+```
+
+Verwijder zonder te vragen elke override met `VEROUDERD` of `OVERBODIG`, samen met de
+comment erboven. Blijft er onder die comment nog een andere override staan, laat de comment
+dan staan. Bij Gradle staat een override op meerdere plekken: haal de versie uit
+`libs.versions.toml` weg, en ook de library-entry, de `extra`-regel en de constraint, voor
+zover niets anders ze gebruikt. Controleer daarna opnieuw: de build uit stap 4 is groen en
+een nieuwe scan vindt geen nieuwe bevindingen. Faalt een van beide, zet die override dan
+terug en noem hem in het verslag. De verwijderingen gaan mee in de PR van stap 6.
+
+Laat overrides met `nog nodig`, `blijft staan` of `handmatig controleren` staan en noem
+ze niet. Overrides op dependencies van Maven- of Gradle-plugins vallen buiten deze controle.
+
+### npm-projecten
 
 Alleen als `npm ci` vulnerabilities meldt:
 
@@ -161,8 +271,9 @@ git status --short
 
 ## 6. Openstaande wijzigingen via één PR
 
-Alleen als er wijzigingen zijn: de `.sdkmanrc` uit stap 3, audit-fixes uit stap 5 of een
-`ignore`-regel uit stap 1. Breng ze samen in één PR, om het aantal builds te beperken.
+Alleen als er wijzigingen zijn: de `.sdkmanrc` uit stap 3, patches, audit-fixes of
+verwijderde overrides uit stap 5 of een `ignore`-regel uit stap 1. Breng ze samen in één
+PR, om het aantal builds te beperken.
 
 Maak vanaf de base branch een branch, commit alleen de gewijzigde bestanden, push en
 maak een PR naar de base branch:
@@ -239,10 +350,12 @@ is klaar. Geef een kort verslag:
 
 - welke PR's gemerged zijn en welke niet, met de reden, ook de PR's uit stap 6 en 7
 - per rode PR de oorzaak en wat ermee is gebeurd, of een voorstel als ik moet beslissen
+- per storing in CI: welke run, wat je zag, hoe vaak je herstartte en het resultaat
 - elke nieuwe `ignore`-regel, wanneer die weg kan, en een voorstel om dat bij elke routine
   te controleren via `projecten/<repo>.md`
 - de commit waarop de base branch nu staat
 - resultaat van de install en de audit, met de kwetsbaarheden die blijven staan
+- verwijderde overrides, en overrides die terug moesten omdat de build of scan faalde
 - resultaat van de build uit stap 8
 - als er meer dan één Dependabot-PR gemerged is: dat de checks van latere PR's tegen de
   oude base draaiden, en dat de build uit stap 8 de samengevoegde stand dekt
