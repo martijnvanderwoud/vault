@@ -72,6 +72,10 @@ Doel: `SKILL.md` kent een autonome modus, en bij elk stoppunt staat wat er dan g
 - Neem de indeling hieronder door en verwerk hem in de stappen van `SKILL.md`.
 - Pas de inleiding aan: een situatie zonder regel is autonoom `stoppen`, tenzij hij maar één
   PR raakt en de rest gewoon door kan.
+- Vervang in stap 0 van de skill, bij `Op het board zetten`, de `grep` op `.env` en de `curl`
+  door `/usr/bin/python3 -I ~/vault/scripts/youtrack_command.py <issue> "add Board <board>
+  <sprint>"`. Dan werkt het in vault- en projectsessies hetzelfde en hoeft de run `.env` niet
+  zelf te lezen. Neem het script mee in de `--allowedTools` van stap 3.
 - Controleer de projectbestanden op eigen stoppunten. Bij een eerste grep had geen enkel
   bestand er een, maar de grep zocht alleen op vaste zinnen.
 

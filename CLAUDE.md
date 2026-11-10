@@ -41,3 +41,6 @@ Achtergrond, beslissingen en roadmap van de vault: `gebieden/vault/`.
 ## Geheimen
 
 - API-sleutels staan in `.env` (niet in git); `.env.example` toont de namen.
+- Lees `.env` niet zelf uit (dat blokkeert een deny-regel). Scripts in `scripts/` lezen de
+  sleutels zelf en tonen ze nooit. YouTrack-commands, zoals een issue op een bord zetten:
+  `/usr/bin/python3 -I ~/vault/scripts/youtrack_command.py <issue> "<command>"`.
