@@ -22,3 +22,6 @@ in [[vault-roadmap]].
 | Guardrails liefst technisch afdwingen | Permissies in `.claude/settings.json` of in scripts zijn sterker dan een zin in CLAUDE.md. |
 | CLAUDE.md klein houden | Wordt elke sessie volledig geladen; persoonlijke context in aparte notities waarnaar verwezen wordt. |
 | Notitienamen met voorvoegsel per gebied (`vault-…`) | Algemene namen als `beslissingen.md` geven dubbelzinnige `[[links]]` zodra een ander gebied dezelfde naam gebruikt. |
+| Urenscript haalt elke run alle uren van de periode op, geen incrementele cache (10-11-2026) | Eén klein request (`$filter` + `$select`, ~3 requests totaal, limiet 500 per dag). Incrementeel via `LastChangeTime` mist verwijderde entries, waardoor een totaal stil fout kan zijn. Alleen afgesloten maanden cachen kan later als het te zwaar wordt. |
+| Urenscript rondt niets af (10-11-2026) | Ik rond zelf al af bij het loggen (3 minuten); het script telt `DurationSeconds` op. |
+| Uren van projecten zonder klant tellen als niet-declarabel (10-11-2026) | Het LogMyTime-project "Niet declarabel" heeft geen klant en wordt in de Excel ook niet meegeteld. |
