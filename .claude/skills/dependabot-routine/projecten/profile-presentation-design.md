@@ -13,6 +13,10 @@ Base branch: `develop`. Releases gaan via een PR van `develop` naar `master`.
 - Parent: geen. De taak wordt direct aangemaakt, zonder parent.
 - Titel subtask: `Profile presentation design - apply Dependabot upgrades <jaar> w<week>`.
 
+## Stap 4. Schone install
+
+- Build: `npm run build-library`. Er is geen script `build`.
+
 ## Stap 7. Projectstappen
 
 ### Release-PR

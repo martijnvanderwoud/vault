@@ -249,8 +249,50 @@ Kijk of er errors of warnings zijn. Leg die aan mij voor voordat je verder gaat.
 melding over vulnerabilities is geen reden om te stoppen: die is voor stap 5.
 Deprecation-warnings in gegenereerde API-clients negeer je, die hoef je niet te melden.
 
+Alleen bij npm-projecten: voor `npm warn deprecated` volg je `Deprecation-warnings van npm`.
+
 Meldt de build 0 uitgevoerde tests terwijl het project tests heeft, leg dat dan ook aan mij
 voor: exit 0 is dan geen geslaagde build.
+
+### Deprecation-warnings van npm
+
+Alleen voor npm-projecten (`package-lock.json`). Bij Maven, Gradle en sbt geldt dit niet.
+
+Zoek per warning de keten op met `npm ls <pakket>`. De ouder is het pakket dat de
+verouderde versie vereist, de aanvrager is het pakket dat die ouder vereist.
+
+Voeg zonder te vragen een override toe als dit allemaal geldt:
+
+- Het pakket en de ouder zijn transitief, en `npm ls <pakket> --omit=dev` vindt het pakket
+  niet (exit 1 is hier het gewenste resultaat). Runtime-dependencies vallen hierbuiten:
+  `overrides` werkt niet door bij afnemers van een gepubliceerde library.
+- Een nieuwere stabiele versie van de ouder vereist een versie van het pakket die niet
+  deprecated is (`npm view <ouder>@<versie> dependencies`, `npm view <pakket>@<versie> deprecated`).
+- De `engines` van die versie van de ouder passen bij `.nvmrc`. Ontbreekt `.nvmrc`, dan is
+  dit niet te toetsen: voeg geen override toe en noem dat in het verslag.
+- De nieuwste versie van de aanvrager staat die ouder nog niet toe.
+
+Maak de override zo smal mogelijk, genest onder de aanvrager. Bij meerdere aanvragers
+krijgt elke aanvrager een eigen entry:
+
+```json
+"overrides": { "<aanvrager>": { "<ouder>": "^<versie>" } }
+```
+
+Bewaar `package-lock.json` vooraf in de scratchpad, draai `npm install` en daarna `npm ci`,
+en controleer:
+
+- De warning is weg en er is geen nieuwe warning bij gekomen.
+- Geen versie in de lockfile gaat omlaag.
+- Alleen de ouder en het deprecated pakket wijzigen. Verder verdwijnen er alleen pakketten
+  (ook de dependencies van het deprecated pakket), er komt geen pakket bij.
+- De build slaagt. Gebruik de `build_command` uit `.github/workflows`, anders
+  `npm run build`. Bestaat geen van beide, dan telt de schone `npm ci` als build.
+- Heeft het project een `test`-script, dan slagen de tests.
+
+Voldoet iets hiervan niet, of is de override niet mogelijk, draai hem dan terug. Noem de
+warning met de reden alleen in het verslag en ga door. De override gaat mee in de PR van
+stap 6.
 
 ## 5. Kwetsbaarheden patchen zonder breaking changes
 
@@ -329,6 +371,19 @@ ze niet. Overrides op dependencies van Maven- of Gradle-plugins vallen buiten de
 
 ### npm-projecten
 
+Controleer eerst of geneste overrides verouderd zijn. Overrides die je in stap 4 zelf hebt
+toegevoegd sla je over. Vereist de geïnstalleerde aanvrager nu zelf een versie die binnen
+de override valt (`npm view <aanvrager>@<versie> dependencies`), haal de override dan
+zonder te vragen weg. Bewaar `package-lock.json` vooraf in de scratchpad, haal de
+override uit `package.json`, draai `npm install` en daarna `npm ci`, en controleer:
+
+- Het lockfile wijzigt niet, of er verdwijnen alleen pakketten.
+- Er is geen nieuwe deprecation-warning bij gekomen.
+- De build en de tests slagen, zoals bij `Deprecation-warnings van npm`.
+
+Voldoet iets niet, zet de override dan terug en noem hem in het verslag. Overrides op het
+hoogste niveau laat je staan. De verwijderingen gaan mee in de PR van stap 6.
+
 Alleen als `npm ci` vulnerabilities meldt:
 
 ```bash
@@ -339,8 +394,9 @@ git status --short
 - Gebruik nooit `--force`.
 - `npm audit fix` eindigt met exit 1 als er kwetsbaarheden overblijven, ook als het
   commando zelf goed ging. Lees dat dus niet als mislukking.
-- Heeft het iets gewijzigd, laat dan de diff zien en ga door naar stap 6. Gaat er een
-  versie omlaag, stop dan en leg het mij voor.
+- Heeft het iets gewijzigd, laat dan de diff zien, draai nog één keer `npm ci` en ga door
+  naar stap 6. Een nieuwe deprecation-warning handel je af volgens
+  `Deprecation-warnings van npm`. Gaat er een versie omlaag, stop dan en leg het mij voor.
 - Blijven er kwetsbaarheden over, kijk dan wat `npm audit` als fix noemt. Fixes die een
   downgrade betekenen voer ik nooit door, dus die laat je staan en noem je alleen in het
   verslag. Vergelijk daarvoor de genoemde versie met `npm ls <package> --depth=0`. Is de
@@ -348,9 +404,9 @@ git status --short
 
 ## 6. Openstaande wijzigingen via één PR
 
-Alleen als er wijzigingen zijn: de `.sdkmanrc` uit stap 3, patches, audit-fixes of
-verwijderde overrides uit stap 5 of een `ignore`-regel uit stap 1. Breng ze samen in één
-PR, om het aantal builds te beperken.
+Alleen als er wijzigingen zijn: de `.sdkmanrc` uit stap 3, npm-overrides uit stap 4,
+patches, audit-fixes of verwijderde overrides uit stap 5 of een `ignore`-regel uit stap 1.
+Breng ze samen in één PR, om het aantal builds te beperken.
 
 Maak vanaf de base branch een branch, commit alleen de gewijzigde bestanden, push en
 maak een PR naar de base branch:
@@ -435,6 +491,9 @@ is klaar. Plaats zonder te vragen een verslag als comment in de subtask uit stap
 - de commit waarop de base branch nu staat
 - resultaat van de install en de audit, met de kwetsbaarheden die blijven staan
 - verwijderde overrides, en overrides die terug moesten omdat de build of scan faalde
+- toegevoegde npm-overrides, met de aanvrager die moet updaten voordat ze weg kunnen
+  (stap 5 haalt ze dan vanzelf weg), en deprecation-warnings die blijven staan, met de
+  reden
 - resultaat van de build uit stap 8
 - als er meer dan één Dependabot-PR gemerged is: dat de checks van latere PR's tegen de
   oude base draaiden, en dat de build uit stap 8 de samengevoegde stand dekt

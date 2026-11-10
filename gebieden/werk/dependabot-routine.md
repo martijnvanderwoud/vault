@@ -897,3 +897,50 @@ de suffix `-rc1` mee, hersteld. Maven en Gradle alleen op kleine testbestanden h
 project. Opgemerkt: het script telt sbt-regels per dependency (131). Het eerste getal uit de
 run (242) telde `compile` en `test` apart en is daarna gecorrigeerd naar 131 in dit logboek en
 in de beschrijving van #158. Skill en logboek zijn nog niet gecommit.
+
+## Logboek 2026-11-10 (profile-presentation-design, npm deprecation-warnings)
+
+Geen testrun van de skill. Tijdens een gewone run in `profile-presentation-design` (PRC-60,
+2026 w46) kwamen we een `npm warn deprecated` tegen waar de skill geen regel voor had. Dat is
+achteraf verwerkt in `SKILL.md`; het logboek is dus niet tijdens de run bijgehouden. De feiten
+hieronder komen uit het verslag van de sessie die de run deed.
+
+Eén warning, bij `npm ci` op `develop` 4b87614 (na #47, versie 2.6.0): `glob@10.5.0`.
+Keten: `ts-jest` > `@jest/transform` > `babel-plugin-istanbul@8.0.2` (aanvrager) >
+`test-exclude@7.0.2` (ouder, vereist `glob ^10.4.1`) > `glob@10.5.0`. Alleen dev:
+`npm ls glob --omit=dev` is leeg (die check is pas achteraf gedaan).
+
+Besluit: de skill zei alleen dat warnings aan mij voorgelegd worden. Ik koos "eerst
+uitzoeken" en daarna ja op de override `"babel-plugin-istanbul": { "test-exclude": "^8.0.0" }`
+(`test-exclude@8.0.0` vereist `glob ^13.0.6`, engines passen bij `.nvmrc` 24). Gemerged in #48
+(8ea03bb), daarna release #49 en versiebump #50.
+
+Controles: warning weg, ook op de eindstand 83b68d9. Lockfile: `test-exclude` 7.0.2 naar 8.0.0,
+25 entries verdwenen (onder meer geneste `glob`, `jackspeak`, `path-scurry`), niets omlaag,
+niets erbij. `npm run build-library` geslaagd, CI groen. Daarna `npm audit fix` los van de
+override: 16 omhoog, 1 erbij, 0 omlaag; 32 kwetsbaarheden blijven, alle fixes zijn downgrades.
+De tests faalden al met standaardconfig in 4 van 4 suites (`Cannot find name 'expect'`),
+met en zonder override: PRC-61 en PRC-62. Met `tsconfig.app.json` en diagnostics uit 47/47
+groen, met en zonder override.
+
+Lessen voor de skill: de lockfile verliest ook de dependencies van het deprecated pakket, dus
+"alleen de ouder wijzigt, verder verdwijnen er alleen pakketten" klopt; de controle moet geen
+andere pakketten laten wijzigen dan de ouder en het deprecated pakket zelf. Het buildcommando
+heet hier `build-library`, niet `build`: de fallback in `SKILL.md` kan dan op de schone `npm ci`
+uitkomen.
+
+### Plaatsing na de run
+
+Doorgevoerd op 2026-11-10. Stapnummers zijn die van `SKILL.md`.
+
+| Afwijking of les | Plaats | Waar |
+| --- | --- | --- |
+| `npm warn deprecated` bij `npm ci` | `SKILL.md` | stap 4; subsectie `Deprecation-warnings van npm`, alleen npm-projecten |
+| Override toevoegen, zonder te vragen | `SKILL.md` | stap 4; alleen als pakket en ouder transitief zijn en niet in `--omit=dev` staan, een nieuwere ouder een niet-deprecated versie vereist, `engines` bij `.nvmrc` passen en de nieuwste aanvrager de ouder nog niet toestaat |
+| Override zo smal mogelijk | `SKILL.md` | stap 4; genest onder de aanvrager, per aanvrager een eigen entry |
+| Controle na de override | `SKILL.md` | stap 4; lockfile vooraf bewaren, `npm install` en `npm ci`, warning weg, geen versie omlaag, alleen ouder en pakket wijzigen, build en tests groen; anders terugdraaien en in het verslag |
+| Ontbrekende `.nvmrc` of buildcommando | `SKILL.md` | stap 4; geen override zonder `.nvmrc`; build via `build_command`, anders `npm run build`, anders de schone `npm ci`; de routine loopt door |
+| Verouderde npm-overrides verwijderen | `SKILL.md` | stap 5, tak `npm-projecten`; overrides uit stap 4 overslaan, eigen controles, terugzetten bij falen |
+| Wijzigingen in de PR en in het verslag | `SKILL.md` | stap 6 en 9; toegevoegde overrides met de aanvrager die moet updaten, en warnings die blijven staan |
+
+Getest: de tekst is nagelezen op consistentie en vergeleken met bovenstaande run. De nieuwe regels zijn nog niet in een echte routine gedraaid.
