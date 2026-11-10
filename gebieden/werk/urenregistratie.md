@@ -44,6 +44,11 @@ Pompkracht 1079,65 u en Construct 0,55 u.
 - Lokale datum (Europe/Amsterdam) bepaalt bij welke dag een entry hoort.
 - Gereserveerde vrije uren staan in `data/vrije-dagen-2026.csv` (kolommen `omschrijving`, `gepland_uren`, `nog_gereserveerd_uren`, in uren; uit Excel kolom J, K, L ×24). Het script telt `nog_gereserveerd_uren` op en toont ook vrij over min gereserveerd. Gepland totaal 196 u (= budget), nog gereserveerd 33,0 u (Dag voor kerst 5,0 u, Kerstvakantie 28,0 u). Bij een geplande dag die voorbij is: `nog_gereserveerd_uren` op 0 zetten.
 
+## Skill
+
+`/uren` (`.claude/skills/uren/SKILL.md`) draait `uren.py`, vertaalt "per 6 november" of "details" naar de
+juiste opties en vat de stand samen. Alleen lezen; uren loggen valt erbuiten.
+
 ## Export-observaties
 
 - Het issuenummer zit alleen in het begin van de taaknaam (`PKP-890 …`); kolom `issue_id` is leeg.

@@ -24,7 +24,7 @@ Details en achtergrond in [[urenregistratie]].
 
 1. ~~`scripts/uren.py` (stdlib, alleen lezen) dat de Excel-stand reproduceert~~ (klaar 10-11-2026).
 2. ~~Gereserveerde vrije uren (Excel kolom J, K, L) naar `data/vrije-dagen-2026.csv`, en `uren.py` laten tonen: vrij gereserveerd en het verschil met vrij over~~ (klaar 10-11-2026).
-3. Skill `/uren`.
+3. ~~Skill `/uren`~~ (`.claude/skills/uren/SKILL.md`, klaar 10-11-2026): draait `uren.py` en vat de stand samen; nog niet getest vanuit een nieuwe sessie.
 4. Pas als de cijfers kloppen: Excel uitfaseren.
 
 ## Backlog / ideeën (nog niet beslist)
