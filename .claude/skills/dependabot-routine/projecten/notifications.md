@@ -41,8 +41,10 @@ als absoluut pad.
 
 ```bash
 rm -rf <scratchpad>/deps && mkdir -p <scratchpad>/deps/met <scratchpad>/deps/zonder
+projects=$(sbt projects 2>&1 | grep -E '^\[info\][[:space:]]+[A-Za-z0-9_-]+$' | awk '{print $2}' | grep -vx root)
+echo $projects
 met=""; zonder="set ThisBuild / dependencyOverrides := Seq();"
-for p in model portsService portsEventProcessor adapterRestApi adapterKafkaConsumer adapterKurrentDb adapterMongo adapterAts application integration; do
+for p in $projects; do
   for c in Compile Test; do
     met="$met $p/$c/dependencyTree list --out <scratchpad>/deps/met/$p-$c.txt;"
     zonder="$zonder $p/$c/dependencyTree list --out <scratchpad>/deps/zonder/$p-$c.txt;"
@@ -55,6 +57,9 @@ sbt shutdown
 /usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/check_overrides.py --sbt build.sbt --tree <scratchpad>/deps/zonder/*.txt
 ```
 
+- De projecten komen uit `sbt projects`, zodat een nieuwe module vanzelf meegaat. Controleer dat
+  `echo $projects` alle modules toont (nu 10, zonder `root`): een lege lijst betekent dat sbt
+  de uitvoer anders opmaakt en het filter niet meer klopt.
 - Overrides staan in `ThisBuild / dependencyOverrides` in `build.sbt`, de versies in
   `project/Versions.scala`.
 - Patchen: een directe dependency pas je aan in `project/Versions.scala`. Een transitieve krijgt
