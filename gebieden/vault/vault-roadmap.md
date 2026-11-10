@@ -16,13 +16,14 @@ Zie [[vault-doel]] voor het waarom en [[vault-beslissingen]] voor de gemaakte ke
 - Daily notes: Obsidian staat ingesteld op `dagboek/` met formaat `YYYY/YYYY-MM-DD`.
 - `data/declarabele-uren-2026.xlsx` staat in de vault als tussenoplossing (binair, slecht te diffen); toegevoegd op 7-11-2026.
 - `scripts/uren.py` (10-11-2026) leest de uren uit de LogMyTime API en reproduceert de Excel-stand exact (gevalideerd per 10-11-2026). `LOGMYTIME_API_KEY` staat in `.env`.
+- `data/vrije-dagen-2026.csv` (10-11-2026): gereserveerde vrije uren uit de Excel; `uren.py` toont vrij gereserveerd (33,0 u) en wat er na reserveringen overblijft (0,45 u).
 
 ## Volgende stap: vrije dagen en skill `/uren`
 
 Details en achtergrond in [[urenregistratie]].
 
 1. ~~`scripts/uren.py` (stdlib, alleen lezen) dat de Excel-stand reproduceert~~ (klaar 10-11-2026).
-2. Gereserveerde vrije uren (Excel kolom J, K, L; nu 33,0 u nog gereserveerd) naar `data/vrije-dagen-2026.csv`, en `uren.py` laten tonen: vrij gereserveerd en het verschil met vrij over.
+2. ~~Gereserveerde vrije uren (Excel kolom J, K, L) naar `data/vrije-dagen-2026.csv`, en `uren.py` laten tonen: vrij gereserveerd en het verschil met vrij over~~ (klaar 10-11-2026).
 3. Skill `/uren`.
 4. Pas als de cijfers kloppen: Excel uitfaseren.
 

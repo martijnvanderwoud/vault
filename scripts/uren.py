@@ -7,6 +7,7 @@ de som van DurationSeconds, zoals ik ze zelf al afgerond log.
 De sleutel komt uit LOGMYTIME_API_KEY in ~/vault/.env en wordt nooit getoond.
 """
 import argparse
+import csv
 import json
 import os
 import urllib.error
@@ -21,6 +22,7 @@ TZ = ZoneInfo('Europe/Amsterdam')
 # Werkuren per weekdag (ma t/m vr), 28 u per week.
 UREN_PER_WEEKDAG = [6.5, 6.5, 4.5, 6.25, 4.25]
 VRIJ_BUDGET = 196
+VRIJE_DAGEN = os.path.expanduser('~/vault/data/vrije-dagen-2026.csv')
 
 
 def key():
@@ -71,6 +73,12 @@ def target_uren(vanaf, tot):
     return totaal
 
 
+def gereserveerd_uren():
+    """Som van de nog gereserveerde vrije uren uit data/vrije-dagen-2026.csv."""
+    with open(VRIJE_DAGEN, newline='') as f:
+        return sum(float(r['nog_gereserveerd_uren']) for r in csv.DictReader(f))
+
+
 def main():
     vandaag = date.today()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -115,6 +123,9 @@ def main():
     print('Niet declarabel      %9.2f u' % niet_declarabel)
     print('Target (werkuren)    %9.2f u' % target)
     print('Vrij opgenomen       %9.2f u (budget %d u, over %.2f u)' % (vrij, VRIJ_BUDGET, VRIJ_BUDGET - vrij))
+    gereserveerd = gereserveerd_uren()
+    print('Vrij gereserveerd    %9.2f u' % gereserveerd)
+    print('Vrij na reservering  %9.2f u (vrij over min gereserveerd)' % (VRIJ_BUDGET - vrij - gereserveerd))
     if args.details:
         print('Per TypeID (afwezigheid ja/nee):')
         for (type_id, afwezig), uren in sorted(per_type.items()):
