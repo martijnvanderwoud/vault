@@ -746,3 +746,154 @@ handelt `app/flow-cloud-scala-steward` en `app/dependabot` af. Ik doe later een 
 met `notifications` om de afwijkingen te behandelen. Voor `sbt` is er nog geen build- of scanregel: `build.sbt` staat
 niet in stap 4 en `osv_jvm.py` is alleen getest op Maven en Gradle. Bij de eerste run legt de
 skill dat dus voor.
+
+## Logboek 2026-11-10 (notifications, testrun van de skill met Scala Steward en sbt)
+
+Testrun van de skill `dependabot-routine` in ons enige Scala-project. De skill is tijdens de
+run niet aangepast. Per afwijking: wat er gebeurde, wat ik besloot, en of het generiek of
+projectspecifiek lijkt.
+
+Stappen: repo-naam `notifications`, `projecten/notifications.md` gelezen. Geen open
+Dependabot-PR's, 5 open Scala Steward-PR's (#153 tot en met #157), allemaal base `develop`.
+
+Stap 0: één parent, PN-55, titel van `w40-45` naar `w40-46`. Subtask bestond niet, aangemaakt:
+**PN-64** (`Apply Scala Steward upgrades 2026 w46`), op het board gezet via REST.
+
+| PR | Inhoud | Checks | Actie |
+| --- | --- | --- | --- |
+| #153 | lz4-java naar 1.14.0 | 2/2 groen | squash-merge (befea73) |
+| #154 | jackson-core, jackson-databind naar 2.23.0 | 2/2 groen | squash-merge (cecae7e) |
+| #155 | zstd-jni naar 1.5.7-26 | 2/2 groen | squash-merge (955dadf) |
+| #156 | opentelemetry-api e.a. naar 1.68.0 | 2/2 groen | squash-merge (b6171b8) |
+| #157 | ZIO updates: zio-config 4.1.2, zio-json 1.1.2, zio-kafka 3.8.2 | 2/2 groen | squash-merge (4bb680a) |
+| #158 | eigen PR: #130 terug (volledige tests), guava 33.7.2-jre, `kafka-clients`-override weg | 2/2 groen, 49 tests | squash-merge (d4df9e2) |
+
+Stap 1: bij #154 tot en met #157 eerst `mergeable=UNKNOWN`, na één keer opnieuw kijken
+`MERGEABLE`. Alle vijf wijzigen `project/Versions.scala`, geen conflicten. Stap 2: `develop`
+fast-forward van 8ed39c2 naar 4bb680a, vijf `update/develop/*`-verwijzingen opgeruimd. Stap 3:
+`.sdkmanrc` ongewijzigd. Java 25.0.5.0+8-tem, sbt 2.0.12 en Scala 3.10.0 zijn de nieuwste
+binnen hun major. Nieuwere majors: Java 26.0.2.1+1 en 27.0.0.0+35. sbt 2.1.0 bestaat alleen
+als pre-release (RC3).
+
+### Afwijkingen
+
+1. **Stap 4: geen regel voor `build.sbt`.**
+   - Wat gebeurde: in de root staat `build.sbt`, die niet in de tabel van stap 4 staat. Het
+     projectbestand noemt ook geen commando. Gestopt en voorgelegd. `just ci` draait alleen
+     `sbt test` en loopt achter op `pr.yml` (`sbt "scalafmtCheckAll; compile; test"`).
+   - Besluit: `sbt "clean; scalafmtCheckAll; compile; test"`, zonder `integration/test`. Die
+     en het image dekt de `Develop build` in stap 8.
+   - Indeling: het commando is **projectspecifiek** (nu nog het enige sbt-project), de
+     ontbrekende regel voor sbt in de tabel is **generiek**.
+2. **Stap 4: de build is groen, maar er draaien 0 tests, lokaal en in CI.**
+   - Wat gebeurde: `sbt "clean; scalafmtCheckAll; compile; test"` op 4bb680a (Java 25.0.5, sbt
+     2.0.12): exit 0, 7 s, geen errors of warnings. Alle 9 de projecten melden `Passed: Total 0`
+     en `No tests to run for <project> / Test / testQuick`. Onder `src/test` staan 19
+     Scala-bestanden, waarvan 18 met `Spec` of `Test` in de naam.
+   - Hetzelfde in CI, dus de groene checks zeggen niets over de tests: PR-run 42637916266 van
+     #157 (9 keer `Total 0`, geen enkele `Total` boven 0) en `Develop build` 42832700558 op 4bb680a (10 keer `Total 0`, ook
+     `integration / Test / testQuick`). De vijf PR's zijn op die checks gemerged.
+   - `sbt help testFull` geeft `Executes all tests.`. De oorzaak is niet vastgesteld en
+     `testFull` is niet gedraaid. Gestopt en voorgelegd.
+   - Besluit (later vervangen, zie de heroverweging hieronder): geen tests draaien. `test` is in sbt 2 `testQuick`, en dat draait alleen tests
+     waarvan de input veranderd is. Dat heb ik eerder gezien, stap 4 is hiermee klaar.
+   - Correctie op wat ik had voorgelegd: de regel `sbt cache is not found` in de CI-log gaat
+     over de cache van setup-java. De aparte `sbt 2.x disk cache` werd wel teruggezet, dus
+     een cache sluit dat niet uit. Open punt: de vijf PR's wijzigden wel dependency-versies,
+     en toch draaide er geen test.
+   - Heroverweging op mijn verzoek. Ik had eerder getest dat `testQuick` wel afging bij
+     gewijzigde dependencies in een module, maar misschien ziet hij niet elke verandering.
+     - Documentatie: `test` draait alleen tests die eerder faalden, nog niet gedraaid zijn, of
+       waarvan een transitieve dependency "recompiled" is. Over externe jars staat er niets.
+     - Broncode sbt v2.0.12, `ClassStamper` in `IncrementalTest.scala`: de digest van een
+       testklasse bevat bytecode-hashes van klassen in de eigen en andere sbt-projecten,
+       resources, testopties en een JVM-salt. Jars lopen alleen via `relations.externalDeps`.
+       Zinc (develop-branch, niet de exacte versie uit sbt 2.0.12) zet echte library-jars in
+       `libraryDeps` en niet in `externalDeps`. Volgens die lezing telt een jar dus niet mee,
+       tenzij de bump de bytecode van onze eigen klassen verandert. Dat kan mijn eerdere test
+       verklaren, maar is niet bewezen.
+     - Correctie op wat ik had voorgelegd: mijn telling op `Passed: Total` was geen goede maat.
+       ZIO meldt `N tests passed`. Geteld over 60 PR-builds sinds 2026-08-12: vóór #130
+       (2026-10-06, incrementele tests in CI) draaiden in 28 van 29 builds tests, daarna in 6
+       van 31, steeds 49 tests.
+     - De 6 builds volgen geen library-wijzigingen: ook een GitHub Actions-bump draaide 49
+       tests, terwijl #153 tot en met #157 er 0 draaiden, ook #157 met zio-json 1.1.2 (9
+       main-bestanden en 1 testbestand importeren `zio.json`). Waarschijnlijk een koude
+       disk-cache, niet vastgesteld.
+     - #130 ging uit van "incremental tracking (code and library dependencies)". Dat lijkt voor
+       library-bumps niet te kloppen.
+   - Besluit na heroverweging: `testFull` wordt onderdeel van het stappenplan van de skill
+     (doorvoeren in fase 3) en CI gaat ook `testFull` gebruiken. Voor deze run draait stap 4
+     met `testFull` per project, zonder `integration`.
+   - Resultaat stap 4 op 4bb680a: `sbt "clean; scalafmtCheckAll; compile; <9 projecten>/testFull"`
+     exit 0, geen errors of warnings, 49 tests geslaagd, 0 gefaald.
+   - Voor CI uitgezocht: #130 zette de root-`Test / test` van `testFull` naar `test` per module
+     en haalde de `testFull`-override op `integration` weg (die kwam uit #129). `testFull` op de
+     root aggregeert ook `integration`, omdat alleen `test / aggregate := false` staat.
+     Voorgelegd: #130 terugdraaien of de workflows aanpassen.
+   - Besluit: A, #130 terugdraaien, in de PR van stap 6 onder PN-64.
+   - Indeling: `testFull` en #130 zijn **projectspecifiek** (sbt 2). Dat exit 0 niet genoeg is
+     als er 0 tests draaien, is **generiek**.
+3. **Stap 5: geen sbt-tak, en de scripts lezen geen sbt-uitvoer.**
+   - Wat gebeurde: stap 5 kent alleen Maven, Gradle en npm. `osv_jvm.py` leest Maven- en
+     Gradle-regels, `check_overrides.py` leest `pom.xml` of de Gradle-catalog. De 12 overrides
+     staan hier in `ThisBuild / dependencyOverrides` in `build.sbt`, met de CVE's in de comment
+     erboven en de versies in `project/Versions.scala`. sbt 2 heeft `dependencyTree list --out
+     <file>`. Gestopt en voorgelegd.
+   - Besluit: `dependencyTree list` voor `Compile` en `Test` van alle projecten behalve `root`,
+     inclusief `integration`, zonder plugins. In de scratchpad omzetten naar Maven-formaat voor
+     het ongewijzigde `osv_jvm.py`, met `--exclude nl.pompkracht`. Patchen volgens de regel van
+     de skill. Overrides vergelijken met `set ThisBuild / dependencyOverrides := Seq()`.
+   - Resultaat scan: 131 dependencies, 2 regels met bevindingen, beide guava 33.4.0-jre
+     (compile en test), CVE-2026-102554 (HIGH), `doel=33.7.2`. Guava komt transitief via
+     `kurrentdb-client`.
+   - Bijzonderheid: het script geeft `33.7.2`, maar op Maven Central bestaan alleen
+     `33.7.2-jre` en `33.7.2-android`. De huidige `-jre` aangehouden. Indeling: **generiek**,
+     `osv_jvm.py` kan de suffix meegeven.
+   - Overrides met en zonder vergeleken: `kafka-clients` 4.4.0 met en zonder, dus `OVERBODIG`
+     (sinds zio-kafka 3.8.2 uit #157). De overige 11 worden zonder override lager: nog nodig.
+   - Doorgevoerd: override en `Versions.kafkaClients` weg, override en `Versions.guava`
+     erbij, #130 teruggedraaid.
+   - Controle: `sbt "clean; scalafmtCheckAll; compile; test"` exit 0, geen errors of warnings,
+     49 tests geslaagd (root-`test` is weer `testFull`). `dependencyTree`: guava 33.7.2-jre,
+     kafka-clients 4.4.0. Scan: 131 dependencies, 0 bevindingen. Verder verandert alleen wat
+     guava meebrengt: `error_prone_annotations`, `failureaccess` en `j2objc-annotations`.
+4. **Stap 6: `git revert --no-commit` blokkeert `git switch -c`.**
+   - Wat gebeurde: `fatal: cannot switch branch while reverting`. `git revert --quit` hield
+     de wijzigingen vast, daarna ging het goed. Niets gecommit of gepusht in de tussentijd.
+   - Besluit: geen, klein. Indeling: **projectspecifiek** (komt door deze eenmalige revert).
+
+Stap 6: PR #158, branch `feature/PN-64-full-tests-and-guava-patch`, PR-build 2/2 groen met 49
+tests, opgeruimd. Stap 7: geen projectstappen. Stap 8: `Develop build` op d4df9e2 (run
+42836510845) success, 49 unit- en 40 integratietests. Stap 9: verslag als comment in PN-64.
+Working copy schoon, geen open PR's. Kleine opmerking: `sbt` start een achtergrondserver, die
+ik na de `set`-run met `sbt shutdown` heb gestopt, zodat de `set` niet in de sessie bleef hangen.
+
+### Plaatsing na de run
+
+Doorgevoerd op 2026-11-10. Stapnummers zijn die van `SKILL.md`, het projectbestand is
+`projecten/notifications.md`.
+
+| Afwijking of les | Plaats | Waar |
+| --- | --- | --- |
+| 1. Build bij sbt | projectbestand | stap 4; `sbt "clean; scalafmtCheckAll; compile; test"` |
+| 2. `testFull` | projectbestand en `build.sbt` | stap 4; root-`test` is sinds #158 `testFull`, zonder `integration`, dus `test` in het commando |
+| 2. 0 tests is geen geslaagde build | `SKILL.md` en projectbestand | stap 4; in het projectbestand ook dat `N tests passed` de maat is en `Passed: Total` niet |
+| 3. Scan bij sbt | projectbestand en `osv_jvm.py` | stap 5; het script leest `dependencyTree list` direct |
+| 3. Overrides bij sbt | projectbestand en `check_overrides.py` | stap 5; nieuwe optie `--sbt`, altijd `sbt shutdown` na de `set` |
+| 3. Patchen bij sbt | projectbestand | stap 5; `dependencyOverrides`, `Versions.scala` en de comment-vorm |
+| 3. Suffix van `doel` | `osv_jvm.py` en `SKILL.md` | stap 5; `doel` neemt `-jre` over, niet bij pre-releases |
+| Buildtool buiten de tabel | `SKILL.md` | stap 4 en 5; verwijzing naar het projectbestand |
+| Andere PR-bron | `SKILL.md` | beschrijving, inleiding, stap 2; naam blijft `dependabot-routine` |
+| 4. `git revert` blokkeert `switch` | geen | eenmalig |
+| `just ci` loopt achter op `pr.yml` | geen | buiten de skill |
+
+Getest: de commando's letterlijk uit het projectbestand op d4df9e2 (20 lijsten met en 20 zonder
+overrides, scan 0 bevindingen, 12 overrides `nog nodig`). `--sbt` op de oude stand 4bb680a gaf
+`kafka-clients` `OVERBODIG`, de echte uitkomst van de run. Kunstmatig: `VEROUDERD` met CVE-comment,
+`blijft staan` zonder comment, `%%`-artefact, ontbrekende `Versions`-waarde, geen pad in de boom.
+`osv_jvm.py` op de oude lijsten gaf `doel=33.7.2-jre`. De test ving één fout: `1.0-rc1` kreeg
+de suffix `-rc1` mee, hersteld. Maven en Gradle alleen op kleine testbestanden herhaald, niet op een echt
+project. Opgemerkt: het script telt sbt-regels per dependency (131). Het eerste getal uit de
+run (242) telde `compile` en `test` apart en is daarna gecorrigeerd naar 131 in dit logboek en
+in de beschrijving van #158. Skill en logboek zijn nog niet gecommit.

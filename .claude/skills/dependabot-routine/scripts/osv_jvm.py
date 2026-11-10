@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 """Controleert opgeloste JVM-dependencies tegen de OSV-database.
 
-Leest een of meer bestanden met de output van `mvn dependency:list` of
-`gradle dependencies` en toont per dependency met bevindingen de advisories en de
+Leest een of meer bestanden met de output van `mvn dependency:list`, `gradle dependencies`
+of sbt `dependencyTree list` en toont per dependency met bevindingen de advisories en de
 doelversie: de laagste versie binnen de huidige major (bij 0.x dezelfde minor) die alle
-advisories dekt.
+advisories dekt, met de suffix van de huidige versie (zoals -jre).
 
 Draaien met /usr/bin/python3 -I: niet elke pyenv-Python heeft de ssl-module.
 """
@@ -16,6 +16,8 @@ import urllib.request
 
 MAVEN = re.compile(r'\s*([\w.\-]+):([\w.\-]+):[\w\-]+(?::[\w.\-]+)?:([\w.\-+]+):(compile|runtime|test|provided|system)')
 GRADLE = re.compile(r'.*[+\\]--- ([\w.\-]+):([\w.\-]+)(?::([\w.\-+]+|\{[^}]*\}))?(?: -> ([\w.\-+]+))?')
+SBT = re.compile(r'([\w.\-]+):([\w.\-]+):([\w.\-+]+)\s*$')
+SUFFIX = re.compile(r'-([a-zA-Z]+)[\w.]*$')
 PRE = ('rc', 'cr', 'alpha', 'a', 'beta', 'b', 'm', 'ea', 'preview', 'pre', 'snapshot', 'dev')
 DROP = ('final', 'ga', 'release')
 OSV = 'https://api.osv.dev/v1'
@@ -52,6 +54,9 @@ def parse(paths, excludes):
             m = MAVEN.match(line)
             if m:
                 group, artifact, version, scope = m[1], m[2], m[3], m[4]
+            elif SBT.match(line):
+                m = SBT.match(line)
+                group, artifact, version, scope = m[1], m[2], m[3], 'sbt'
             else:
                 m = GRADLE.match(line)
                 if not m or line.rstrip().endswith('(n)'):
@@ -96,6 +101,14 @@ def target(version, fixed_per_vuln):
     return best
 
 
+def with_suffix(goal, version):
+    """OSV kent 33.7.2, Maven alleen 33.7.2-jre: neem de suffix van de huidige versie over."""
+    suffix = SUFFIX.search(version)
+    if not goal or SUFFIX.search(goal) or not suffix or suffix[1].lower() in PRE:
+        return goal
+    return goal + suffix[0]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('files', nargs='+')
@@ -122,7 +135,7 @@ def main():
     for dep, ids in sorted(hits.items()):
         vulns = [get(OSV + '/vulns/' + vid) for vid in ids]
         fixed = [fixes(v, dep[0]) for v in vulns]
-        goal = target(dep[1], fixed)
+        goal = with_suffix(target(dep[1], fixed), dep[1])
         print('\n%s %s (%s) doel=%s' % (dep[0], dep[1], dep[2], goal or 'GEEN-BINNEN-MAJOR'))
         for vuln, f in zip(vulns, fixed):
             cves = [a for a in vuln.get('aliases', []) if a.startswith('CVE')]

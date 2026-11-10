@@ -5,6 +5,8 @@ Maven: properties na een XML-comment met "Override" of een CVE/GHSA, en elke
 dependencyManagement-entry met een eigen versie.
 Gradle: versies in gradle/libs.versions.toml met "override" of een CVE in de comment, plus
 `extra["<property>"]` en constraints met `because("CVE...")` in *.gradle.kts.
+sbt: `dependencyOverrides` in build.sbt, met de versies uit project/Versions.scala. Bij sbt is
+--tree de uitvoer van `dependencyTree list` zonder overrides.
 
 BOM-overrides worden vergeleken met de property in de BOM, transitieve overrides met
 de versies die de paden in de dependency-boom vragen (--tree, herhaalbaar). Een override
@@ -29,6 +31,9 @@ MARKER = re.compile(r'override|CVE-|GHSA-', re.I)
 SECURITY = re.compile(r'CVE-|GHSA-|security|vulnerab', re.I)
 MAVEN_LINE = re.compile(r'([\w.\-]+):([\w.\-]+):[\w\-]+(?::[\w.\-]+)?:([\w.\-+]+):(?:compile|runtime|test|provided|system)')
 GRADLE_LINE = re.compile(r'^([| ]*)[+\\]--- ([\w.\-]+):([\w.\-]+)(?::(\{[^}]*\}|[^\s]+))?(?: -> [\w.\-+]+)?(.*)$')
+SBT_LINE = re.compile(r'([\w.\-]+):([\w.\-]+):([\w.\-+]+)\s*$')
+SBT_OVERRIDE = re.compile(r'"([\w.\-]+)"\s*(%%?)\s*"([\w.\-]+)"\s*%\s*(?:Versions\.(\w+)|"([^"]+)")')
+SBT_COMMENT = re.compile(r'//\s*([\w.\-]+)\s+\d.*')
 
 
 def vkey(version):
@@ -351,15 +356,59 @@ def check_gradle(root, trees):
     print('overrides: %d' % count)
 
 
+def sbt_versions(files):
+    """Per groupId:artifactId de versies zonder overrides, over alle projecten."""
+    found = {}
+    for path in files:
+        for line in open(path):
+            m = SBT_LINE.match(line)
+            if m:
+                found.setdefault(m[1] + ':' + m[2], set()).add(m[3])
+    return found
+
+
+def check_sbt(build, trees):
+    src = open(build).read()
+    versions_file = os.path.join(os.path.dirname(os.path.abspath(build)), 'project', 'Versions.scala')
+    constants = {}
+    if os.path.exists(versions_file):
+        constants = dict(re.findall(r'val\s+(\w+)\s*=\s*"([^"]+)"', open(versions_file).read()))
+    comments = {m[1].lower(): m[0] for m in SBT_COMMENT.finditer(src)}
+    found = sbt_versions(trees)
+
+    count = 0
+    for block in re.findall(r'dependencyOverrides\s*\+\+=\s*Seq\((.*?)\n\s*\)', src, re.S):
+        for m in SBT_OVERRIDE.finditer(block):
+            key = m[1] + ':' + m[3] + ('_3' if m[2] == '%%' else '')
+            value = constants.get(m[4]) if m[4] else m[5]
+            count += 1
+            comment = next((c for word, c in comments.items() if word in key.lower()), None)
+            if not value:
+                print('%s -> Versions.%s niet gevonden, %s' % (key, m[4], MANUAL))
+            elif key not in found:
+                print('%s=%s -> geen pad in de boom, %s' % (key, value, MANUAL))
+            else:
+                low = None
+                for v in found[key]:
+                    if low is None or cmp(v, low) < 0:
+                        low = v
+                print('%s=%s -> %s (laagste pad %s)' % (key, value, by_comment(verdict(value, low), comment), low))
+    print('overrides: %d' % count)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('pom', nargs='?', default='pom.xml')
     ap.add_argument('--gradle', metavar='ROOT', help='root van een Gradle-project, in plaats van een pom')
-    ap.add_argument('--tree', action='append', default=[], help='output van de dependency-boom, herhaalbaar')
+    ap.add_argument('--sbt', metavar='BUILD_SBT', help='build.sbt van een sbt-project, in plaats van een pom')
+    ap.add_argument('--tree', action='append', nargs='+', default=[], help='output van de dependency-boom, herhaalbaar')
     args = ap.parse_args()
+    args.tree = [path for group in args.tree for path in group]
     if not args.tree:
         raise SystemExit('--tree is verplicht')
-    if args.gradle:
+    if args.sbt:
+        check_sbt(args.sbt, args.tree)
+    elif args.gradle:
         check_gradle(args.gradle, args.tree)
     else:
         check_maven(args.pom, args.tree)

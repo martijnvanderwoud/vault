@@ -1,12 +1,13 @@
 ---
 name: dependabot-routine
-description: Voert mijn Dependabot-routine uit in het huidige project - een YouTrack-issue aanmaken of hervatten, groene Dependabot-PR's squash-mergen, de oorzaak van rode PR's uitzoeken, de lokale base branch bijwerken, `.sdkmanrc` bijwerken, een schone build draaien, kwetsbaarheden zonder breaking changes patchen, alle wijzigingen in één PR samenbrengen, de build op de base branch controleren en verslag leggen in het YouTrack-issue. Gebruik deze skill zodra ik vraag om de Dependabot-routine, om Dependabot-PR's af te handelen of weg te werken, of om de wekelijkse dependency-updates te mergen, ook als ik het woord skill of routine niet gebruik. Niet voor vragen over de Dependabot-configuratie of voor het beoordelen van één losse dependency-update.
+description: Voert mijn Dependabot-routine uit in het huidige project - een YouTrack-issue aanmaken of hervatten, groene Dependabot- of Scala Steward-PR's squash-mergen, de oorzaak van rode PR's uitzoeken, de lokale base branch bijwerken, `.sdkmanrc` bijwerken, een schone build draaien, kwetsbaarheden zonder breaking changes patchen, alle wijzigingen in één PR samenbrengen, de build op de base branch controleren en verslag leggen in het YouTrack-issue. Gebruik deze skill zodra ik vraag om de Dependabot-routine, om Dependabot- of Scala Steward-PR's af te handelen of weg te werken, of om de wekelijkse dependency-updates te mergen, ook als ik het woord skill of routine niet gebruik. Niet voor vragen over de Dependabot-configuratie of voor het beoordelen van één losse dependency-update.
 ---
 
 # Dependabot-routine
 
-Werkt in elk project met Dependabot-PR's op GitHub. Draai vanuit de root van het
-project, zodat `gh` de repo zelf vindt.
+Werkt in elk project met Dependabot-PR's op GitHub. Het projectbestand kan een andere
+PR-bron toevoegen, zoals Scala Steward. Draai vanuit de root van het project, zodat `gh`
+de repo zelf vindt.
 
 Uitgangspunt: voer alleen uit wat hieronder als regel staat. Elke situatie waarvoor
 geen regel is, leg je aan mij voor met wat je ziet, want dat zijn beoordelingen die
@@ -211,7 +212,7 @@ git pull --ff-only origin <base-branch>
 git fetch --prune
 ```
 
-De `fetch --prune` ruimt de lokale verwijzingen naar de `dependabot/*`-branches op.
+De `fetch --prune` ruimt de lokale verwijzingen naar de branches van de gemerged PR's op.
 
 Sta je op een andere branch, is de working copy niet schoon, of lukt een fast-forward
 niet, stop dan en vraag het mij.
@@ -241,12 +242,15 @@ Kijk in de root van het project welk buildbestand er staat:
 | `build.gradle` of `build.gradle.kts` | `./gradlew clean build` |
 | `package-lock.json` | `npm ci` |
 
-Staan er meerdere, volg dan het projectbestand. Staat het daar niet in, of staat er geen
-van deze, vraag het mij dan.
+Staan er meerdere, of staat de buildtool niet in deze tabel, volg dan het projectbestand.
+Staat het daar niet in, vraag het mij dan.
 
 Kijk of er errors of warnings zijn. Leg die aan mij voor voordat je verder gaat. Een
 melding over vulnerabilities is geen reden om te stoppen: die is voor stap 5.
 Deprecation-warnings in gegenereerde API-clients negeer je, die hoef je niet te melden.
+
+Meldt de build 0 uitgevoerde tests terwijl het project tests heeft, leg dat dan ook aan mij
+voor: exit 0 is dan geen geslaagde build.
 
 ## 5. Kwetsbaarheden patchen zonder breaking changes
 
@@ -255,7 +259,8 @@ Deprecation-warnings in gegenereerde API-clients negeer je, die hoef je niet te 
 De scripts staan in `~/vault/.claude/skills/dependabot-routine/scripts/`, naast deze
 `SKILL.md`. Draai ze met `/usr/bin/python3 -I`,
 want niet elke pyenv-Python heeft SSL. Sla de dependency-lijst op in de scratchpad en sluit
-met `--exclude` de eigen groupIds uit en alles wat het projectbestand noemt.
+met `--exclude` de eigen groupIds uit en alles wat het projectbestand noemt. Staat de
+buildtool hieronder niet, volg dan `Stap 5` van het projectbestand.
 
 Maven:
 
@@ -274,7 +279,8 @@ Gradle:
 ```
 
 Het script toont per bevinding `doel=<versie>`, de laagste versie binnen de huidige major
-(bij 0.x dezelfde minor) die alle advisories dekt.
+(bij 0.x dezelfde minor) die alle advisories dekt, met de suffix van de huidige versie
+(zoals `-jre`).
 
 - **Doel bekend en hoger dan de huidige versie:** patch, zonder te vragen.
   - Directe dependency: pas de versie of de property aan.
