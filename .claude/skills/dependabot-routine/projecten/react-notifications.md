@@ -6,6 +6,13 @@ description: Extra stappen van de Dependabot-routine voor react-notifications (G
 
 Base branch: `develop`. Releases gaan via een PR van `develop` naar `master`.
 
+## Stap 0. YouTrack-issue
+
+- YouTrack-project: `pompkracht-ui-components` (key `PRC`).
+- Board: `Pompkracht Kanban Board`, sprint `Kanban workflow`.
+- Parent: geen. De taak wordt direct aangemaakt, zonder parent.
+- Titel subtask: `React-notifications: apply Dependabot upgrades <jaar> w<week>`.
+
 ## Stap 7. Projectstappen
 
 ### Release-PR

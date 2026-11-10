@@ -1,5 +1,5 @@
 ---
-description: Aanvullingen op de Dependabot-routine voor roep (Maven, webjars negeren, Maven-versie in de workflows)
+description: Aanvullingen op de Dependabot-routine voor roep (YouTrack-gegevens, Maven, webjars negeren, Maven-versie in de workflows)
 ---
 
 # Dependabot-routine: roep
@@ -8,16 +8,22 @@ Base branch: `develop`. Een PR heeft 2 checks: `Validate GitFlow Branch Rules` e
 `build / build`. De validator komt uit een ruleset van de organisatie en staat niet in de
 repo.
 
+## Stap 0. YouTrack-issue
+
+- YouTrack-project: `pompkracht-roep` (key `ROEP`).
+- Board: `Pompkracht Kanban Board`, sprint `Kanban workflow`.
+- Titel parent: `Dependabot upgrades <jaar> w<bereik>`.
+- Titel subtask: `Apply Dependabot upgrades <jaar> w<week>`.
+
 ## Stap 3. `.sdkmanrc` bijwerken
 
 Wijzigt de Maven-versie, werk dan ook `maven_version` bij in `.github/workflows/*.yml`.
 
 ## Stap 4. Schone install
 
-`mvn clean package`, zoals in CI. De deprecation-warnings in `target/generated-sources/`
-(`swagger-more` en `swagger-iam`) hoef je niet te melden.
+`mvn clean package`, zoals in CI.
 
-## Stap 5. Audit fix zonder breaking changes
+## Stap 5. Kwetsbaarheden patchen zonder breaking changes
 
 Sluit bij de scan uit: `--exclude com.crimsoncricket --exclude nl.pompkracht --exclude org.webjars`.
 

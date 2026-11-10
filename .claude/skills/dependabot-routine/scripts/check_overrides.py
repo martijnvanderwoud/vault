@@ -1,14 +1,16 @@
 #!/usr/bin/python3
 """Vergelijkt CVE-overrides met de versie die er zonder override zou staan.
 
-Maven: properties en dependencyManagement-entries na een XML-comment met "Override".
-Gradle: versies in gradle/libs.versions.toml met "override" in de comment, plus
+Maven: properties na een XML-comment met "Override" of een CVE/GHSA, en elke
+dependencyManagement-entry met een eigen versie.
+Gradle: versies in gradle/libs.versions.toml met "override" of een CVE in de comment, plus
 `extra["<property>"]` en constraints met `because("CVE...")` in *.gradle.kts.
 
 BOM-overrides worden vergeleken met de property in de BOM, transitieve overrides met
 de versies die de paden in de dependency-boom vragen (--tree, herhaalbaar). Een override
-is alleen weg te halen als alle paden minstens even hoog zijn. Poms komen uit ~/.m2 of
-de Gradle-cache, dus draai dit na een build.
+is alleen weg te halen als alle paden minstens even hoog zijn. Wordt de versie zonder
+override hoger, dan mag hij alleen weg als de comment een security-patch noemt. Poms komen
+uit ~/.m2 of de Gradle-cache, dus draai dit na een build.
 """
 import argparse
 import glob
@@ -23,6 +25,8 @@ DROP = ('final', 'ga', 'release')
 M2 = os.path.expanduser('~/.m2/repository')
 GRADLE_CACHE = os.path.expanduser('~/.gradle/caches/modules-2/files-2.1')
 MANUAL = 'handmatig controleren'
+MARKER = re.compile(r'override|CVE-|GHSA-', re.I)
+SECURITY = re.compile(r'CVE-|GHSA-|security|vulnerab', re.I)
 MAVEN_LINE = re.compile(r'([\w.\-]+):([\w.\-]+):[\w\-]+(?::[\w.\-]+)?:([\w.\-+]+):(?:compile|runtime|test|provided|system)')
 GRADLE_LINE = re.compile(r'^([| ]*)[+\\]--- ([\w.\-]+):([\w.\-]+)(?::(\{[^}]*\}|[^\s]+))?(?: -> [\w.\-+]+)?(.*)$')
 
@@ -53,6 +57,14 @@ def verdict(override, other):
     if c == 0:
         return 'OVERBODIG: zonder override dezelfde versie, override kan weg'
     return 'nog nodig'
+
+
+def by_comment(result, comment):
+    """Zonder override hoger: alleen een security-patch mag weg."""
+    if result.startswith('VEROUDERD') and not (comment and SECURITY.search(comment)):
+        return 'blijft staan: zonder override is de versie hoger, maar %s' % (
+            'de comment noemt geen security-patch' if comment else 'er staat geen comment boven')
+    return result
 
 
 class Paths:
@@ -191,32 +203,35 @@ def check_maven(pom, trees):
     props, managed = chain(root)
     paths = maven_paths(trees)
 
-    count, active = 0, False
+    count, comment = 0, None
     block = root.find(NS + 'properties')
     for el in ([] if block is None else block):
         if is_comment(el):
-            active = 'override' in el.text.lower()
-        elif active:
+            comment = el.text if MARKER.search(el.text) else None
+        elif comment:
             name, value = el.tag.replace(NS, ''), (el.text or '').strip()
             count += 1
             if name in props:
-                print('%s=%s BOM=%s -> %s' % (name, value, props[name], verdict(value, resolve(props[name], props))))
+                print('%s=%s BOM=%s -> %s' % (name, value, props[name],
+                                              by_comment(verdict(value, resolve(props[name], props)), comment)))
             else:
                 print('%s=%s -> property niet in de parent, %s' % (name, value, MANUAL))
 
-    active = False
+    comment, own = None, own_props(root, props)
     block = root.find(NS + 'dependencyManagement/' + NS + 'dependencies')
     for dep in ([] if block is None else block):
         if is_comment(dep):
-            active = 'override' in dep.text.lower()
-        elif active:
-            key, value = text(dep, 'groupId') + ':' + text(dep, 'artifactId'), text(dep, 'version')
+            comment = dep.text
+            continue
+        value = resolve(text(dep, 'version'), own)
+        if value and text(dep, 'scope') != 'import':
+            key = text(dep, 'groupId') + ':' + text(dep, 'artifactId')
             count += 1
             if key in managed:
-                print('%s=%s BOM=%s -> %s' % (key, value, managed[key], verdict(value, managed[key])))
+                print('%s=%s BOM=%s -> %s' % (key, value, managed[key], by_comment(verdict(value, managed[key]), comment)))
             else:
-                print('%s=%s -> %s' % (key, value, paths.judge(key, value)))
-            active = False
+                print('%s=%s -> %s' % (key, value, by_comment(paths.judge(key, value), comment)))
+        comment = None
     print('overrides: %d' % count)
 
 
@@ -225,12 +240,12 @@ def norm(name):
 
 
 def read_catalog(root):
-    """Versies met override-comment, en per versie-key de libraries."""
+    """Versies met override-comment, per versie-key de libraries, en alle versies met comments."""
     versions, libraries, section = {}, {}, None
     path = os.path.join(root, 'gradle', 'libs.versions.toml')
     if not os.path.exists(path):
-        return {}, {}, {}
-    plain = {}
+        return {}, {}, {}, {}
+    plain, comments = {}, {}
     for line in open(path):
         head = re.match(r'\[(\w+)\]', line)
         if head:
@@ -239,13 +254,14 @@ def read_catalog(root):
             m = re.match(r'([\w.\-]+)\s*=\s*"([^"]+)"\s*(#.*)?', line)
             if m:
                 plain[m[1]] = m[2]
-                if m[3] and 'override' in m[3].lower():
+                if m[3] and MARKER.search(m[3]):
                     versions[m[1]] = m[2]
+                    comments[m[1]] = m[3]
         elif section == 'libraries':
             m = re.search(r'module\s*=\s*"([^"]+)".*version\.ref\s*=\s*"([^"]+)"', line)
             if m:
                 libraries.setdefault(m[2], []).append(m[1])
-    return versions, libraries, plain
+    return versions, libraries, plain, comments
 
 
 def build_files(root):
@@ -272,7 +288,7 @@ def gradle_bom_props(plain, sources):
 
 
 def check_gradle(root, trees):
-    versions, libraries, plain = read_catalog(root)
+    versions, libraries, plain, comments = read_catalog(root)
     files = build_files(root)
     sources = [open(f).read() for f in files]
     bom = gradle_bom_props(plain, sources)
@@ -291,7 +307,7 @@ def check_gradle(root, trees):
                 if ref:
                     extras.setdefault(norm(ref[1]), []).append(m[1])
                 elif value and re.search(r'CVE-|override', previous, re.I):
-                    literal.append((m[1], value[1]))
+                    literal.append((m[1], value[1], previous))
             previous = line
 
     for key, value in sorted(versions.items()):
@@ -300,11 +316,12 @@ def check_gradle(root, trees):
         known = [p for p in props if p in bom]
         if known:
             for prop in known:
-                print('%s=%s BOM %s=%s -> %s' % (key, value, prop, bom[prop], verdict(value, resolve(bom[prop], bom))))
+                print('%s=%s BOM %s=%s -> %s' % (key, value, prop, bom[prop],
+                                                 by_comment(verdict(value, resolve(bom[prop], bom)), comments.get(key))))
         elif props:
             print('%s=%s -> property %s niet in de BOM, %s' % (key, value, props[0], MANUAL))
         elif key in libraries:
-            results = [(lib, paths.judge(lib, value)) for lib in libraries[key]]
+            results = [(lib, by_comment(paths.judge(lib, value), comments.get(key))) for lib in libraries[key]]
             removable = [r.startswith(('VEROUDERD', 'OVERBODIG')) for _, r in results]
             mixed = any(removable) and not all(removable)
             for lib, result in results:
@@ -312,10 +329,10 @@ def check_gradle(root, trees):
         else:
             print('%s=%s -> geen library of extra gevonden, %s' % (key, value, MANUAL))
 
-    for prop, value in literal:
+    for prop, value, previous in literal:
         count += 1
         if prop in bom:
-            print('%s=%s BOM=%s -> %s' % (prop, value, bom[prop], verdict(value, resolve(bom[prop], bom))))
+            print('%s=%s BOM=%s -> %s' % (prop, value, bom[prop], by_comment(verdict(value, resolve(bom[prop], bom)), previous)))
         else:
             print('%s=%s -> property niet in de BOM, %s' % (prop, value, MANUAL))
 

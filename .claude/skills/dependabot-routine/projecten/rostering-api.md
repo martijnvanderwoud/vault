@@ -7,6 +7,14 @@ description: Aanvullingen op de Dependabot-routine voor rostering-api (Gradle-co
 Base branch: `develop`. Een PR heeft 3 checks: `Validate GitFlow Branch Rules`,
 `codegen / build` en `node-build / build`. `/codegen` is een Gradle-project met wrapper.
 
+## Stap 0. YouTrack-issue
+
+- YouTrack-project: `pompkracht-roepaas` (key `RPAAS`).
+- Board: `Pompkracht Kanban Board`, sprint `Kanban workflow`.
+- Titel parent: `Rostering API - Dependabot upgrades <jaar> w<bereik>`.
+- Titel subtask: `Rostering API - apply Dependabot upgrades <jaar> w<week>`.
+- Subsystem op parent en subtask: `rostering API`.
+
 ## Stap 3. `.sdkmanrc` bijwerken
 
 Dependabot werkt de wrapper in `/codegen` bij, maar niet `.sdkmanrc`. Neem voor Gradle

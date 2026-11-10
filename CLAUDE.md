@@ -33,6 +33,10 @@ Achtergrond, beslissingen en roadmap van de vault: `gebieden/vault/`.
 - Hooks (`.claude/settings.json`): na elke Write/Edit wordt `build_index.py`
   gedraaid; bij SessionEnd worden de indexen herbouwd en wordt automatisch
   gecommit (geen push).
+- Commit je zelf, vanuit de vault of vanuit een projectsessie met `--add-dir ~/vault`,
+  draai dan eerst `python3 ~/vault/scripts/build_index.py` en neem gewijzigde
+  `index.md`-bestanden mee in de commit. De hooks van de vault draaien niet mee in een
+  projectsessie, dus anders gaat de commit met een verouderde index de deur uit.
 
 ## Geheimen
 

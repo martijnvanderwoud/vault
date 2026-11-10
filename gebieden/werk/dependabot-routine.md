@@ -550,3 +550,199 @@ Na de run: PR #205 verwijderde de overbodige `asm`-override uit `pom.xml`, op mi
 als aparte PR. Eerste echte uitvoering van de override-controle: `mvn clean package` groen
 (546 tests), `asm` bleef 9.11.1, opgeloste dependency-lijst ongewijzigd, scan zonder
 bevindingen. Squash-merge (b5eabab7).
+
+## Logboek 2026-11-10 (cata, testrun van de skill met YouTrack-issue)
+
+Testrun van de skill `dependabot-routine`, met twee uitbreidingen: vooraf een
+YouTrack-issue aanmaken en achteraf via dat issue verslag leggen. De skill is tijdens de
+run niet aangepast. Per afwijking: wat er gebeurde, wat ik besloot, en of het generiek of
+projectspecifiek lijkt.
+
+### Fase 1: YouTrack-issue
+
+- Eerste poging: vier meerkeuzevragen tegelijk (parent, samenvatting, velden, beschrijving),
+  op basis van eerdere issues. Afgewezen: ik wil Claude stap voor stap door het proces leiden
+  in plaats van vragen beantwoorden.
+- Stap 1, parent bepalen: uitgangspunt is het Pompkracht Kanban-bord. Gevraagd of Claude
+  kan zien wat daarop staat.
+  - De YouTrack-MCP heeft geen tool voor agile boards. Het kan wel via `search_issues`.
+  - De boardnaam is `Pompkracht Kanban Board`, gevonden in de opgeslagen zoekopdracht
+    `Pompkracht Kanban Board Backlog` (`get_saved_issue_searches`). De namen `Pompkracht
+    Kanban` en `Board: {...}` geven stil 0 treffers, geen foutmelding.
+  - Werkende query: `has: {Board Pompkracht Kanban Board} #Unresolved`. Toont wel welke
+    issues op het bord staan, niet de kolom of volgorde.
+  - Herkenning van de parent (mijn regel): Type `Maintenance`, en de titel begint met
+    `Dependabot upgrades <jaar> w<bereik>`. In PCATA matcht precies één onopgelost issue op
+    het bord: PCATA-594 (`Dependabot upgrades 2026 w40-45`, In Progress).
+  - Let op voor de skill: in RPAAS beginnen de titels met de naam van de applicatie
+    (`Rostering API - Dependabot upgrades ...`), en daar staan meerdere parents op het bord.
+    De regel "begint met Dependabot" dekt die niet.
+  - Besluit: de match zoek je altijd in het YouTrack-project dat bij de huidige repository
+    hoort. Voor `cata` is dat `pompkracht-cata` (key `PCATA`), en daarmee is PCATA-594 de
+    enige match. Indeling: de regel is **generiek**, de koppeling repo naar YouTrack-project
+    is **projectspecifiek** (`projecten/<repo>.md`).
+- Stap 2, parent aanmaken als er geen match is. Hier bestaat de parent al, maar we testen
+  het proces met een tijdelijk issue dat daarna weer weg moet.
+  - Velden (mijn regel): Type `Maintenance`, State `In Progress`, Assignee ik
+    (`Martijn_van_der_Woud`), Board ingevuld.
+  - Tegenvaller 1: `Board` staat niet in `get_issue_fields_schema` van PCATA, omdat het geen
+    custom field is. De YouTrack-MCP heeft ook geen tool voor commands of boards.
+  - Tegenvaller 2: de YouTrack-MCP heeft geen tool om een issue te verwijderen. Weghalen kan
+    dus niet via Claude. Ik haal het testissue zelf weg.
+  - Titel: `Dependabot upgrades 2026 w46`, zonder `TEST`, op mijn akkoord.
+  - Poging om het board te zetten met `create_issue` en `customFields`
+    `"Board Pompkracht Kanban Board": "Current sprint"`: geweigerd met `Issue field 'Board
+    Pompkracht Kanban Board' not found`. De hele aanmaak mislukt dan, er ontstaat geen issue.
+  - Daarna zonder board aangemaakt: PCATA-616 (testissue). Type, State en Assignee zijn
+    gezet, Priority kreeg de default `Normal`. Het issue komt niet vanzelf op het bord.
+  - Het veld heet in YouTrack `Boards` (meervoud). Claude leest het niet als veld: `get_issue`
+    toont het niet, alleen de zoekfilter `has: {Board <naam>}` werkt.
+  - Documentatie YouTrack (niet getest): schrijven kan via de REST-API, niet via de MCP. Twee
+    routes: `POST /api/commands` met het command `Board <boardnaam> <sprint>`, en `POST
+    /api/agiles/<id>/sprints/<id>/issues` (alleen bij handmatige toewijzing op het bord; bron
+    is een antwoord op het JetBrains-forum). Beide hebben een eigen YouTrack-token nodig. De
+    combinatie van `/api/commands` met het Board-command staat niet letterlijk in de docs.
+  - Token: de YouTrack-MCP gebruikt een token dat letterlijk in `~/.claude.json` staat, onder
+    `mcpServers.YouTrack.headers.Authorization`, en een tweede item onder
+    `projects["/Users/martijn"]`. Dit is alleen de vindplaats, de waarde is niet uitgelezen.
+    Ik heb hem zelf als `YOUTRACK_TOKEN` in `~/vault/.env` gezet.
+  - Board zetten via REST, werkt met dat token. Het MCP-token werkt dus ook voor de REST-API.
+    `GET /youtrack/api/agiles` geeft het bord (`87-6`) met één sprint, `Kanban workflow`
+    (`91-28`). Het command is `add Board Pompkracht Kanban Board Kanban workflow`, via
+    `POST /youtrack/api/commands` met `issues: [{idReadable: ...}]`. Vooraf gecontroleerd
+    met `POST /youtrack/api/commands/assist`, dat niets uitvoert. De vorm met accolades
+    (`{Kanban workflow}`) geeft een fout. Uitgevoerd op PCATA-616: HTTP 200.
+    Indeling: bordnaam en sprint **organisatiespecifiek**, de werkwijze **generiek**.
+  - PCATA-616 is door mij verwijderd.
+- Stap 3, bestaande parent bijwerken (mijn regel): bij een match werk je de titel bij, zodat
+  het weekbereik tot en met de huidige ISO-week loopt. PCATA-594 van `w40-45` naar `w40-46`.
+  Het weeknummer komt uit `date '+%G w%V'`. Indeling: **generiek**.
+- Stap 4, subtask aanmaken onder de parent (mijn regel): hetzelfde project, Type `Task`,
+  State `In Progress` (we gaan er direct mee aan de slag), Assignee ik. Dit wijkt af van de
+  globale regel (State `Open`) voor subtasks.
+  - Titel: `Apply Dependabot upgrades 2026 w46`, patroon van de eerdere subtasks, op mijn
+    akkoord.
+  - `create_issue` met `parentIssue: PCATA-594`, daarna het `add Board`-command via REST,
+    want een issue komt niet automatisch op het bord.
+  - **Issue-ID voor deze run: PCATA-617.** Geen beschrijving, zoals de eerdere subtasks.
+
+### Fase 2: de routine
+
+Stappen: repo-naam `cata`, `projecten/cata.md` gelezen. Eén open Dependabot-PR.
+
+| PR | Inhoud | Checks | Actie |
+| --- | --- | --- | --- |
+| #163 | axon-stomp-event-publishing 5.5.0 naar 5.6.0, kotlin-logging-jvm 8.0.4 naar 8.0.6, jaxb2-maven-plugin (groep `minor-and-patch`) | 2/2 groen | squash-merge (7f35cf70) |
+| #164 | eigen PR: overbodige `asm`-pin uit `pom.xml` | 2/2 groen | squash-merge (75cbb9cd) |
+
+Stap 2: `develop` fast-forward van bb9b931f naar 7f35cf70, inclusief PCATA-615 (#162, niet van
+deze routine). Stap 3: `.sdkmanrc` ongewijzigd, Java 25.0.5.0+8-tem en Maven 3.10.0 zijn de
+nieuwste binnen hun major. Stap 4 op 7f35cf70 (Java 25.0.5, Maven 3.10.0): `mvn clean package`
+exit 0, `BUILD SUCCESS`, 1254 tests, 0 failures, 0 errors, 26,6 s. 0 errors, 4 warnings.
+
+Stap 6: PR #164, branch `feature/PCATA-617-remove-redundant-asm-override`, opgeruimd. Stap 7:
+geen projectstappen. Stap 8: `Develop build` op 75cbb9cd (run 42823545033) success. Working copy
+schoon, geen open Dependabot-PR's.
+
+### Afwijkingen
+
+1. **Stap 4: warnings in gegenereerde code.**
+   - Wat gebeurde: alle 4 de warnings zijn deprecations (`Jackson2JsonEncoder`,
+     `Jackson2JsonDecoder` en hun `jackson2Json...`-methoden, marked for removal) in
+     `target/generated-sources/swagger-iam/.../ApiClient.java`, regels 183 en 184.
+     `projecten/roep.md` zegt dat je die daar niet hoeft te melden, `projecten/cata.md` niet.
+     Dus volgens stap 4 voorgelegd voordat ik verderging.
+   - Besluit: deprecation-warnings in gegenereerde API-clients negeren we in alle projecten.
+   - Indeling: **generiek**. Hoort in `SKILL.md` stap 4; de uitzondering in
+     `projecten/roep.md` kan dan weg.
+2. **Stap 5: `check_overrides.py` ziet de overrides in `cata` niet.**
+   - Wat gebeurde: scan op 7f35cf70: 362 dependencies, 0 met bevindingen. De override-controle
+     gaf `overrides: 0`, terwijl `dependencyManagement` in `pom.xml` er 4 heeft. Het script
+     zoekt een XML-comment met het woord `Override`. De comments in `cata` zijn
+     `Transitive...; patches CVE-...`, en `asm` heeft geen comment.
+   - Op een kopie in de scratchpad met aangepaste comments (skill en `pom.xml` niet gewijzigd):
+     `asm` 9.11.1 `OVERBODIG`, `ognl` 3.4.17, `json-smart` 2.6.1 en `kafka-clients` 4.4.0
+     `nog nodig`.
+   - Voorgelegd: geen regel voor overrides die het script niet herkent.
+   - Besluit: `asm`-pin weghalen uit `pom.xml`, nog niet committen. Ik controleer eerst zelf
+     of de IntelliJ-scanner meer kwetsbaarheden vindt dan OSV.
+   - Controle na het weghalen: `mvn clean package` exit 0, 1254 tests groen, dezelfde 4
+     warnings in gegenereerde code. `asm` blijft 9.11.1, opgeloste dependency-lijst
+     ongewijzigd, scan 362 dependencies en 0 bevindingen.
+   - IntelliJ-scanner (door mij gedraaid): alleen kwetsbaarheden in webjars, dus geen extra
+     bevindingen ten opzichte van OSV.
+3. **Stap 6: issuenummer in branch en commit.**
+   - Besluit: altijd het issuenummer van de subtask in de branchnaam en in het commitbericht.
+     Hier `feature/PCATA-617-remove-redundant-asm-override` en
+     `PCATA-617 Remove redundant asm override`.
+   - Indeling: **generiek**, hoort in `SKILL.md` stap 6.
+
+### Fase 3: verslag via het issue
+
+- Verslag eerst in de chat getoond, na mijn akkoord als Engels comment in PCATA-617 gezet.
+  Webjars zijn weggelaten; de tekst zegt daardoor `no findings`, terwijl de scan ze uitsluit.
+- State en uren: PCATA-617 blijft op `In Progress`. Besluit: na een run kijk ik zelf wat er
+  gebeurd is en schrijf ik eventueel zelf uren. In de skill hoeft na het comment niets meer
+  met het issue te gebeuren. Indeling: **generiek**.
+
+### Fase 4: besluiten bij het voorstel
+
+- Meer dan één parent: stoppen en vragen.
+- De subtask van deze week bestaat al: een nieuwe run binnen die subtask, het comment gaat weer
+  in dezelfde subtask. Staat die op `Done`, dan eerst terug op `In Progress`, en daar blijft
+  hij staan.
+- Dat verwijderen niet via de MCP kan, hoort niet in de skill.
+- Geen handmatige stappen in de skill. Het verslag gaat zonder goedkeuring als comment in het
+  issue.
+- Een lijst in de vault met alle projecten en hun YouTrack-keys, en alvast voor alle projecten
+  een projectbestand met de YouTrack-projectnaam erin. `diis` en `infra` doen niet mee,
+  `notifications` en `portal` wel.
+- De nieuwe stap krijgt nummer 0.
+- Overrides: blijft de versie zonder override gelijk, dan mag hij sowieso weg. Wordt de versie
+  zonder override hoger, dan beslist de comment: security-patch mag weg, bewuste pin wegens
+  incompatibiliteit blijft, geen comment blijft voor de veiligheid staan.
+- Geen open Dependabot-PR's: direct stoppen, ook geen YouTrack-issue.
+- Bij de rostering-repo's onder `pompkracht-roepaas` vullen we ook altijd Subsystem in.
+
+### Plaatsing na de run
+
+Doorgevoerd op 2026-11-10. Stapnummers zijn die van de bijgewerkte `SKILL.md`, de nieuwe stap
+is stap 0, zodat de bestaande nummers blijven kloppen.
+
+| Les | Plaats | Waar |
+| --- | --- | --- |
+| Geen open PR's: direct stoppen | `SKILL.md` | begin stap 0; de vraag in stap 1 vervalt |
+| Parent zoeken, bijwerken of aanmaken | `SKILL.md` | stap 0, `Parent`; meer dan één match of ander jaar: vragen |
+| Subtask aanmaken of hervatten, `Done` terug op `In Progress` | `SKILL.md` | stap 0, `Subtask` |
+| Board zetten via REST met `YOUTRACK_TOKEN` | `SKILL.md` | stap 0, `Op het board zetten` |
+| Project zonder YouTrack-gegevens: vragen | `SKILL.md` | stap 0 |
+| YouTrack-gegevens per repo, titels en Subsystem | projectbestanden | kopje `Stap 0` in 21 bestanden, 17 daarvan nieuw |
+| Overzicht repo's en keys | `lijsten/youtrack-projecten.md` | nieuw |
+| 1. Deprecations in gegenereerde clients | `SKILL.md` en `roep.md` | stap 4; uitzondering in `roep.md` weg |
+| 2. Overrides en de comment-regel | `scripts/check_overrides.py` en `SKILL.md` | elke entry met eigen versie in `dependencyManagement`; stap 5 |
+| 3. Issuenummer in branch, commit en PR-titel | `SKILL.md` | stap 6 |
+| IntelliJ gelijk aan OSV | geen | alleen dit logboek |
+| Verslag via het issue, zonder goedkeuring | `SKILL.md` | stap 9; state en uren doe ik zelf |
+| Verwijderen kan niet via de MCP | geen | niet relevant voor de skill |
+| Engels in YouTrack, frontmatter | `SKILL.md` | inleiding en beschrijving |
+
+Getest: `check_overrides.py` op een kunstmatige pom voor alle comment-gevallen, en op `cata`
+(3 overrides, nog nodig), `roep` (9, gelijk aan de oude uitvoer) en `insights` (1 extra regel:
+`org-json`, directe dependency, blijft staan). De zoekopdrachten voor parent en subtask gaven
+PCATA-594 en PCATA-617, en voor RPAAS de vier parents. Stap 0 is als geheel nog niet gedraaid
+met de nieuwe tekst.
+
+Besluit achteraf: PRC en PMD (`react-notifications`, `profile-presentation-design`,
+`axon-stomp-event-publishing`) hebben een afwijkende flow, daar wordt direct een taak
+aangemaakt zonder parent. In `SKILL.md` stap 0 als `Parent: geen`, in de drie projectbestanden
+ingevuld. Die taken gaan wel op het board: daar komen ze als ongecategoriseerd onderaan te
+staan, en na controle haal ik ze er zelf af. Daarom staan oudere taken als PRC-59 en PMD-8 er
+niet meer op.
+
+`notifications` is een Scala-project: Dependabot ondersteunt Scala niet, dus daar gebruiken we
+Scala Steward, voor de rest grotendeels hetzelfde proces. In `projecten/notifications.md`
+staan de titels (`Scala Steward upgrades`, parent PN-55) en de twee PR-auteurs: de routine
+handelt `app/flow-cloud-scala-steward` en `app/dependabot` af. Ik doe later een aparte testrun
+met `notifications` om de afwijkingen te behandelen. Voor `sbt` is er nog geen build- of scanregel: `build.sbt` staat
+niet in stap 4 en `osv_jvm.py` is alleen getest op Maven en Gradle. Bij de eerste run legt de
+skill dat dus voor.

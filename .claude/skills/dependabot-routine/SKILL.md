@@ -1,6 +1,6 @@
 ---
 name: dependabot-routine
-description: Voert mijn Dependabot-routine uit in het huidige project - groene Dependabot-PR's squash-mergen, de oorzaak van rode PR's uitzoeken, de lokale base branch bijwerken, `.sdkmanrc` bijwerken, een schone build draaien, kwetsbaarheden zonder breaking changes patchen, alle wijzigingen in één PR samenbrengen en de build op de base branch controleren. Gebruik deze skill zodra ik vraag om de Dependabot-routine, om Dependabot-PR's af te handelen of weg te werken, of om de wekelijkse dependency-updates te mergen, ook als ik het woord skill of routine niet gebruik. Niet voor vragen over de Dependabot-configuratie of voor het beoordelen van één losse dependency-update.
+description: Voert mijn Dependabot-routine uit in het huidige project - een YouTrack-issue aanmaken of hervatten, groene Dependabot-PR's squash-mergen, de oorzaak van rode PR's uitzoeken, de lokale base branch bijwerken, `.sdkmanrc` bijwerken, een schone build draaien, kwetsbaarheden zonder breaking changes patchen, alle wijzigingen in één PR samenbrengen, de build op de base branch controleren en verslag leggen in het YouTrack-issue. Gebruik deze skill zodra ik vraag om de Dependabot-routine, om Dependabot-PR's af te handelen of weg te werken, of om de wekelijkse dependency-updates te mergen, ook als ik het woord skill of routine niet gebruik. Niet voor vragen over de Dependabot-configuratie of voor het beoordelen van één losse dependency-update.
 ---
 
 # Dependabot-routine
@@ -13,8 +13,8 @@ geen regel is, leg je aan mij voor met wat je ziet, want dat zijn beoordelingen 
 ik zelf maak. Commit en push niets zonder dat ik erom vraag, behalve waar een stap
 hieronder of in het projectbestand dat voorschrijft.
 
-Branchnamen, commitberichten en de titel en beschrijving van PR's zijn altijd in het
-Engels.
+Branchnamen, commitberichten, de titel en beschrijving van PR's en alles wat je in YouTrack
+zet zijn altijd in het Engels.
 
 ## Projectspecifieke aanvullingen
 
@@ -28,6 +28,72 @@ Staat er naast deze `SKILL.md` een bestand `projecten/<repo>.md`, lees dat dan e
 Daarin staan extra stappen en afwijkende beslissingen voor dit project, per stap bij
 naam genoemd. Bij tegenspraak wint het projectbestand. Is er geen bestand, volg dan
 alleen de stappen hieronder.
+
+## 0. YouTrack-issue
+
+Kijk eerst of er open Dependabot-PR's zijn:
+
+```bash
+gh pr list --author "app/dependabot" --state open --limit 50 --json number --jq length
+```
+
+Is dat 0, stop dan direct: geen issue en geen verdere stappen.
+
+Neem de YouTrack-gegevens uit `Stap 0` van `projecten/<repo>.md`: project, board, sprint,
+titels en vaste velden zoals Subsystem. Ontbreken die, vraag ze mij dan en neem niets aan.
+Bepaal het jaar en de ISO-week met `date '+%G w%V'`. Deze stap vraagt verder geen akkoord.
+
+### Parent
+
+Staat in het projectbestand `Parent: geen`, sla dit deel dan over: dan maak je alleen de taak
+uit `Titel subtask`, zonder parent.
+
+Zoek de parent alleen in het YouTrack-project van deze repo, met `search_issues`:
+
+```text
+project: <key> #Unresolved Type: Maintenance has: {Board <board>} summary: "Dependabot upgrades"
+```
+
+Tel alleen issues waarvan de titel past op `Titel parent` uit het projectbestand.
+
+- **Eén match:** laat het bereik in de titel eindigen op de huidige week, met
+  `update_issue`: `w40-45` wordt `w40-46`, `w46` wordt `w46-47`. Staat de huidige week er
+  al in, laat de titel dan staan.
+- **Geen match:** maak de parent aan met `create_issue`: Type `Maintenance`, State
+  `In Progress`, Assignee `Martijn_van_der_Woud`, de vaste velden, en als bereik alleen de
+  huidige week. Zet hem op het board.
+- **Meer dan één match, of een ander jaar in de titel:** stop en vraag het mij.
+
+### Subtask
+
+Zoek onder de parent de subtask van deze week, met de exacte titel uit het projectbestand:
+`project: <key> subtask of: <parent-id> summary: "<titel>"`. Zonder parent:
+`project: <key> summary: "<titel>"`.
+
+- **Bestaat al:** de nieuwe run hoort in die subtask, ook het verslag van stap 9. Staat hij
+  op `Done`, zet hem dan op `In Progress`, en daar blijft hij staan. Bij een andere state dan
+  `In Progress` of `Done`: vraag het mij.
+- **Bestaat niet:** maak hem aan met `create_issue`, met `parentIssue` als er een parent is:
+  Type `Task`, State `In Progress`, Assignee `Martijn_van_der_Woud`, de vaste velden, geen
+  beschrijving. Zet hem op het board.
+
+Het ID van de subtask gebruik je in stap 6 en stap 9.
+
+### Op het board zetten
+
+`create_issue` zet een issue niet op het board, ook niet via `customFields`. Dat gaat alleen
+met de REST-API, met `YOUTRACK_TOKEN` uit `~/vault/.env`. Toon het token nooit:
+
+```bash
+T=$(grep -E '^YOUTRACK_TOKEN=' ~/vault/.env | tail -1 | cut -d= -f2-)
+curl -fsS -X POST -H "Authorization: Bearer $T" -H 'Content-Type: application/json' \
+  -d '{"query":"add Board <board> <sprint>","issues":[{"idReadable":"<issue-id>"}]}' \
+  https://crimsoncricket.myjetbrains.com/youtrack/api/commands
+```
+
+Zet geen accolades om de sprintnaam. Controleer het met `search_issues`:
+`has: {Board <board>} issue ID: <issue-id>`. Ontbreekt het token of mislukt de aanroep, leg het
+mij dan voor.
 
 ## 1. Groene PR's squash-mergen
 
@@ -64,8 +130,7 @@ gh pr merge <n> --squash
   `Rode PR's` valt (ook bij lopende, overgeslagen, neutrale, afgebroken of ontbrekende
   checks), `mergeable=CONFLICTING`, en een merge die mislukt. Merge de overige groene
   PR's wel.
-- Zijn er helemaal geen open Dependabot-PR's, of hebben de PR's verschillende base
-  branches, vraag dan hoe ik verder wil.
+- Hebben de PR's verschillende base branches, vraag dan hoe ik verder wil.
 
 ### Storing in CI
 
@@ -181,6 +246,7 @@ van deze, vraag het mij dan.
 
 Kijk of er errors of warnings zijn. Leg die aan mij voor voordat je verder gaat. Een
 melding over vulnerabilities is geen reden om te stoppen: die is voor stap 5.
+Deprecation-warnings in gegenereerde API-clients negeer je, die hoef je niet te melden.
 
 ## 5. Kwetsbaarheden patchen zonder breaking changes
 
@@ -239,6 +305,11 @@ mvn -q -o dependency:tree -Dverbose -DoutputFile=<scratchpad>/tree.txt -DappendO
 /usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/check_overrides.py --gradle . --tree <scratchpad>/tree.txt
 ```
 
+Het script beoordeelt bij Maven elke entry met een eigen versie in `dependencyManagement`.
+Blijft de versie zonder override gelijk, dan is dat `OVERBODIG` en gaat hij sowieso weg. Wordt
+de versie zonder override hoger, dan beslist de comment: een security-patch is `VEROUDERD` en
+gaat weg, een bewuste pin of een entry zonder comment is `blijft staan`.
+
 Verwijder zonder te vragen elke override met `VEROUDERD` of `OVERBODIG`, samen met de
 comment erboven. Blijft er onder die comment nog een andere override staan, laat de comment
 dan staan. Bij Gradle staat een override op meerdere plekken: haal de versie uit
@@ -279,13 +350,14 @@ Maak vanaf de base branch een branch, commit alleen de gewijzigde bestanden, pus
 maak een PR naar de base branch:
 
 ```bash
-git switch -c feature/<beschrijving-van-de-inhoud>
+git switch -c feature/<issue-id>-<beschrijving-van-de-inhoud>
 git add <gewijzigde bestanden>
-git commit -m "<korte beschrijving>"
-git push -u origin feature/<beschrijving-van-de-inhoud>
-gh pr create --base <base-branch> --title "<titel>" --body "<beschrijving>"
+git commit -m "<issue-id> <korte beschrijving>"
+git push -u origin feature/<issue-id>-<beschrijving-van-de-inhoud>
+gh pr create --base <base-branch> --title "<issue-id> <titel>" --body "<beschrijving>"
 ```
 
+- `<issue-id>` is het ID van de subtask uit stap 0.
 - Bij een base branch `develop` begint de branchnaam met `feature/`. Bij een andere base
   branch: vraag het mij.
 - Zet in de beschrijving elke wijziging, en welke kwetsbaarheden blijven staan en waarom.
@@ -312,7 +384,7 @@ Ruim daarna op:
 ```bash
 git switch <base-branch>
 git pull --ff-only origin <base-branch>
-git branch -d feature/<beschrijving-van-de-inhoud>
+git branch -d feature/<issue-id>-<beschrijving-van-de-inhoud>
 git fetch --prune
 ```
 
@@ -346,7 +418,8 @@ gh run watch <id> --exit-status --interval 10
 ## 9. Afronden
 
 Geen openstaande changes in `git status --short` en verder niets te doen: de routine
-is klaar. Geef een kort verslag:
+is klaar. Plaats zonder te vragen een verslag als comment in de subtask uit stap 0
+(`add_issue_comment`), met links naar de gemerged PR's:
 
 - welke PR's gemerged zijn en welke niet, met de reden, ook de PR's uit stap 6 en 7
 - per rode PR de oorzaak en wat ermee is gebeurd, of een voorstel als ik moet beslissen
@@ -359,3 +432,6 @@ is klaar. Geef een kort verslag:
 - resultaat van de build uit stap 8
 - als er meer dan één Dependabot-PR gemerged is: dat de checks van latere PR's tegen de
   oude base draaiden, en dat de build uit stap 8 de samengevoegde stand dekt
+
+Geef daarna in de chat een kort verslag met de link naar het issue. Verder doe je niets met
+het issue: de state blijft `In Progress` en de uren schrijf ik zelf.
