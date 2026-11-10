@@ -13,54 +13,13 @@ de notitie volgt alleen mijn stappen en beslissingen.
 
 ### Stappen
 
-1. **Groene PR's squash-mergen**: alle open Dependabot-PR's waarvan alle checks
-   geslaagd zijn.
-2. **`.sdkmanrc` nakijken**: kijken of er een `.sdkmanrc` is die bijgewerkt moet
-   worden. Geldt voor projecten met Java-gebaseerde tooling, zoals codegen.
-3. **Lokale working copy bijwerken**: de squash-merges binnenhalen, zodat de base
-   branch up-to-date is.
-4. **Schone install**: bij npm-projecten `npm ci` draaien en kijken of er errors of
-   warnings zijn.
-5. **Audit fix zonder breaking changes**: `npm audit fix` draaien om te kijken of er
-   iets te patchen valt zonder breaking changes.
-6. **Afronden**: geen openstaande changes en verder niets te doen, dan is de routine
-   klaar.
-
-### Commando's
-
-```bash
-# Per open Dependabot-PR: aantal checks, aantal geslaagd, mergeability
-gh pr list -R <org>/<repo> --author "app/dependabot" --state open --json number --jq 'sort_by(.number)|.[].number'
-gh pr view <n> -R <org>/<repo> --json statusCheckRollup,mergeable,title \
-  --jq '"\(.statusCheckRollup|length) \([.statusCheckRollup[]|select(.conclusion=="SUCCESS")]|length) \(.mergeable) \(.title)"'
-
-# Mergen
-gh pr merge <n> -R <org>/<repo> --squash
-
-# Lokaal bijwerken en schone install
-ls -la .sdkmanrc
-git pull --ff-only origin <base-branch>
-npm ci
-
-# Patchen zonder breaking changes (dus zonder --force), daarna effect bekijken
-npm audit fix
-git status --short
-```
+De actuele stappen staan in `.claude/skills/dependabot-routine/SKILL.md`.
 
 ### Beslissingen van mij
 
 - Groen betekent: alle checks geslaagd. Dat is het criterium om te squash-mergen.
 - Fixes die een downgrade betekenen voer ik nooit door. `npm audit fix --force`
   valt daar in dit geval onder.
-
-### Nog te bepalen voor de skill
-
-Deze situaties kwamen in deze run niet voor:
-
-- Wat ik doe met een PR die niet groen is.
-- Wat ik doe als `npm audit fix` wel iets wijzigt (committen, PR, op welke branch).
-- Wat ik doe als er wel een `.sdkmanrc` is en wanneer die bijgewerkt moet worden.
-- Wat ik doe als `npm ci` errors of warnings geeft.
 
 ### Verrassingen
 
@@ -88,6 +47,11 @@ Deze situaties kwamen in deze run niet voor:
 - Base branch: `develop` (default branch van het project; `master` is de main branch).
 - Geen `.sdkmanrc`.
 - Extra stappen staan in `.claude/skills/dependabot-routine/projecten/react-notifications.md`.
+
+## Alleen dit project (rostering-api)
+
+- Projectgegevens en extra stappen staan in
+  `.claude/skills/dependabot-routine/projecten/rostering-api.md`.
 
 ## Logboek 2026-11-09 (rostering-ui)
 
@@ -263,3 +227,106 @@ Doorgevoerd op 2026-11-09. Stapnummers zijn die van de bijgewerkte `SKILL.md`.
 Overige besluiten: bij stap 5 de diff tonen en doorgaan, alleen stoppen als er een
 versie omlaag gaat. Nieuwe stap 7 als vaste plek voor projectstappen. De beschrijving
 van #48 blijft zoals die is.
+
+## Logboek 2026-11-10 (rostering-api, testrun van de skill)
+
+Testrun van de skill `dependabot-routine`. De skill is tijdens de run niet aangepast.
+Per afwijking: wat er gebeurde, wat ik besloot, en of het generiek of projectspecifiek
+lijkt. Afwijkingen 1 tot en met 3 had ik vooraf opgegeven.
+
+| PR | Inhoud | Checks | Actie |
+| --- | --- | --- | --- |
+| #89 | graphql 16.14.2 naar 17.1.0 (major) | 2/3, `node-build / build` rood | niet gemerged, voorgelegd, later gesloten |
+| #90 | gradle-wrapper 9.8.2 naar 9.9.0 in `/codegen` | 3/3 groen | squash-merge (691fd78) |
+| #91 | eigen PR: Gradle 9.9.0 in `.sdkmanrc` | 3/3 groen | squash-merge (4297a8e) |
+| #92 | eigen PR na de run: `ignore` voor graphql-majors in `.github/dependabot.yml` | 3/3 groen | squash-merge (b2df812) |
+
+Stappen: repo-naam `rostering-api`, geen `projecten/rostering-api.md`. Stap 1 #90
+gemerged, #89 niet. Stap 3 `develop` fast-forward van f4887fd naar 691fd78. Stap 4
+`npm ci` (Node 24.21.0, npm 11.19.0): exit 0, 225 packages, geen errors of warnings,
+wel `2 moderate severity vulnerabilities`. Stap 5 `npm audit fix`: exit 1, niets
+gewijzigd, 2 moderate blijven (`minimatch` 7.0.0 - 11.0.0, GHSA-g3hv-75wg-m249, via
+`nodemon`). De `--force`-fix `nodemon@3.1.11` is een downgrade (nu 3.1.14), dus niet
+doorgevoerd. Stap 6 PR #91, `develop` toen op 4297a8e. Stap 8 `Develop build` op 4297a8e
+(run 42795151491): success, `codegen / build` en `node-build / build` geslaagd.
+Working copy schoon.
+
+### Afwijkingen
+
+1. **`.sdkmanrc` bijwerken in plaats van voorleggen, en pas na de pull.**
+   - Wat gebeurde: de skill zet deze stap vóór de pull en zegt alleen "laat de inhoud
+     zien en vraag". Vooraf bepaald: bijwerken naar de meest recente versies die een
+     minor of patch update betekenen, pas na de pull van stap 3. Beschikbare versies
+     opgehaald via de SDKMAN-API (`api.sdkman.io/2/candidates/<sdk>/darwinarm64/versions/list?installed=`).
+     Gradle 9.8.2 naar 9.9.0. Java blijft `25.0.5.0+8-tem`: dat is de nieuwste binnen
+     major 25, 26 en 27 zijn major-updates.
+   - Besluit: bijwerken zonder te vragen, na de pull.
+   - Indeling: **generiek**.
+   - Gaten die dit liet zien: de skill zegt niet hoe je de versies vindt, en niet dat
+     je de vendor-suffix (`-tem`) behoudt. Een Gradle-major of Java-major kent geen regel.
+2. **Eén gezamenlijke PR, met een branchnaam die bij de inhoud past.**
+   - Wat gebeurde: stap 6 gaat alleen over audit-fixes en schrijft
+     `feature/audit-fix-<package>` voor. Vooraf bepaald: `.sdkmanrc` en audit-fixes in
+     één PR, om het aantal builds te beperken. Hier wijzigde alleen `.sdkmanrc`:
+     branch `feature/sdkman-gradle-9.9.0`, PR #91 naar `develop`.
+   - Besluit: één PR, de naam volgt de inhoud.
+   - Indeling: **generiek**. De `feature/`-prefix bij base `develop` stond al in de skill.
+3. **Rode Dependabot-PR: oorzaak uit de CI-log halen, niet alleen melden.**
+   - Wat gebeurde: de skill zegt alleen "leg aan mij voor". Vooraf bepaald: niet mergen,
+     niets wijzigen, de oorzaak in de CI-logs zoeken en met een voorstel voorleggen. Via
+     de job-URL uit `statusCheckRollup` en `gh run view --job <id> --log-failed`
+     gevonden: `npm ci` faalt in `node-build / build` met `ERESOLVE`. `@apollo/server`
+     5.5.1 heeft peer `graphql@^16.11.0`, #89 zet graphql op 17.1.0. 5.5.1 is de
+     nieuwste versie van `@apollo/server`, er is dus nog geen release die graphql 17
+     toestaat.
+   - Besluit: #89 sluiten en major-updates van graphql uitsluiten in
+     `.github/dependabot.yml`, zodat minor- en patch-updates blijven komen (PR #92).
+     Deze afhandeling wordt standaard in de skill voor een update die niet gemerged
+     kan worden omdat de nieuwe versie nog niet ondersteund wordt.
+   - Indeling: de werkwijze is **generiek**, de oorzaak (graphql en Apollo) is
+     **projectspecifiek**.
+4. **Doorgaan met de routine terwijl een rode PR openstaat.**
+   - Wat gebeurde: de skill zegt dat de overige groene PR's wel gemerged worden, maar
+     niet of stap 2 en verder dan doorgaan. Ik ben doorgegaan, omdat de opdracht de
+     bevindingen van #89 los van de rest behandelde.
+   - Besluit: geen; viel onder mijn opdracht vooraf.
+   - Indeling: **generiek**, geen regel in de skill.
+5. **Groene checks zeggen weinig over `.sdkmanrc`.**
+   - Wat gebeurde: CI en `npm run codegen` draaien `./gradlew`, dus de wrapper. De
+     Gradle uit `.sdkmanrc` wordt daar niet gebruikt, en Gradle 9.9.0 is lokaal niet
+     gedraaid. De 3/3 op #91 toont dus niet dat die versie werkt.
+   - Besluit: geen; meegenomen voor het voorstel.
+   - Indeling: **projectspecifiek** (Gradle via wrapper in `/codegen`).
+6. **Volgorde van `.sdkmanrc` en de wrapper-update.**
+   - Wat gebeurde: #90 zette de wrapper op 9.9.0 en de update van `.sdkmanrc` volgde
+     daarna. Zonder de bijwerkstap lopen wrapper en `.sdkmanrc` uit elkaar, omdat
+     Dependabot `.sdkmanrc` niet bijwerkt.
+   - Besluit: geen; meegenomen voor het voorstel.
+   - Indeling: **projectspecifiek**.
+7. **Controle op een PR-template mislukte in zsh.**
+   - Wat gebeurde: `ls .github/PULL_REQUEST_TEMPLATE*` brak af met `no matches found`,
+     omdat zsh een glob zonder treffers als fout ziet. Met `find` opnieuw gedaan: er is
+     geen template. De skill noemt templates niet.
+   - Besluit: geen.
+   - Indeling: **generiek**, klein. Past bij de eerdere zsh-opmerking in Verrassingen.
+
+### Plaatsing na de run
+
+Doorgevoerd op 2026-11-10. Stapnummers zijn die van de bijgewerkte `SKILL.md`. De
+projectgegevens van `rostering-api` staan in
+`.claude/skills/dependabot-routine/projecten/rostering-api.md`.
+
+| Afwijking | Plaats | Waar |
+| --- | --- | --- |
+| 1. `.sdkmanrc` bijwerken, na de pull | `SKILL.md` | stap 2 en 3 omgewisseld; nieuwe tekst in stap 3 |
+| 2. Eén gezamenlijke PR | `SKILL.md` | stap 6; branchnaam volgt de inhoud |
+| 3. Rode PR | `SKILL.md` | stap 1 (`Rode PR's`), stap 6 en stap 9 |
+| 3. Uitzondering voor graphql | projectbestand | stap 7; PR #92 |
+| 4. Doorgaan bij een rode PR | `SKILL.md` | stap 1: de routine afmaken |
+| 5. Groene checks en `.sdkmanrc` | projectbestand | stap 3; opgelost doordat Gradle de wrapper volgt |
+| 6. Wrapper en `.sdkmanrc` gelijk houden | projectbestand | stap 3; Gradle volgt de wrapper, ook bij een major |
+| 7. Zsh-glob op een PR-template | geen | de skill schrijft die controle niet voor |
+
+Na de run: PR #92 squash-gemerged (b2df812) en #89 gesloten met een opmerking. Het
+waren twee eigen PR's ondanks afwijking 2, omdat het besluit over #89 pas viel nadat #91
+gemerged was. Eindstand: `develop` op b2df812, `Develop build` (run 42796660662) success.
