@@ -32,6 +32,18 @@ de routine gewoon door kan. Dan is hij verslag, en laat je die PR staan.
 
 Zonder het argument blijft alles zoals hieronder staat: je legt het mij voor en wacht.
 
+De autonome run mag alleen commando's uit een vaste lijst, en heeft geen eigen scratchpad:
+
+- Gebruik als `<scratchpad>` de map `~/dependabot-runs/.scratch/<repo>`. Die bestaat al.
+  Schrijf nergens anders buiten de working copy, ook niet naar `/tmp`.
+- Schrijf paden zoals in deze skill, met `~/` en niet uitgeschreven, en `gh api` met
+  `{owner}/{repo}` en niet met de naam van de repo. De lijst kent alleen die vorm.
+- Draai de commando's uit deze skill zoals ze er staan. Geen lussen, subshells of
+  command substitution (`$(...)`): die worden geweigerd. Splits zo'n commando op en neem
+  de uitkomst over in het volgende.
+- Wordt een commando toch geweigerd, zoek dan een weg met de commando's uit de skill.
+  Lukt dat niet, dan is het een stop.
+
 ### Pauzeren
 
 Bij een stop plaats je met `add_issue_comment` een pauze-comment in de subtask uit stap 0,
@@ -394,8 +406,9 @@ mvn -q -o dependency:list -DoutputFile=<scratchpad>/deps.txt -DappendOutput=true
 Gradle:
 
 ```bash
-(echo dependencies; ./gradlew -q projects | grep -oE "Project '[^']+'" | sed -E "s/Project '([^']+)'/\1:dependencies/") \
-  | xargs ./gradlew -q > <scratchpad>/tree.txt
+./gradlew -q projects | grep -oE "Project '[^']+'"
+# elk subproject uit de vorige regel als <project>:dependencies, bijvoorbeeld :model:dependencies
+./gradlew -q dependencies <project>:dependencies ... > <scratchpad>/tree.txt
 /usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/osv_jvm.py <scratchpad>/tree.txt --exclude <groupId-prefix>
 ```
 
@@ -497,10 +510,12 @@ git switch -c feature/<issue-id>-<beschrijving-van-de-inhoud>
 git add <gewijzigde bestanden>
 git commit -m "<issue-id> <korte beschrijving>"
 git push -u origin feature/<issue-id>-<beschrijving-van-de-inhoud>
-gh pr create --base <base-branch> --title "<issue-id> <titel>" --body "<beschrijving>"
+gh pr create --base <base-branch> --title "<issue-id> <titel>" --body-file <scratchpad>/pr-body.md
 ```
 
 - `<issue-id>` is het ID van de subtask uit stap 0.
+- Schrijf de beschrijving eerst met Write naar `<scratchpad>/pr-body.md`. Backticks in
+  `--body` lijken op command substitution en worden in autonome modus geweigerd.
 - Bij een base branch `develop` begint de branchnaam met `feature/`. Bij een andere base
   branch: vraag het mij. Autonoom: stop.
 - Zet in de beschrijving elke wijziging, en welke kwetsbaarheden blijven staan en waarom.
@@ -551,7 +566,8 @@ merges uit de vorige stappen, de push-build op de laatste commit van de base bra
 
 ```bash
 git fetch -q origin <base-branch>
-gh run list --commit "$(git rev-parse origin/<base-branch>)" --event push \
+git rev-parse origin/<base-branch>
+gh run list --commit <commit uit de vorige regel> --event push \
   --json databaseId,status,conclusion,workflowName \
   --jq '.[] | "\(.databaseId) \(.workflowName) \(.status)/\(.conclusion)"'
 gh run watch <id> --exit-status --interval 10

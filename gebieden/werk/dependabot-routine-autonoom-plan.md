@@ -10,7 +10,7 @@ mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat 
 ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
 zijn afgelopen.
 
-Vastgelegd op 2026-11-10. Stap 1 en 2 zijn klaar op 2026-11-11.
+Vastgelegd op 2026-11-10. Stap 1 tot en met 3 zijn klaar op 2026-11-11.
 
 ## Zo werken we dit af
 
@@ -25,7 +25,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 - [x] 1. Stoppunten indelen in de skill
 - [x] 2. Pauzeren en hervatten in de skill
-- [ ] 3. Handmatige headless-run zonder pauze
+- [x] 3. Handmatige headless-run zonder pauze
 - [ ] 4. Handmatige headless-run met pauze en hervatting
 - [ ] 5. Runner: repo's selecteren (dry-run)
 - [ ] 6. Runner: eigen clones en omgeving
@@ -157,10 +157,32 @@ een repo met open Dependabot-PR's.
 
 Klaar als: de run `done` geeft zonder geweigerde tools, en het commando in dit plan staat.
 
+Het commando, vanuit `~/dependabot-runs/<repo>`:
+
+```bash
+U=$(uuidgen | tr A-Z a-z)
+claude -p "/dependabot-routine autonoom session=$U" --session-id $U \
+  --add-dir ~/vault --add-dir ~/dependabot-runs/.scratch/<repo> \
+  --permission-mode dontAsk --permission-prompts none \
+  --settings ~/vault/scripts/dependabot-runner/settings.json \
+  --model claude-opus-5-5 --output-format stream-json --verbose > <log>
+```
+
+De allowlist staat in `scripts/dependabot-runner/settings.json`, niet in `--allowedTools`.
+`--permission-mode dontAsk` is nodig, want mijn gebruikersinstellingen hebben
+`defaultMode: auto`: dan zou de classifier beslissen in plaats van de lijst.
+
 ### 4. Handmatige headless-run met pauze en hervatting
 
 Doel: het hervatten werkt echt.
 
+- Twee repo's, met het commando uit stap 3: `insights` (#260, #261) voor de interactieve
+  hervatting, `iam` (#219) voor de terugval. De pauze valt in stap 2 van de skill, dus de
+  PR's zijn dan al gemerged: elke pauzetest kost een repo. Te weinig PR's: start Dependabot
+  handmatig in een ander project (Insights → Dependency graph → Dependabot → Check for
+  updates), of wacht op maandag, de standaarddag van het wekelijkse schema.
+- Controleer ook dat beide runs `permission_denials: []` geven, na de aanpassingen uit de
+  bevindingen van stap 3. In stap 3 lukte dat nog niet.
 - Lok een pauze uit: zet een onschuldig ongecommit bestand in de clone, zodat stap 2 stopt.
 - Controleer het comment in YouTrack en de statusregel.
 - Haal het bestand weg en hervat met `claude --resume <uuid>`, interactief.
@@ -192,6 +214,13 @@ Doel: de runner maakt een clone klaar en draait daarin de juiste tools, ook buit
 
 - Clone aanmaken als die ontbreekt, anders `fetch`, en controleren dat hij schoon is. Een
   vuile clone na een run is een reden om te stoppen, niet om op te ruimen.
+- De scratch-map `~/dependabot-runs/.scratch/<repo>` aanmaken. De skill rekent erop.
+- Alleen de YouTrack-MCP laden: `--strict-mcp-config --mcp-config <bestand>`. Nu laadt de
+  run ook GitHub, JetBrains, Gmail en de claude.ai-connectors (geweigerd door `dontAsk`,
+  maar wel in de prompt). De config van `~/.claude.json` bevat het token in een
+  `Authorization`-header en mag dus niet in de vault: zet in het bestand
+  `${YOUTRACK_TOKEN}` en laat de runner die variabele uit `.env` vullen. Kijk of de
+  claude.ai-connectors daarmee ook wegvallen.
 - SDKMAN (`.sdkmanrc`) en Node (`.nvmrc`) opzetten binnen het script, want launchd laadt
   mijn zsh-profiel niet.
 - Testen met een lege omgeving (`env -i`): `java`, `mvn` of `gradle`, `node`, `gh` en
@@ -258,14 +287,15 @@ Klaar als: de allowlist weg is en een hele ronde is gedraaid.
 
 ## Nog te verifiëren
 
-Deze punten staan niet of niet duidelijk in de documentatie. Controleren in stap 3.
+Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in stap 3.
 
-- Of de skill uit `--add-dir ~/vault` via `/dependabot-routine` start in `-p`-modus.
-- Of de YouTrack-MCP uit `~/.claude.json` beschikbaar is in `-p`-modus.
-- Wat er gebeurt als het model toch om input vraagt. Met `--permission-prompts none` is
-  `AskUserQuestion` weggehaald, en de run moet dan de pauzeregel volgen.
-- Of `--allowedTools` opnieuw moet bij hervatten. Interactief keur ik zelf goed, bij een
-  hervatting met `-p` moeten de flags er wel opnieuw bij.
+- Ja: de skill uit `--add-dir ~/vault` start via `/dependabot-routine` in `-p`-modus.
+- Ja: de YouTrack-MCP uit `~/.claude.json` is beschikbaar (`connected` in het init-event).
+- `AskUserQuestion` staat niet in de tools van de run. De run vroeg ook nergens om input.
+  Of hij bij een twijfelgeval netjes pauzeert, blijkt in stap 4.
+- Hervatten met `claude --resume` is interactief en gebruikt mijn eigen instellingen, daar
+  horen de flags niet bij. Een autonome hervatting (`/dependabot-routine autonoom <issue>`)
+  is een nieuwe run en krijgt het hele commando uit stap 3.
 
 ## Bevindingen
 
@@ -318,3 +348,24 @@ Deze punten staan niet of niet duidelijk in de documentatie. Controleren in stap
   `Debbie (Dependabot routine)`, omdat ze onder mijn account staan. Het verslag van stap 9 begint
   in autonome modus met `Debbie (Dependabot routine) report`, zodat hervatten ziet dat er na een
   pauze al een verslag is.
+- 2026-11-11, stap 3: proefrun op `ats` zonder open PR's gaf `done issue=none`, in 3 beurten
+  voor $0,29. Dat bevestigt dat de check of er werk is in de runner hoort.
+- Echte run op `rostering-engine`: `done issue=RPAAS-518`, 45 beurten, 9 minuten, $1,13.
+  #75 gemerged, een eigen PR #76 voor Gradle 9.9.1 in `.sdkmanrc`, build op `develop` groen,
+  verslag in het issue, één `RUN_ATTENTION` (een Gradle-deprecation).
+- Zes commando's geweigerd. Het model vond voor elk zelf een weg, maar het klaar-criterium
+  "zonder geweigerde tools" is hiermee niet gehaald. Een tweede run zou PR's kosten, dus
+  dat controleren we in stap 4. De oorzaken:
+  - Twee commando's stonden zo in de skill: de Gradle-subshell met `xargs` in stap 5 en
+    `$(git rev-parse ...)` in stap 8. Beide zijn opgesplitst.
+  - Backticks in `gh pr create --body`. De beschrijving gaat nu via Write naar een bestand
+    en `--body-file`.
+  - In `-p`-modus is er geen scratchpad, dus het model schreef naar `/tmp`. De skill noemt
+    in autonome modus nu `~/dependabot-runs/.scratch/<repo>`, en het commando geeft die map
+    mee met `--add-dir`. Ook staat in de skill: geen lussen, subshells of `$(...)`.
+  - `sort`, `uniq` en `tr` toegevoegd aan de allowlist, `xargs` eruit.
+  - De allowlist bevat geen paden of namen van mijn machine: alleen `~/` en `{owner}/{repo}`,
+    en de skill vraagt het model die vorm te gebruiken. Werkt dat niet in stap 4, dan kan de
+    runner de regels met absolute paden genereren in plaats van ze in het bestand te zetten.
+- Dependabot is ook handmatig te starten per repo, mocht stap 4 of later meer PR's nodig
+  hebben (Insights → Dependency graph → Dependabot → Check for updates).
