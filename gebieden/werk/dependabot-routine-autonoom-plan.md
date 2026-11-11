@@ -10,7 +10,7 @@ mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat 
 ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
 zijn afgelopen.
 
-Vastgelegd op 2026-11-10. Stap 1 is klaar op 2026-11-11.
+Vastgelegd op 2026-11-10. Stap 1 en 2 zijn klaar op 2026-11-11.
 
 ## Zo werken we dit af
 
@@ -24,7 +24,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 ## Voortgang
 
 - [x] 1. Stoppunten indelen in de skill
-- [ ] 2. Pauzeren en hervatten in de skill
+- [x] 2. Pauzeren en hervatten in de skill
 - [ ] 3. Handmatige headless-run zonder pauze
 - [ ] 4. Handmatige headless-run met pauze en hervatting
 - [ ] 5. Runner: repo's selecteren (dry-run)
@@ -149,7 +149,7 @@ een repo met open Dependabot-PR's.
 
 - Maak met de hand de clone in `~/dependabot-runs/<repo>`.
 - Bepaal het commando, ongeveer:
-  `claude -p "/dependabot-routine autonoom" --add-dir ~/vault --session-id <uuid>
+  `claude -p "/dependabot-routine autonoom session=<uuid>" --add-dir ~/vault --session-id <uuid>
   --permission-prompts none --allowedTools ... --output-format stream-json --verbose`
 - Stel de lijst `--allowedTools` samen uit de commando's in de skill en de YouTrack-tools.
 - Lees na afloop `permission_denials` uit de output en vul de lijst aan.
@@ -164,7 +164,8 @@ Doel: het hervatten werkt echt.
 - Lok een pauze uit: zet een onschuldig ongecommit bestand in de clone, zodat stap 2 stopt.
 - Controleer het comment in YouTrack en de statusregel.
 - Haal het bestand weg en hervat met `claude --resume <uuid>`, interactief.
-- Herhaal met de terugval: een nieuwe sessie met `/dependabot-routine <issue-id>`.
+- Herhaal met de terugval: een nieuwe sessie met `/dependabot-routine <issue-id>`. Controleer
+  dat de punten uit `Report so far` in het eindverslag staan.
 
 Klaar als: beide manieren op de juiste stap verdergaan en niets dubbel doen.
 
@@ -204,7 +205,8 @@ Doel: de runner start één run en legt de uitkomst vast.
 
 - Het model als optie van de runner, standaard Opus 5.5, en doorgeven aan `claude --model`.
   Zet het model ook in de run-notitie (frontmatter `model`), zodat een vergelijking later kan.
-- `session_id` vooraf maken en meegeven, de sessie een naam geven met
+- `session_id` vooraf maken en meegeven, aan `--session-id` en als `session=<uuid>` in de
+  prompt, de sessie een naam geven met
   `-n debbie-<repo>-w<week>`, de output bewaren in een logbestand buiten de vault.
 - Per run een notitie in `gebieden/werk/dependabot-runs/<jaar>-w<week>-<repo>.md`, met
   frontmatter `description`, `agent` (`debbie`), `status`, `repo`, `issue`, `step`, `session_id`, `started`,
@@ -300,3 +302,19 @@ Deze punten staan niet of niet duidelijk in de documentatie. Controleren in stap
     regel over 0 tests uit stap 4.
 - `Op het board zetten` gebruikt nu `youtrack_command.py`. Dat script stopt met een melding als
   het token ontbreekt, wat onder `mislukt` valt.
+- 2026-11-11, stap 2: de run kent zijn eigen sessie-ID niet vanzelf. De runner geeft het mee als
+  argument, `/dependabot-routine autonoom session=<uuid>`, naast `--session-id`. Zonder dat
+  argument laat de skill de regel `Resume` weg. Stap 3 en 7 zijn daarop aangepast.
+- Het pauze-comment kreeg twee regels extra. `Report so far` bevat de verslagpunten van vóór de
+  pauze, anders mist een hervatting via de terugval die in het eindverslag. `Fallback` geeft het
+  commando voor de terugval, `/dependabot-routine <subtask-id>`. `State` noemt ook PR's die niet
+  gemerged zijn en ongecommitte bestanden.
+- Statusregel: `RUN_STATUS: <done|paused> issue=<id|none> step=<n> reason="..."`, met `step` en
+  `reason` alleen bij `paused`, als allerlaatste regel na de `RUN_ATTENTION`-regels. Een stop vóór
+  de subtask is `paused` met `issue=none`, geen open PR's is `done issue=none`. Stap 7 kan hierop
+  parsen.
+- Hervatten via het issue is interactief. Met `/dependabot-routine autonoom <issue-id>` gaat het
+  autonoom verder. De skill herkent de comments van Debbie aan de eerste regel
+  `Debbie (Dependabot routine)`, omdat ze onder mijn account staan. Het verslag van stap 9 begint
+  in autonome modus met `Debbie (Dependabot routine) report`, zodat hervatten ziet dat er na een
+  pauze al een verslag is.

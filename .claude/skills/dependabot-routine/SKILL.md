@@ -17,11 +17,12 @@ hieronder of in het projectbestand dat voorschrijft.
 ## Autonome modus
 
 Start ik de skill met het argument `autonoom` (`/dependabot-routine autonoom`), dan draait
-hij zonder dat ik meekijk. Stel dan nooit een vraag. Elk punt waar je mij iets voorlegt,
-heeft hieronder een klasse, achter `Autonoom:`:
+hij zonder dat ik meekijk. Stel dan nooit een vraag. De runner geeft ook het ID van de
+sessie mee: `/dependabot-routine autonoom session=<uuid>`. Elk punt waar je mij iets
+voorlegt, heeft hieronder een klasse, achter `Autonoom:`:
 
-- **stop:** voer geen verdere stappen uit en wijzig niets meer. Meld wat je zag, welke
-  beslissing nodig is en je voorstel.
+- **stop:** voer geen verdere stappen uit en wijzig niets meer, ook niet aan de working
+  copy. Plaats het pauze-comment uit `Pauzeren` en eindig met de statusregels.
 - **verslag:** neem het punt op in het verslag van stap 9, met wat je zag en een voorstel
   als ik iets moet beslissen, en ga door. Zo'n punt is altijd een aandachtspunt: ik moet er
   iets mee.
@@ -30,6 +31,66 @@ Een situatie zonder regel is autonoom een stop, tenzij hij maar één PR raakt e
 de routine gewoon door kan. Dan is hij verslag, en laat je die PR staan.
 
 Zonder het argument blijft alles zoals hieronder staat: je legt het mij voor en wacht.
+
+### Pauzeren
+
+Bij een stop plaats je met `add_issue_comment` een pauze-comment in de subtask uit stap 0,
+in het Engels en in deze vorm:
+
+```text
+Debbie (Dependabot routine) PAUSED at step <n>
+Seen: <wat je zag, met links naar PR's en runs>
+Decision needed: <welke beslissing>  Proposal: <je voorstel>
+State: merged #<n> #<n>, not merged #<n> (<reden>), branch <branch of none>, base <korte commit van de base branch>, uncommitted <bestanden of none>
+Report so far: <de verslagpunten tot nu toe, of none>
+Resume: cd <pwd> && claude --resume <uuid>
+Fallback: cd <pwd> && claude "/dependabot-routine <subtask-id>"
+```
+
+- `<pwd>` is de map waarin je draait, `<uuid>` het `session=` uit het argument. Ontbreekt
+  dat, laat de regel `Resume` dan weg.
+- `Report so far` maakt het verslag compleet als ik via `Fallback` hervat: die sessie kent de
+  verslagpunten van voor de pauze niet.
+- Stop je voordat de subtask bestaat, plaats dan geen comment. De reden staat dan alleen in
+  de statusregel.
+
+### Statusregels
+
+Eindig in autonome modus, bij een stop en na stap 9, met regels die de runner leest. Eerst
+per aandachtspunt een regel, daarna als allerlaatste regel de status:
+
+```text
+RUN_ATTENTION: <korte tekst, met PR-nummer als het om één PR gaat>
+RUN_STATUS: <done|paused> issue=<subtask-id of none> step=<n> reason="<korte reden>"
+```
+
+- Een `RUN_ATTENTION`-regel komt er voor elk punt met `Autonoom: verslag` dat zich voordeed,
+  ook bij een stop. Wat de skill "alleen in het verslag" noemt, krijgt geen regel.
+- `step` en `reason` alleen bij `paused`. Ook een stop voordat de subtask bestaat is
+  `paused`, met `issue=none`.
+- Geen open PR's in stap 0 is `RUN_STATUS: done issue=none`.
+
+## Hervatten
+
+Start ik de skill met het ID van een subtask (`/dependabot-routine PCATA-617`), dan hervat je
+een gepauzeerde run. Lees eerst het projectbestand, zoals bij `Projectspecifieke aanvullingen`.
+
+1. Lees de comments van de subtask (`get_issue_comments`). De comments van Debbie staan onder
+   mijn account en beginnen met `Debbie (Dependabot routine)`. Het laatste daarvan moet een
+   pauze-comment zijn. Is het een verslag, of is er geen, dan is er niets te hervatten: meld
+   dat en stop.
+2. Controleer de `State` tegen GitHub en git: welke PR's nu gemerged of nog open zijn, op
+   welke branch je staat, de commit van de base branch en `git status --short`. Wijkt iets
+   af, meld dan wat ik intussen veranderd lijk te hebben.
+3. Ga verder bij de stap uit het pauze-comment. Doe die stap opnieuw vanaf het begin, maar
+   sla over wat volgens de controle al gedaan is: merge geen PR twee keer, maak geen tweede
+   branch of PR.
+4. Neem `Report so far` op in het verslag van stap 9, samen met de reden van de pauze.
+
+Hervatten is interactief, want ik ben erbij. Wil ik dat je autonoom verdergaat, dan geef ik
+beide argumenten: `/dependabot-routine autonoom PCATA-617`. Hervat ik met
+`claude --resume`, dan ken je de stand al en ga je bij de stap van de pauze verder, ook
+interactief.
 
 Branchnamen, commitberichten, de titel en beschrijving van PR's en alles wat je in YouTrack
 zet zijn altijd in het Engels.
@@ -524,3 +585,7 @@ is klaar. Plaats zonder te vragen een verslag als comment in de subtask uit stap
 
 Geef daarna in de chat een kort verslag met de link naar het issue. Verder doe je niets met
 het issue: de state blijft `In Progress` en de uren schrijf ik zelf.
+
+In autonome modus begint het comment met de regel `Debbie (Dependabot routine) report`, en
+is het comment het verslag: geen verslag in de chat, alleen de statusregels uit
+`Statusregels`.
