@@ -57,6 +57,11 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
   `--permission-prompts none`. De run leest CI-logs en die zijn niet te vertrouwen.
 - **De runner schrijft de status, niet het model,** zodat een vastgelopen run ook zichtbaar
   is als `failed`.
+- **Debbie draait op Opus 5.5.** Door de check in de runner draait hij alleen als er werk is,
+  ongeveer één keer per repo per week, dus het prijsverschil met Sonnet telt weinig. Het werk
+  vraagt oordeel zonder toezicht: de oorzaak van een rode PR, patchen zonder breaking change,
+  en vooral op tijd stoppen. Het model is een parameter van de runner (`--model`), met Opus als
+  standaard. Na stap 10 eventueel Sonnet proberen op het npm-groepje en de verslagen vergelijken.
 - **De agent heet Debbie,** vanwege Dependabot. De naam staat in de sessienaam, in de
   run-notities en boven de comments. Die comments komen onder mijn YouTrack-account te staan,
   dus zo is ook te zien dat ze van de agent zijn.
@@ -166,11 +171,12 @@ Doel: `scripts/dependabot_runner.py --dry-run` toont welke repo's nu een run zou
 zonder iets te wijzigen.
 
 - De repo's komen uit `projecten/*.md`. Daarin staat nog geen GitHub-owner (bijvoorbeeld
-  `Flow-Cloud-Systems/roep`), dus voeg die toe als regel in elk bestand, of bepaal hem
-  eenmalig uit de `origin` van de bestaande working copies. Mapnamen wijken soms af van de
-  repo-naam (`pk-react-notifications`).
-- Een repo komt in aanmerking als er open PR's zijn van `app/dependabot`, in `notifications`
-  ook van Scala Steward, en alle checks klaar zijn.
+  `Flow-Cloud-Systems/roep`), dus voeg die toe als frontmatter `repo` in elk bestand (zie
+  `Bevindingen`). Bepaal de waarde eenmalig uit de `origin` van de bestaande working copies.
+  Mapnamen wijken soms af van de repo-naam (`pk-react-notifications`).
+- Een repo komt in aanmerking als er open PR's zijn van de auteurs in de frontmatter
+  `authors` (standaard `app/dependabot`, in `notifications` ook Scala Steward), en alle
+  checks klaar zijn.
 - Een repo met een lopende of gepauzeerde run, of een run die deze week al klaar is met
   dezelfde PR's, slaat de runner over.
 
@@ -193,6 +199,8 @@ Klaar als: dit werkt in `env -i` voor één Maven-, één Gradle- en één npm-r
 
 Doel: de runner start één run en legt de uitkomst vast.
 
+- Het model als optie van de runner, standaard Opus 5.5, en doorgeven aan `claude --model`.
+  Zet het model ook in de run-notitie (frontmatter `model`), zodat een vergelijking later kan.
 - `session_id` vooraf maken en meegeven, de sessie een naam geven met
   `-n debbie-<repo>-w<week>`, de output bewaren in een logbestand buiten de vault.
 - Per run een notitie in `gebieden/werk/dependabot-runs/<jaar>-w<week>-<repo>.md`, met
@@ -256,4 +264,21 @@ Deze punten staan niet of niet duidelijk in de documentatie. Controleren in stap
 
 ## Bevindingen
 
-Nog geen.
+- 2026-11-11, vóór stap 1: tokens besparen door de check of er werk is in een script te doen,
+  en niet in Claude. Een run zonder werk kost toch een paar modelbeurten op een prompt van
+  tienduizenden tokens, en prompt caching vangt dat maar voor een klein deel op. De
+  systeemprompt verschilt per repo (werkmap, git-status, datum), de cache verloopt na 5 minuten
+  (of na 1 uur, maar dan kost het schrijven 2×), en output en denkwerk betaal je altijd
+  volledig. Bij 21 repo's elk half uur zijn dat ongeveer 1000 starts per dag. Dit bevestigt de
+  aanpak in stap 5. De overslaglogica daar is net zo belangrijk: anders start een PR die rood
+  blijft elk half uur een nieuwe run.
+- Voor stap 5: leg repo en auteurs vast in de frontmatter van `projecten/*.md`, zodat runner en
+  skill één bron hebben. `authors` weglaten betekent `[app/dependabot]`, alleen
+  `notifications` vult het in:
+
+  ```yaml
+  repo: Flow-Cloud-Systems/notifications
+  authors: [app/dependabot, app/flow-cloud-scala-steward]
+  ```
+
+  Laat de tekst van `notifications.md` over de twee auteurs dan naar die frontmatter verwijzen.
