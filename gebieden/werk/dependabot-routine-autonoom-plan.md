@@ -10,7 +10,7 @@ mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat 
 ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
 zijn afgelopen.
 
-Vastgelegd op 2026-11-10. Stap 1 tot en met 3 zijn klaar op 2026-11-11.
+Vastgelegd op 2026-11-10. Stap 1 tot en met 4 zijn klaar op 2026-11-11.
 
 ## Zo werken we dit af
 
@@ -26,7 +26,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 1. Stoppunten indelen in de skill
 - [x] 2. Pauzeren en hervatten in de skill
 - [x] 3. Handmatige headless-run zonder pauze
-- [ ] 4. Handmatige headless-run met pauze en hervatting
+- [x] 4. Handmatige headless-run met pauze en hervatting
 - [ ] 5. Runner: repo's selecteren (dry-run)
 - [ ] 6. Runner: eigen clones en omgeving
 - [ ] 7. Runner: run starten en status vastleggen
@@ -292,7 +292,7 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
 - Ja: de skill uit `--add-dir ~/vault` start via `/dependabot-routine` in `-p`-modus.
 - Ja: de YouTrack-MCP uit `~/.claude.json` is beschikbaar (`connected` in het init-event).
 - `AskUserQuestion` staat niet in de tools van de run. De run vroeg ook nergens om input.
-  Of hij bij een twijfelgeval netjes pauzeert, blijkt in stap 4.
+  Ja, bij een stop pauzeert hij netjes (stap 4).
 - Hervatten met `claude --resume` is interactief en gebruikt mijn eigen instellingen, daar
   horen de flags niet bij. Een autonome hervatting (`/dependabot-routine autonoom <issue>`)
   is een nieuwe run en krijgt het hele commando uit stap 3.
@@ -369,3 +369,31 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
     runner de regels met absolute paden genereren in plaats van ze in het bestand te zetten.
 - Dependabot is ook handmatig te starten per repo, mocht stap 4 of later meer PR's nodig
   hebben (Insights → Dependency graph → Dependabot → Check for updates).
+- 2026-11-11, stap 4: beide runs pauzeerden in stap 2 met de juiste statusregel en een goed
+  pauze-comment (`insights` in PI-202, `iam` in PKIAM-840). Elke run kostte
+  ongeveer $0,50 en ruim een minuut. Hervatten met `claude --resume` (`insights`) en via de
+  terugval (`iam`) gingen allebei verder bij stap 2. Ze mergeden niets dubbel, maakten elk één
+  eigen PR (#262 en #220) en zetten het verslag in de subtask. De terugval nam
+  `Report so far` en de reden van de pauze mee.
+- `permission_denials: []` is nog niet gehaald: elke run had één weigering, nu niet door de
+  skill maar door eigen initiatief van het model:
+  - `insights` zocht de commit van `origin/develop` op met `gh api .../commits/develop` voor
+    `base` in `State`. De skill zegt nu: `base` is de lokale base branch,
+    `git rev-parse --short <base-branch>`.
+  - `iam` zette een zelfgebouwde PR-link (`pompkracht/iam`) in het comment, wilde die
+    corrigeren met `youtrack_edit_comment.py` uit mijn globale CLAUDE.md (geweigerd) en
+    plaatste toen een correctie-comment zonder de `Debbie`-kop. De skill zegt nu: links uit
+    `gh pr view <n> --json url`, geen correctie-comments en geen bewerkte comments.
+  - Controleer in stap 7 en 8 opnieuw `permission_denials` in de log.
+- De `Fallback`-regel werkte niet: buiten de vault kent een sessie de skill alleen met
+  `--add-dir ~/vault`, en `--add-dir` slikt een prompt die erachter staat op als map. De regel
+  is nu `claude "/dependabot-routine <subtask-id>" --add-dir ~/vault`.
+- De run laadt mijn globale `~/.claude/CLAUDE.md`, zie het edit-script hierboven. Voor stap 6:
+  kijk of dat uit kan, of dat de skill het moet afdekken.
+- `insights` heeft in de root alleen `settings.gradle.kts` en `buildSrc`, geen
+  `build.gradle(.kts)`. Interactief ging dat goed, autonoom was het een stop geweest
+  (buildtool niet te bepalen). `settings.gradle(.kts)` staat nu in de tabel van stap 4.
+- De JVM-melding `Sharing is only supported for boot loader classes ...` tijdens de tests kwam
+  in het verslag als warning. Autonoom wordt dat een `RUN_ATTENTION` bij elke Gradle-run met
+  Java 25. Te beslissen: deze melding in de skill laten negeren.
+- Logs van handmatige runs staan in `~/dependabot-runs/.logs/`.

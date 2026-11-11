@@ -56,11 +56,18 @@ Decision needed: <welke beslissing>  Proposal: <je voorstel>
 State: merged #<n> #<n>, not merged #<n> (<reden>), branch <branch of none>, base <korte commit van de base branch>, uncommitted <bestanden of none>
 Report so far: <de verslagpunten tot nu toe, of none>
 Resume: cd <pwd> && claude --resume <uuid>
-Fallback: cd <pwd> && claude "/dependabot-routine <subtask-id>"
+Fallback: cd <pwd> && claude "/dependabot-routine <subtask-id>" --add-dir ~/vault
 ```
 
 - `<pwd>` is de map waarin je draait, `<uuid>` het `session=` uit het argument. Ontbreekt
   dat, laat de regel `Resume` dan weg.
+- Neem links naar PR's over uit `gh pr view <n> --json url --jq .url` en stel ze niet zelf
+  samen. De naam van de organisatie wijkt soms af van wat je verwacht.
+- `base` is de lokale base branch: `git rev-parse --short <base-branch>`. Die vergelijkt
+  `Hervatten` met git.
+- Plaats geen correctie-comment en wijzig geen comment. Staat er iets verkeerd in, zet de
+  correctie dan in het volgende comment van Debbie (het verslag of een nieuw pauze-comment).
+  Elk comment van Debbie begint met `Debbie (Dependabot routine)`.
 - `Report so far` maakt het verslag compleet als ik via `Fallback` hervat: die sessie kent de
   verslagpunten van voor de pauze niet.
 - Stop je voordat de subtask bestaat, plaats dan geen comment. De reden staat dan alleen in
@@ -329,7 +336,7 @@ Kijk in de root van het project welk buildbestand er staat:
 | Bestand | Commando |
 | --- | --- |
 | `pom.xml` | `mvn clean package` |
-| `build.gradle` of `build.gradle.kts` | `./gradlew clean build` |
+| `build.gradle`, `build.gradle.kts` of `settings.gradle(.kts)` | `./gradlew clean build` |
 | `package-lock.json` | `npm ci` |
 
 Staan er meerdere, of staat de buildtool niet in deze tabel, volg dan het projectbestand.
@@ -582,7 +589,7 @@ gh run watch <id> --exit-status --interval 10
 
 Geen openstaande changes in `git status --short` en verder niets te doen: de routine
 is klaar. Plaats zonder te vragen een verslag als comment in de subtask uit stap 0
-(`add_issue_comment`), met links naar de gemerged PR's:
+(`add_issue_comment`), met links naar de gemerged PR's (uit `gh pr view <n> --json url`):
 
 - welke PR's gemerged zijn en welke niet, met de reden, ook de PR's uit stap 6 en 7
 - per rode PR de oorzaak en wat ermee is gebeurd, of een voorstel als ik moet beslissen
