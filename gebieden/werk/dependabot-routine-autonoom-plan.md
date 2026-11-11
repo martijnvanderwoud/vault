@@ -10,7 +10,7 @@ mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat 
 ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
 zijn afgelopen.
 
-Vastgelegd op 2026-11-10. Stap 1 tot en met 8 zijn klaar op 2026-11-11.
+Vastgelegd op 2026-11-10. Stap 1 tot en met 9 zijn klaar op 2026-11-11.
 
 ## Zo werken we dit af
 
@@ -31,7 +31,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 6. Runner: eigen clones en omgeving
 - [x] 7. Runner: run starten en status vastleggen
 - [x] 8. Schedule met launchd op één repo
-- [ ] 9. Dashboard in Obsidian
+- [x] 9. Dashboard in Obsidian
 - [ ] 10. Uitrollen naar alle repo's
 
 ## Beslissingen
@@ -598,3 +598,49 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   `npm audit fix` gemerged, de clone stond daarna schoon op `develop`. Daarmee werken `NPM_TOKEN`
   uit `.env` en een nieuwe clone ook onder launchd.
 - De allowlist in de plist is nu `ats` en `portal-employee-ui`. Stap 10 breidt hem per groepje uit.
+- 2026-11-11, stap 9: `dependabot-runs/dashboard.base` (Obsidian 1.15, Bases staat aan) met drie
+  weergaven: `Aandacht nodig`, `Lopend` en `Alle runs` (gegroepeerd op status, nieuwste eerst). Het
+  issue is een formule met een link naar YouTrack. De globale filter is `agent == "debbie"` in de
+  map, dus `index.md` valt weg. Kolombreedtes staan per weergave in `columnSize`.
+- Werkwijze, besloten na het eerste bekijken: het issue in YouTrack is de bron voor "afgehandeld".
+  - Een autonome run zonder aandachtspunten zet de subtask na het verslag zelf op `Done`
+    (stap 9 van de skill). Met aandachtspunten, of na een pauze, blijft hij `In Progress`.
+  - De runner neemt bij elke tik de state over in `issue_state`, tot die `Done` is. Een `paused`-
+    of `failed`-run met een issue op `Done` zet hij op `done`: ik heb het afgehandeld, de repo is
+    weer vrij.
+  - `Aandacht nodig` toont runs die `paused` of `failed` zijn of aandachtspunten hebben, zolang het
+    issue niet op `Done` staat en de run niet `resolved` is.
+  - Ik handel een punt af en zet de subtask op `Done`. Binnen een half uur is de run weg uit
+    `Aandacht nodig`. `resolved` blijft alleen voor runs zonder issue, zoals een vuile clone.
+  - Een eerdere poging met een vinkje `gezien` viel af: Obsidian toont geen checkbox voor een
+    property die nog in geen enkele notitie staat, en het was dubbel werk naast het issue.
+  - Een directe trigger bij een state-wijziging (webhook) vraagt een server die YouTrack kan
+    bereiken. Het half uur van launchd is snel genoeg.
+- Indeling, na het tweede bekijken: per project alleen de laatste run, in gewone taal. Weergaven
+  `Overzicht` (alle projecten met een run), `Aandacht nodig` en `Geschiedenis` (alle runs per
+  project, met beurten en kosten). `Lopend` is vervallen: een lopende run is altijd de laatste en
+  staat in `Overzicht` als `Bezig`. Formules geven de status in woorden met een icoon, de
+  projectnaam als link naar de run en de start als leesbare datum.
+- Bases kan niet zelf "de laatste per groep" kiezen. De runner zet daarom `laatste: true` op de
+  nieuwste run per project (`laatste_markeren()`, bij elke `index_bijwerken()` en aan het eind van
+  `opruimen()`), en de weergaven filteren daarop.
+- Wijzig ik in Obsidian een property, dan schrijft Obsidian de hele frontmatter opnieuw, zonder de
+  JSON-quotes van de runner en met een blok-string voor een `reason` van meer regels.
+  `notitie_lezen()` deed `json.loads` op elke waarde en zou daarop crashen. Hij leest nu ook strings
+  zonder quotes, met enkele quotes en blok-strings (`|-`, `>-`), en booleans. Getest: alle
+  bestaande notities gaan ongewijzigd heen en terug, en een notitie in Obsidian-stijl leest goed.
+  PyYAML staat niet in de systeem-Python, vandaar een eigen parser.
+- De run-notities blijven in git. Ze zijn klein en de geschiedenis van status en aandacht is
+  nuttig. De runner commit niet zelf: de auto-commit bij SessionEnd neemt ze mee. De logs staan
+  buiten de vault.
+- `started` toont het dashboard zonder formule. Obsidian kan het als tekst of als datum zien, en een
+  stringfunctie zou dan breken.
+- De base is een tussenoplossing. Na het bekijken wil ik iets dat visueel meer opvalt, en een
+  dashboard voor al mijn agents, niet alleen Debbie, dat niet een half uur achterloopt. Dat is
+  [[agents-dashboard-plan]]: één statusvorm voor alle agents, een watcher die altijd draait en een
+  gegenereerde notitie met callouts. Het lezen van `issue_state` en het opruimen van afgebroken
+  runs gaan daar van de runner naar de watcher. Stap 10 kan los daarvan verder.
+- Een `:` gevolgd door een spatie in een formule zonder quotes maakt de base kapot
+  ("nested mappings are not allowed"). Formules staan daarom tussen enkele quotes.
+- De drie testnotities uit stap 7 (`2026-w46-iam-login-ui`, `-2`, `-3`) zijn weggehaald. Hun logs staan nog in
+  `~/dependabot-runs/.logs/`.

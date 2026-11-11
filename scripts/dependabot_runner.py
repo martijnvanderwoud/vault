@@ -7,7 +7,8 @@ run, één tegelijk. Per run een notitie in gebieden/werk/dependabot-runs/<jaar>
 en een log in ~/dependabot-runs/.logs/. Bij `paused` of `failed` een macOS-melding. Een tweede
 runner-proces stopt meteen (lock). Een `paused`- of `failed`-run blokkeert de repo. Na een
 hervatting zet de runner hem op `done` zodra er een verslag van Debbie in het issue staat. Anders
-geef ik hem met de hand vrij met `status: resolved`.
+geef ik hem met de hand vrij met `status: resolved`. De state van het issue neemt hij over in
+`issue_state`; zet ik het issue op Done, dan is de run afgehandeld. Overzicht: dependabot-runs/dashboard.base.
 
 Gebruik: dependabot_runner.py --dry-run [--repo NAAM ...]
 Toont per project uit de skill welke repo's nu een run zouden krijgen, zonder iets te wijzigen.
@@ -60,7 +61,8 @@ DEFAULT_TIMEOUT = 120  # minuten; stap 8 van de skill wacht op de build van de b
 YOUTRACK_API = 'https://crimsoncricket.myjetbrains.com/youtrack/api'
 VERSLAG_KOP = 'Debbie (Dependabot routine) report'
 VELDEN = ['description', 'agent', 'status', 'repo', 'issue', 'step', 'reason', 'session_id', 'started',
-          'ended', 'resume', 'aandacht', 'prs', 'model', 'pid', 'kosten', 'beurten', 'geweigerd', 'log']
+          'ended', 'resume', 'aandacht', 'prs', 'model', 'pid', 'kosten', 'beurten', 'geweigerd', 'log', 'issue_state', 'laatste']
+LIJSTEN = ('aandacht', 'prs')
 
 
 class Stop(Exception):
@@ -265,6 +267,8 @@ def tools_tonen(clone, env):
 def yaml_waarde(value):
     if value is None or value == '':
         return ' ""'
+    if isinstance(value, bool):
+        return ' true' if value else ' false'
     if isinstance(value, list):
         return ' []' if not value else ''.join('\n  - ' + json.dumps(v, ensure_ascii=False) for v in value)
     if isinstance(value, (int, float)):
@@ -277,17 +281,43 @@ def notitie_schrijven(path, fm, tekst):
     path.write_text('\n'.join(regels) + tekst.rstrip() + '\n', encoding='utf-8')
 
 
+def yaml_lezen(value):
+    """Een waarde uit de frontmatter. De runner schrijft JSON, maar Obsidian schrijft de hele frontmatter
+    opnieuw als ik daar een property wijzig (`status`, `gezien`): dan staan strings zonder quotes."""
+    try:
+        return json.loads(value)
+    except ValueError:
+        pass
+    if len(value) >= 2 and value[0] == value[-1] == "'":
+        return value[1:-1].replace("''", "'")
+    return value
+
+
 def notitie_lezen(path):
-    """Frontmatter en tekst van een notitie van `notitie_schrijven`: strings zijn JSON."""
+    """Frontmatter en tekst van een run-notitie, van `notitie_schrijven` of daarna door Obsidian bewerkt."""
     kop, _, tekst = path.read_text(encoding='utf-8')[4:].partition('\n---\n')
-    fm, key = {}, None
+    fm, key, blok = {}, None, None
     for line in kop.splitlines():
-        if line.startswith('  - ') and key:
-            fm[key].append(json.loads(line[4:]))
+        if blok is not None and (line.startswith('  ') or not line.strip()):
+            blok.append(line[2:])
+            continue
+        if blok is not None:  # einde van een blok-string (`|-` of `>-`) van Obsidian
+            fm[key] = ('\n' if fm[key].startswith('|') else ' ').join(blok).strip('\n')
+            blok = None
+        if line.lstrip().startswith('- ') and key:
+            fm[key].append(yaml_lezen(line.lstrip()[2:].strip()))
             continue
         key, _, value = line.partition(':')
-        value = value.strip()
-        fm[key] = [] if value in ('', '[]') else json.loads(value)
+        key, value = key.strip(), value.strip()
+        if value[:1] in ('|', '>'):
+            fm[key], blok = value, []
+        else:
+            fm[key] = [] if value in ('', '[]') else yaml_lezen(value)
+    if blok is not None:
+        fm[key] = ('\n' if fm[key].startswith('|') else ' ').join(blok).strip('\n')
+    for key, value in fm.items():
+        if value == [] and key not in LIJSTEN:
+            fm[key] = ''
     return fm, tekst.lstrip('\n')
 
 
@@ -312,7 +342,29 @@ def beschrijving(fm):
     return 'Debbie-run %s, gestart %s: %s%s' % (fm['repo'], fm['started'][:16].replace('T', ' '), status, issue)
 
 
+def laatste_markeren():
+    """Zet `laatste: true` op de laatste run van elk project en haalt het weg bij de andere. Het
+    dashboard toont per project alleen die run, en Bases kan dat niet zelf. Geeft True bij een wijziging."""
+    runs = [(path,) + notitie_lezen(path) for path in notities()]
+    laatste = {}
+    for path, fm, _ in runs:
+        if fm.get('started', '') >= laatste.get(fm.get('repo'), (None, ''))[1]:
+            laatste[fm.get('repo')] = (path, fm.get('started', ''))
+    gewijzigd = False
+    for path, fm, tekst in runs:
+        if bool(fm.get('laatste')) == (laatste[fm.get('repo')][0] == path):
+            continue
+        if fm.get('laatste'):
+            fm.pop('laatste')
+        else:
+            fm['laatste'] = True
+        notitie_schrijven(path, fm, tekst)
+        gewijzigd = True
+    return gewijzigd
+
+
 def index_bijwerken():
+    laatste_markeren()
     subprocess.run([sys.executable, str(VAULT / 'scripts/build_index.py')], check=False, capture_output=True)
 
 
@@ -357,13 +409,32 @@ def verslag_na(issue, sinds):
                for c in comments)
 
 
+def issue_state(issue):
+    """De State van het issue in YouTrack, of None bij een fout."""
+    url = '%s/issues/%s?fields=customFields(name,value(name))' % (YOUTRACK_API, issue)
+    try:
+        headers = {'Authorization': 'Bearer ' + youtrack_token(), 'Accept': 'application/json'}
+        velden = json.load(urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=30))
+    except Exception as e:  # netwerk of YouTrack: volgende keer opnieuw
+        print('  YouTrack %s niet te lezen: %s' % (issue, e))
+        return None
+    return next(((f.get('value') or {}).get('name') for f in velden.get('customFields', [])
+                 if f.get('name') == 'State'), None)
+
+
 def opruimen(dry_run):
     """Zet een `running`-notitie zonder levend proces op `failed`, en een gepauzeerde of mislukte run
-    op `done` als er na het einde een verslag van Debbie in het issue staat (hervat). Geeft regels."""
+    op `done` als er na het einde een verslag van Debbie in het issue staat (hervat) of als het issue
+    op Done staat (door mij afgehandeld). Neemt de state van het issue over in `issue_state`, tot die
+    Done is. Geeft regels."""
     regels = []
     for path in notities():
         fm, tekst = notitie_lezen(path)
         status, nieuw = fm.get('status'), None
+        stap = ' bij stap %s' % fm['step'] if fm.get('step') else ''
+        state = None
+        if fm.get('issue') and status != 'running' and fm.get('issue_state') != 'Done':
+            state = issue_state(fm['issue'])
         if status == 'running' and not proces_leeft(fm.get('pid')):
             nieuw = 'failed'
             fm['reason'] = 'run gestopt zonder status, runner of claude is afgebroken'
@@ -371,25 +442,35 @@ def opruimen(dry_run):
             fm.pop('pid', None)
             if fm.get('session_id'):
                 fm['resume'] = resume_regel(fm['repo'], fm['session_id'])
+        elif status in ('paused', 'failed') and state == 'Done':
+            nieuw = 'done'
+            tekst += '\n\nOp `done` gezet op %s: na de %s%s (%s) staat %s op Done.\n' % (
+                nu_lokaal().isoformat(), status, stap, fm.get('reason') or '?', fm['issue'])
         elif status in ('paused', 'failed') and fm.get('issue') and fm.get('ended') and \
                 verslag_na(fm['issue'], fm['ended']):
             nieuw = 'done'
-            stap = ' bij stap %s' % fm['step'] if fm.get('step') else ''
             tekst += '\n\nOp `done` gezet op %s: na de %s%s (%s) staat er een verslag in %s.\n' % (
                 nu_lokaal().isoformat(), status, stap, fm.get('reason') or '?', fm['issue'])
+        if nieuw == 'done':
             for key in ('step', 'reason', 'resume'):
                 fm.pop(key, None)
-        if not nieuw:
+        state_gewijzigd = state and state != fm.get('issue_state')
+        if not nieuw and not state_gewijzigd:
             continue
-        regels.append('%s: %s -> %s' % (path.stem, status, nieuw))
+        regels.append('%s: %s' % (path.stem, ', '.join(
+            ([status + ' -> ' + nieuw] if nieuw else []) +
+            (['issue %s -> %s' % (fm.get('issue_state') or '?', state)] if state_gewijzigd else []))))
         if dry_run:
             continue
-        fm['status'] = nieuw
-        fm['description'] = beschrijving(fm)
+        if state_gewijzigd:
+            fm['issue_state'] = state
+        if nieuw:
+            fm['status'] = nieuw
+            fm['description'] = beschrijving(fm)
         notitie_schrijven(path, fm, tekst)
         if nieuw == 'failed':
             melden('Debbie: %s failed' % fm['repo'], fm['reason'])
-    if regels and not dry_run:
+    if not dry_run and (regels or laatste_markeren()):
         index_bijwerken()
     return regels
 
