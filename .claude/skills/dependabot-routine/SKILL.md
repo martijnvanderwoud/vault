@@ -34,6 +34,9 @@ Zonder het argument blijft alles zoals hieronder staat: je legt het mij voor en 
 
 De autonome run mag alleen commando's uit een vaste lijst, en heeft geen eigen scratchpad:
 
+- De runner zet Node uit `.nvmrc` en de SDK's uit `.sdkmanrc` klaar, ook na een wijziging
+  in stap 3. `nvm use` of `sdk use` is niet nodig, ook niet als de CLAUDE.md van het project
+  erom vraagt.
 - Gebruik als `<scratchpad>` de map `~/dependabot-runs/.scratch/<repo>`. Die bestaat al.
   Schrijf nergens anders buiten de working copy, ook niet naar `/tmp`.
 - Schrijf paden zoals in deze skill, met `~/` en niet uitgeschreven, en `gh api` met

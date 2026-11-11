@@ -10,7 +10,7 @@ mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat 
 ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
 zijn afgelopen.
 
-Vastgelegd op 2026-11-10. Stap 1 tot en met 5 zijn klaar op 2026-11-11.
+Vastgelegd op 2026-11-10. Stap 1 tot en met 6 zijn klaar op 2026-11-11.
 
 ## Zo werken we dit af
 
@@ -28,7 +28,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 3. Handmatige headless-run zonder pauze
 - [x] 4. Handmatige headless-run met pauze en hervatting
 - [x] 5. Runner: repo's selecteren (dry-run)
-- [ ] 6. Runner: eigen clones en omgeving
+- [x] 6. Runner: eigen clones en omgeving
 - [ ] 7. Runner: run starten en status vastleggen
 - [ ] 8. Schedule met launchd op één repo
 - [ ] 9. Dashboard in Obsidian
@@ -232,6 +232,10 @@ Klaar als: dit werkt in `env -i` voor één Maven-, één Gradle- en één npm-r
 
 Doel: de runner start één run en legt de uitkomst vast.
 
+- Bouw het commando met `clone_klaarzetten()`, `omgeving()` en `claude_args()` uit stap 6, niet
+  met het commando uit stap 3: dat mist de MCP-config, `--setting-sources` en
+  `claudeMdExcludes`. Start `claude` met `stdin` op `/dev/null`, anders wacht hij 3 seconden op
+  invoer. Een `Stop` uit `clone_klaarzetten()` is `paused` met de reden, zonder run.
 - Het model als optie van de runner, standaard Opus 5.5, en doorgeven aan `claude --model`.
   Zet het model ook in de run-notitie (frontmatter `model`), zodat een vergelijking later kan.
 - `session_id` vooraf maken en meegeven, aan `--session-id` en als `session=<uuid>` in de
@@ -445,3 +449,33 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   een goede test voor meerdere runs achter elkaar en de lock. Extra PR's uitlokken is niet nodig.
   Twee auteurs in `notifications` hangt af van Scala Steward, want Dependabot doet daar alleen
   `github-actions`.
+- 2026-11-11, stap 6: `dependabot_runner.py --prepare --repo <naam>` zet de clone klaar en toont
+  de tools zoals een Bash-commando van de run ze ziet. Getest in `env -i HOME=$HOME` op `ats`
+  (Maven), `insights` (Gradle) en `iam-login-ui` (npm, nieuwe clone): overal de juiste Java,
+  Maven of Node, en `gh`, `claude` en git ingelogd. Een vuile clone geeft `STOP` met de bestanden.
+- In een lege omgeving vindt de Bash-tool van de run niets: geen `mvn`, `node` of `gh`, en
+  `java` is de macOS-stub. Mijn `.zshrc` laadt hij dan niet. De oplossing is `CLAUDE_ENV_FILE`:
+  Claude Code sourcet dat bestand voor elk Bash-commando. `scripts/dependabot-runner/env.sh`
+  laadt SDKMAN en draait `sdk env`, of `sdk env install` als er een versie ontbreekt. Zo volgt de
+  omgeving ook een nieuwe `.sdkmanrc` uit stap 3. `sdk env install` vraagt niets en wijzigt de
+  standaardversie niet. Gradle 9.9.1 is zo getest en staat nu ook op de machine.
+- `env.sh` staat in de vault en niet in `~/dependabot-runs`: daar mag de run schrijven, en een
+  bestand dat voor elk commando wordt gesourced zou de allowlist omzeilen.
+- Node zet de runner vooraf in `PATH`, want de skill wijzigt `.nvmrc` niet. Net als `load-nvmrc`
+  in mijn `.zshrc`: `nvm which`, en alleen als er lokaal niets past `nvm install`. De CLAUDE.md
+  van de npm-projecten vraagt om `nvm use 24`. De skill zegt nu dat dat autonoom niet hoeft.
+- Git ging via SSH, en zonder `SSH_AUTH_SOCK` faalt dat. De clones gaan nu via HTTPS, met
+  `gh auth git-credential` als credential helper in de lokale git-config. `gh` is ingelogd via de
+  keychain en werkt in `env -i`, ook voor push (`--dry-run` getest). De vier bestaande clones zijn
+  omgezet. Het token van `gh` heeft geen `workflow`-scope: een push die `.github/workflows/`
+  wijzigt, mislukt. De skill doet dat nu niet (`dependabot.yml` valt er niet onder).
+- Alleen YouTrack: `--strict-mcp-config --mcp-config scripts/dependabot-runner/mcp.json`, met
+  `Bearer ${YOUTRACK_TOKEN}` in de header. De runner zet die variabele uit `.env`. Claude Code
+  vult hem in (`connected`), en ook de claude.ai-connectors vallen weg. `echo $YOUTRACK_TOKEN` is
+  geweigerd, ondanks `Bash(echo *)`: commando's met een variabele vallen niet onder de lijst.
+- Mijn globale CLAUDE.md blijft geladen, ook met `--setting-sources project,local`. Wat werkt:
+  `claudeMdExcludes` met het absolute pad. Dat pad zet de runner erin, zodat `settings.json` vrij
+  blijft van paden van mijn machine. Hij geeft de settings daarom als JSON-string mee.
+  `--safe-mode` en `--bare` vallen af: die zetten skills uit of lezen de keychain niet.
+- `--setting-sources project,local` houdt ook mijn gebruikersinstellingen buiten de run
+  (`defaultMode: auto`, plugins, taal). `--permission-mode dontAsk` blijft voor de zekerheid.

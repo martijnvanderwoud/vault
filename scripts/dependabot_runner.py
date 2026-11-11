@@ -1,15 +1,20 @@
 #!/usr/bin/python3
-"""Runner van de autonome Dependabot-routine (Debbie). Nu alleen de selectie van repo's.
+"""Runner van de autonome Dependabot-routine (Debbie). Nu: repo's selecteren en clones klaarzetten.
 
 Gebruik: dependabot_runner.py --dry-run [--repo NAAM ...]
 Toont per project uit de skill welke repo's nu een run zouden krijgen, zonder iets te wijzigen.
 Een repo komt in aanmerking als er open PR's zijn van de auteurs uit de frontmatter `authors`
 (standaard app/dependabot) en alle checks klaar zijn. Een repo met een lopende, gepauzeerde of
 mislukte run, of een run die deze ISO-week al klaar is met dezelfde PR's, slaat hij over.
+
+Gebruik: dependabot_runner.py --prepare --repo NAAM [--repo NAAM ...]
+Zet de clone in ~/dependabot-runs/NAAM klaar (clonen of fetchen, moet schoon zijn) en toont de
+tools die een run daar krijgt. Werkt ook zonder mijn shellprofiel, zoals onder launchd.
 Plan: gebieden/werk/dependabot-routine-autonoom-plan.md.
 """
 import argparse
 import json
+import os
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -23,6 +28,21 @@ DEFAULT_AUTHORS = ['app/dependabot']
 # Zo lang na het openen van een PR zonder checks wachten we nog tot de checks verschijnen.
 GEEN_CHECKS_WACHTTIJD = timedelta(minutes=30)
 PENDING_STATES = {'PENDING', 'EXPECTED'}
+
+HOME = Path.home()
+CLONES = HOME / 'dependabot-runs'
+RUNNER = VAULT / 'scripts/dependabot-runner'
+NVM_SH = '/opt/homebrew/opt/nvm/nvm.sh'
+# PATH zonder mijn shellprofiel: Homebrew (gh, git) en ~/.local/bin (claude). Node komt erbij uit
+# .nvmrc, SDKMAN per commando via env.sh.
+BASIS_PATH = ['/opt/homebrew/bin', str(HOME / '.local/bin'), '/usr/bin', '/bin', '/usr/sbin', '/sbin']
+# Git via HTTPS met gh als credential helper: gh is ingelogd via de keychain, een SSH-agent is er
+# onder launchd niet altijd.
+GH_CREDENTIAL_HELPER = '!gh auth git-credential'
+
+
+class Stop(Exception):
+    """Reden om in deze repo niets te doen. Opruimen doet de runner nooit zelf."""
 
 
 def frontmatter(path):
@@ -121,6 +141,90 @@ def beoordeel(project, prs, run, nu):
     return 'run', ''
 
 
+def basis_env():
+    return {'HOME': str(HOME), 'USER': HOME.name, 'LOGNAME': HOME.name, 'LANG': 'en_US.UTF-8',
+            'PATH': ':'.join(BASIS_PATH)}
+
+
+def run(args, cwd=None, env=None):
+    p = subprocess.run(args, cwd=cwd, env=env or basis_env(), stdin=subprocess.DEVNULL,
+                       capture_output=True, text=True)
+    if p.returncode != 0:
+        raise Stop('%s mislukt: %s' % (' '.join(args[:3]), (p.stderr or p.stdout).strip()[-500:]))
+    return p.stdout
+
+
+def clone_klaarzetten(project):
+    """Clonet de repo of haalt hem bij, met HTTPS en gh. Een vuile clone is een Stop."""
+    clone = CLONES / project['name']
+    url = 'https://github.com/%s.git' % project['repo']
+    if not clone.exists():
+        run(['git', 'clone', '--quiet', '-c', 'credential.helper=',
+             '-c', 'credential.https://github.com.helper=' + GH_CREDENTIAL_HELPER, url, str(clone)])
+    # Ook voor clones van vóór de runner, die nog via SSH gingen. Een lege helper wist wat de
+    # globale of systeemconfig instelt, zoals osxkeychain.
+    run(['git', 'remote', 'set-url', 'origin', url], cwd=clone)
+    run(['git', 'config', '--replace-all', 'credential.helper', ''], cwd=clone)
+    run(['git', 'config', '--replace-all', 'credential.https://github.com.helper', GH_CREDENTIAL_HELPER], cwd=clone)
+    run(['git', 'fetch', '--prune', '--quiet', 'origin'], cwd=clone)
+    vuil = run(['git', 'status', '--porcelain'], cwd=clone).strip()
+    if vuil:
+        raise Stop('clone %s is niet schoon:\n%s' % (clone, vuil))
+    (CLONES / '.scratch' / project['name']).mkdir(parents=True, exist_ok=True)
+    return clone
+
+
+def node_bin(clone):
+    """De bin-map van de Node-versie uit .nvmrc, zo nodig eerst geïnstalleerd. None zonder .nvmrc."""
+    if not (clone / '.nvmrc').exists():
+        return None
+    env = dict(basis_env(), NVM_DIR=str(HOME / '.nvm'))
+    # Zoals load-nvmrc in mijn .zshrc: alleen installeren als er lokaal geen passende versie is.
+    out = run(['/bin/bash', '-c', '. "%s" && { nvm which >/dev/null 2>&1 || nvm install >/dev/null; } && nvm which'
+               % NVM_SH], cwd=clone, env=env)
+    return str(Path(out.strip().splitlines()[-1]).parent)
+
+
+def youtrack_token():
+    """Uit ~/vault/.env, voor ${YOUTRACK_TOKEN} in mcp.json. Wordt nooit getoond."""
+    for line in reversed((VAULT / '.env').read_text().splitlines()):
+        if line.startswith('YOUTRACK_TOKEN='):
+            return line.split('=', 1)[1].strip()
+    raise Stop('YOUTRACK_TOKEN ontbreekt in ' + str(VAULT / '.env'))
+
+
+def omgeving(clone):
+    """De omgeving voor `claude` in deze clone. Gaat niet uit van mijn shellprofiel."""
+    env = basis_env()
+    node = node_bin(clone)
+    if node:
+        env['PATH'] = node + ':' + env['PATH']
+    env['CLAUDE_ENV_FILE'] = str(RUNNER / 'env.sh')
+    env['YOUTRACK_TOKEN'] = youtrack_token()
+    return env
+
+
+def claude_args(project, clone):
+    """De vaste flags voor een run, behalve prompt, sessie, model en output (stap 7)."""
+    settings = json.loads((RUNNER / 'settings.json').read_text())
+    # Mijn globale CLAUDE.md noemt bijvoorbeeld youtrack_edit_comment.py, en dat mag de run niet.
+    settings['claudeMdExcludes'] = [str(HOME / '.claude/CLAUDE.md')]
+    return ['--add-dir', str(VAULT), '--add-dir', str(CLONES / '.scratch' / project['name']),
+            '--setting-sources', 'project,local', '--settings', json.dumps(settings),
+            '--strict-mcp-config', '--mcp-config', str(RUNNER / 'mcp.json'),
+            '--permission-mode', 'dontAsk', '--permission-prompts', 'none']
+
+
+def tools_tonen(clone, env):
+    """Draait de tools zoals een Bash-commando van de run ze ziet: met env.sh in de clone."""
+    script = ('. "$CLAUDE_ENV_FILE"; for t in git gh claude java mvn gradle node npm; do printf "%-7s" $t; '
+              'command -v $t || echo ontbreekt; done; java -version 2>&1 | head -1; mvn -v 2>/dev/null | head -1; '
+              'node -v 2>/dev/null; claude --version; gh auth status 2>&1 | grep -E "Logged in|Token scopes"; '
+              'claude auth status 2>&1 | grep -i -E "logged|login|method" | head -2; '
+              'git ls-remote --heads origin >/dev/null && echo "git via HTTPS: ok"')
+    return run(['/bin/zsh', '-f', '-c', script], cwd=clone, env=env)
+
+
 def selecteer(namen):
     nu = datetime.now(timezone.utc)
     lijst = [p for p in projecten() if not namen or p['name'] in namen]
@@ -139,10 +243,25 @@ def selecteer(namen):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--dry-run', action='store_true', help='alleen tonen welke repo\'s een run krijgen')
+    parser.add_argument('--prepare', action='store_true', help='clone klaarzetten en de tools tonen')
     parser.add_argument('--repo', action='append', default=[], help='alleen dit project (herhaalbaar)')
     args = parser.parse_args()
+    if args.prepare:
+        if not args.repo:
+            raise SystemExit('--prepare vraagt om --repo')
+        alle = {p['name']: p for p in projecten()}
+        for naam in args.repo:
+            if naam not in alle:
+                raise SystemExit('onbekend project: ' + naam)
+            print('== ' + naam)
+            try:
+                clone = clone_klaarzetten(alle[naam])
+                print(tools_tonen(clone, omgeving(clone)), end='')
+            except Stop as stop:
+                print('STOP: %s' % stop)
+        return
     if not args.dry_run:
-        raise SystemExit('Runs starten kan nog niet (stap 7 van het plan). Gebruik --dry-run.')
+        raise SystemExit('Runs starten kan nog niet (stap 7 van het plan). Gebruik --dry-run of --prepare.')
     breedte = max(len(p.stem) for p in PROJECTEN.glob('*.md'))
     for project, prs, besluit, reden in selecteer(args.repo):
         nummers = ' '.join('#%d' % pr['number'] for pr in prs)

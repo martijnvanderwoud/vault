@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "YouTrack": {
+      "type": "http",
+      "url": "https://crimsoncricket.myjetbrains.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${YOUTRACK_TOKEN}"
+      }
+    }
+  }
+}
