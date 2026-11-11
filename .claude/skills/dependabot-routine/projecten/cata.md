@@ -1,5 +1,6 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor cata (YouTrack-gegevens, Maven, webjars negeren, Maven-versie in de workflows)
+repo: Flow-Cloud-Systems/cata
 ---
 
 # Dependabot-routine: cata

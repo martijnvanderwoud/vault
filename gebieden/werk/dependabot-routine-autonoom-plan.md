@@ -10,7 +10,7 @@ mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat 
 ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
 zijn afgelopen.
 
-Vastgelegd op 2026-11-10. Stap 1 tot en met 4 zijn klaar op 2026-11-11.
+Vastgelegd op 2026-11-10. Stap 1 tot en met 5 zijn klaar op 2026-11-11.
 
 ## Zo werken we dit af
 
@@ -27,7 +27,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 2. Pauzeren en hervatten in de skill
 - [x] 3. Handmatige headless-run zonder pauze
 - [x] 4. Handmatige headless-run met pauze en hervatting
-- [ ] 5. Runner: repo's selecteren (dry-run)
+- [x] 5. Runner: repo's selecteren (dry-run)
 - [ ] 6. Runner: eigen clones en omgeving
 - [ ] 7. Runner: run starten en status vastleggen
 - [ ] 8. Schedule met launchd op één repo
@@ -180,7 +180,7 @@ Doel: het hervatten werkt echt.
   hervatting, `iam` (#219) voor de terugval. De pauze valt in stap 2 van de skill, dus de
   PR's zijn dan al gemerged: elke pauzetest kost een repo. Te weinig PR's: start Dependabot
   handmatig in een ander project (Insights → Dependency graph → Dependabot → Check for
-  updates), of wacht op maandag, de standaarddag van het wekelijkse schema.
+  updates), of wacht op de vaste dag van een andere repo (zie `Bevindingen`, stap 5).
 - Controleer ook dat beide runs `permission_denials: []` geven, na de aanpassingen uit de
   bevindingen van stap 3. In stap 3 lukte dat nog niet.
 - Lok een pauze uit: zet een onschuldig ongecommit bestand in de clone, zodat stap 2 stopt.
@@ -239,13 +239,20 @@ Doel: de runner start één run en legt de uitkomst vast.
   `-n debbie-<repo>-w<week>`, de output bewaren in een logbestand buiten de vault.
 - Per run een notitie in `gebieden/werk/dependabot-runs/<jaar>-w<week>-<repo>.md`, met
   frontmatter `description`, `agent` (`debbie`), `status`, `repo`, `issue`, `step`, `session_id`, `started`,
-  `ended`, `resume`, `aandacht`. Status: `running`, `done`, `paused`, `failed`. `aandacht` is
+  `ended`, `resume`, `aandacht`, `prs`. `repo` is de naam van het projectbestand, `started` een
+  ISO-tijd met tijdzone. `prs` is de lijst uit `vingerafdruk()` van de runner (`#171@abc1234`),
+  vastgelegd bij de start: de overslaglogica van stap 5 vergelijkt daarmee. Status: `running`, `done`, `paused`, `failed`. `aandacht` is
   de lijst met `RUN_ATTENTION`-regels, leeg als er niets is.
 - `status` volgt uit de `RUN_STATUS`-regel. Geen regel of een fout in de exitcode: `failed`.
 - Daarna `build_index.py` draaien, want de hooks van de vault draaien niet mee.
 - Bij `paused` of `failed` een macOS-melding sturen. Een comment op mijn eigen issue levert
   waarschijnlijk geen notificatie op.
 - Per repo één run tegelijk, en een lock zodat twee runner-processen niet overlappen.
+- Een `running`-notitie van een runner die is gecrasht blijft anders altijd `running`: zet die
+  op `failed` als het proces niet meer bestaat (pid in de notitie of in de lock).
+- Een `paused`- of `failed`-run blokkeert de repo tot de status verandert (zie stap 5). Bepaal hoe
+  dat gebeurt na een hervatting: met de hand, of de runner kijkt in het issue of er na de pauze
+  een `Debbie (Dependabot routine) report` staat en zet de notitie dan op `done`.
 
 Klaar als: een echte run via de runner de juiste notitie oplevert, ook bij een afgebroken run.
 
@@ -401,3 +408,40 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   Java 25. Besloten: de skill negeert deze melding, net als deprecations in gegenereerde
   API-clients.
 - Logs van handmatige runs staan in `~/dependabot-runs/.logs/`.
+- 2026-11-11, stap 5: alle 21 projecten staan onder `Flow-Cloud-Systems/<bestandsnaam>`, ook de
+  twee met een afwijkende mapnaam (`pk-react-notifications`, `pk-react-profile-presentation-design`).
+  De skill zoekt het projectbestand op de repo-naam, dus bestandsnaam en repo-naam zijn gelijk.
+  `repo` staat in elk bestand, `authors` alleen in `notifications`.
+- De skill leest de auteurs nu ook uit `authors` (bij `Projectspecifieke aanvullingen`), en `notifications.md`
+  verwijst daarnaar in plaats van de twee `--author`-varianten zelf te noemen.
+- `scripts/dependabot_runner.py --dry-run [--repo <naam>]` geeft per project `run`, `wacht`
+  (checks lopen nog), `overslaan` (met reden) of `niets`. Zonder `--dry-run` stopt hij nog met
+  een melding. 21 repo's kosten ongeveer 2 seconden (`gh pr list` parallel).
+- Keuzes in de selectie:
+  - Een PR zonder checks telt pas na 30 minuten als klaar. Daarvoor zijn de checks waarschijnlijk
+    nog niet aangemaakt. Blijft hij zonder checks, dan meldt de skill dat (run met 0 jobs).
+  - "Dezelfde PR's" is nummer plus commit (`#171@abc1234`). Een rebase door Dependabot, of een
+    nieuwe PR, geeft dus een nieuwe run in dezelfde week. Een PR die rood blijft niet.
+  - Ook een `failed`-run slaat de repo over, net als `paused`. Anders start een run die steeds
+    crasht elk half uur opnieuw.
+  - De laatste run per repo is de notitie met de laatste `started`, dus de bestandsnaam doet er
+    niet toe. Twee runs in één week (zie de rebase hierboven) moeten in stap 7 wel een eigen
+    bestandsnaam krijgen.
+- Op het moment van testen stond er in de hele organisatie geen enkele open PR, dus de dry-run gaf
+  overal `niets`, wat klopt. De regels zelf zijn getest met nep-PR's en nep-run-notities.
+- Daarna Dependabot handmatig gestart in `iam-login-ui`. De dry-run, elke 30 seconden, gaf
+  `niets`, toen `wacht` zodra #31 open stond met `build / build` nog bezig (de validator was al
+  klaar), en twee minuten later `run`. De andere 20 repo's bleven `niets`. #31 staat nog open
+  voor de eerste echte run in stap 7, dus niet met de hand mergen.
+- Dependabot draait niet overal op maandag. Geen `dependabot.yml` noemt een `day:`, maar per repo
+  is de dag wel vast (laatste 15 PR's, UTC):
+  - ma: cata, iam, react-notifications, roep, rostering-api, rostering-application, rostering-ui
+  - di: insights, profile-presentation-design
+  - wo: axon-stomp-event-publishing, more, portal, rostering-engine
+  - do: ats, iam-login-ui (ook vr), notifications, portal-employee-ui, portal-enrollment-ui,
+    portal-ui-common, portal-worker-ui, profile-presentation-ui
+
+  Voor stap 7 en 8 is er dus bijna elke werkdag werk, en donderdag komen er veel repo's tegelijk:
+  een goede test voor meerdere runs achter elkaar en de lock. Extra PR's uitlokken is niet nodig.
+  Twee auteurs in `notifications` hangt af van Scala Steward, want Dependabot doet daar alleen
+  `github-actions`.

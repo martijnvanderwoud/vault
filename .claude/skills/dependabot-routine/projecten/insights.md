@@ -1,5 +1,6 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor insights (YouTrack-gegevens)
+repo: Flow-Cloud-Systems/insights
 ---
 
 # Dependabot-routine: insights

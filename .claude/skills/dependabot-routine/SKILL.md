@@ -128,6 +128,11 @@ Daarin staan extra stappen en afwijkende beslissingen voor dit project, per stap
 naam genoemd. Bij tegenspraak wint het projectbestand. Is er geen bestand, volg dan
 alleen de stappen hieronder.
 
+De auteurs van de PR's staan in de frontmatter `authors` van het projectbestand. Ontbreekt
+die, of is er geen bestand, dan is het alleen `app/dependabot`. Draai elke `gh pr list` met
+`--author` hieronder voor elke auteur apart. Bij stap 0 stop je alleen als het voor alle
+auteurs 0 is.
+
 ## 0. YouTrack-issue
 
 Kijk eerst of er open Dependabot-PR's zijn:

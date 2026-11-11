@@ -1,13 +1,14 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor notifications (Scala Steward in plaats van Dependabot)
+repo: Flow-Cloud-Systems/notifications
+authors: [app/dependabot, app/flow-cloud-scala-steward]
 ---
 
 # Dependabot-routine: notifications
 
 Scala-project. Dependabot ondersteunt Scala niet, de dependency-updates komen van Scala
 Steward. Dependabot doet hier alleen `github-actions`. Handel in de routine de PR's van beide
-auteurs af: draai de `gh pr list` uit stap 0 en stap 1 met `--author "app/dependabot"` en met
-`--author "app/flow-cloud-scala-steward"`. Bij stap 0 stop je alleen als beide 0 zijn.
+auteurs uit de frontmatter `authors` af.
 
 ## Stap 0. YouTrack-issue
 

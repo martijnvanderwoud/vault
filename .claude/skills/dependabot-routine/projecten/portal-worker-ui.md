@@ -1,5 +1,6 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor portal-worker-ui (YouTrack-gegevens)
+repo: Flow-Cloud-Systems/portal-worker-ui
 ---
 
 # Dependabot-routine: portal-worker-ui

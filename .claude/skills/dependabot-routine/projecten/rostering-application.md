@@ -1,5 +1,6 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor rostering-application (YouTrack-gegevens)
+repo: Flow-Cloud-Systems/rostering-application
 ---
 
 # Dependabot-routine: rostering-application
