@@ -586,6 +586,8 @@ def main():
         for project, prs, besluit, reden in selecteer(args.repo):
             print(regel_tonen(project, prs, besluit, reden))
         return
+    # Zo is in runner.log te zien of launchd elk half uur start.
+    print('-- %s' % nu_lokaal().isoformat())
     lock = lock_nemen()
     if not lock:
         print('er draait al een runner (%s)' % LOCK)

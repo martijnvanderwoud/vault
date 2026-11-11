@@ -9,7 +9,7 @@
         <!-- launchd breidt ~ en $HOME niet uit, de shell wel: zo staan er geen absolute paden in -->
         <string>/bin/sh</string>
         <string>-c</string>
-        <string>exec /usr/bin/python3 -I "$HOME/vault/scripts/dependabot_runner.py" --repo ats &gt;&gt; "$HOME/dependabot-runs/.logs/runner.log" 2&gt;&amp;1</string>
+        <string>exec /usr/bin/python3 -I "$HOME/vault/scripts/dependabot_runner.py" --repo ats --repo portal-employee-ui &gt;&gt; "$HOME/dependabot-runs/.logs/runner.log" 2&gt;&amp;1</string>
     </array>
     <key>StartInterval</key>
     <integer>1800</integer>

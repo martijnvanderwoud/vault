@@ -10,7 +10,7 @@ mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat 
 ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
 zijn afgelopen.
 
-Vastgelegd op 2026-11-10. Stap 1 tot en met 7 zijn klaar op 2026-11-11.
+Vastgelegd op 2026-11-10. Stap 1 tot en met 8 zijn klaar op 2026-11-11.
 
 ## Zo werken we dit af
 
@@ -30,7 +30,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 5. Runner: repo's selecteren (dry-run)
 - [x] 6. Runner: eigen clones en omgeving
 - [x] 7. Runner: run starten en status vastleggen
-- [ ] 8. Schedule met launchd op één repo
+- [x] 8. Schedule met launchd op één repo
 - [ ] 9. Dashboard in Obsidian
 - [ ] 10. Uitrollen naar alle repo's
 
@@ -575,5 +575,26 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   uitslagen blijven stil, want die komen elke week terug. De skill controleert na het weghalen ook
   dat de opgeloste versie niet lager is dan de override.
 - Nog open voor stap 8: een run die echt door de schedule start, niet door `kickstart`, en
-  zonder pauze afloopt. De gewone Dependabot-ronde van maandag 16 november op `ats` is daarvoor
-  de kans. De allowlist blijft tot dan `ats`.
+  zonder pauze afloopt. De allowlist blijft tot dan `ats`.
+- 2026-11-11, stap 8 (vervolg): `ats` krijgt zijn Dependabot-PR's op donderdag rond 12:35 CET
+  (29 oktober, 5 november), niet op maandag. De eerste kans is dus donderdag 12 november. Omdat
+  Dependabot vandaag met de hand al is gestart, kan die ronde leeg blijven. Dan wordt het
+  donderdag 19 november, of zet ik er een tweede donderdag-repo bij (de plist met de hand
+  aanpassen en herladen).
+- `runner.log` had geen tijden, dus niet te zien of launchd elk half uur start. De runner zet nu
+  bij elke start (niet bij `--dry-run` of `--prepare`) een regel `-- <ISO-tijd>` in de log.
+  Controleren met `grep -- '^-- ' ~/dependabot-runs/.logs/runner.log | tail`: ongeveer elke 30
+  minuten een regel, met gaten als de Mac sliep.
+- Allowlist uitgebreid met `portal-employee-ui` (donderdag-repo, Dependabot met de hand te
+  starten). Herladen met `bootout` en direct daarna `bootstrap` gaf toch `5: Input/output error`,
+  maar daarna stond wel de nieuwe plist geladen en had `RunAtLoad` gedraaid. Vertrouw dus niet op
+  die melding. Controleer met
+  `launchctl print gui/$(id -u)/nl.crimsoncricket.dependabot-runner | grep exec` en kijk of er een
+  nieuwe `-- `-regel in `runner.log` staat.
+- Klaar-criterium gehaald op `portal-employee-ui`: Dependabot met de hand gestart om ±13:40, #251
+  (minor-and-patch, 7 updates) en #252 (jsdom 30 → 31, een major) geopend. De timer tikte om 14:05,
+  precies 30 minuten na het laden, en de runner startte zelf de run. `done` (PKP-909) om 14:12,
+  53 beurten, $0,98, `geweigerd: 0`, `aandacht: []`. Beide PR's gemerged, een eigen PR #253 met
+  `npm audit fix` gemerged, de clone stond daarna schoon op `develop`. Daarmee werken `NPM_TOKEN`
+  uit `.env` en een nieuwe clone ook onder launchd.
+- De allowlist in de plist is nu `ats` en `portal-employee-ui`. Stap 10 breidt hem per groepje uit.
