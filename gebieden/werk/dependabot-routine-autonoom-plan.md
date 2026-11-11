@@ -398,5 +398,6 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   (buildtool niet te bepalen). `settings.gradle(.kts)` staat nu in de tabel van stap 4.
 - De JVM-melding `Sharing is only supported for boot loader classes ...` tijdens de tests kwam
   in het verslag als warning. Autonoom wordt dat een `RUN_ATTENTION` bij elke Gradle-run met
-  Java 25. Te beslissen: deze melding in de skill laten negeren.
+  Java 25. Besloten: de skill negeert deze melding, net als deprecations in gegenereerde
+  API-clients.
 - Logs van handmatige runs staan in `~/dependabot-runs/.logs/`.

@@ -347,6 +347,8 @@ Kijk of er errors of warnings zijn. Leg die aan mij voor voordat je verder gaat.
 errors zijn een stop, warnings zijn verslag. Een
 melding over vulnerabilities is geen reden om te stoppen: die is voor stap 5.
 Deprecation-warnings in gegenereerde API-clients negeer je, die hoef je niet te melden.
+Dat geldt ook voor de JVM-melding `Sharing is only supported for boot loader classes because
+bootstrap classpath has been appended` tijdens de tests.
 
 Alleen bij npm-projecten: voor `npm warn deprecated` volg je `Deprecation-warnings van npm`.
 
