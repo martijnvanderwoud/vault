@@ -3,7 +3,7 @@ filters:
     - file.inFolder("gebieden/werk/dependabot-runs")
     - agent == "debbie"
 formulas:
-  run: 'link(file, file.name.slice(0, 8))'
+  run: link(file, file.name.slice(0, 8))
   project: link(file, repo)
   toestand: if(status == "running", "🔄 Bezig", if(status == "paused", "⏸️ Wacht op mij", if(status == "failed", "❌ Mislukt", if(status == "resolved", "↩️ Vrijgegeven", if(aandacht.isEmpty() || issue_state == "Done", "✅ Klaar", "⚠️ Klaar, met aandachtspunten")))))
   issue_link: if(issue, link("https://crimsoncricket.myjetbrains.com/youtrack/issue/" + issue, issue), "")

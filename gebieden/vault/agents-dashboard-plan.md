@@ -172,6 +172,13 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
   watcher of dashboard, is de echte toets van de statusvorm.
 - Een rijkere weergave (eigen plugin, Datacore) kan later op dezelfde run-notities, mocht de
   gegenereerde notitie te sober blijken.
+- Een HTML-interface naast Obsidian, in deze repo (bijvoorbeeld `scripts/agents-ui/`). Obsidian
+  toont en indexeert `.html` standaard niet, en Sync neemt het niet mee. Twee punten:
+  - Een pagina die je als `file://` opent, mag geen andere lokale bestanden lezen. Dus: de watcher
+    genereert de pagina met de gegevens erin, of de watcher draait een kleine lokale webserver.
+  - Knoppen die iets doen, zoals Hervatten, vragen die server, en die moet afgeschermd zijn
+    (alleen `localhost`, een geheim token), anders kan een willekeurige website in mijn browser
+    er commando's mee starten. Dat wordt een eigen stap.
 
 ## Bevindingen
 

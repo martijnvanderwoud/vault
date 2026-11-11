@@ -1,0 +1,10 @@
+/* Notities met `cssclasses: [wide-page]` gebruiken de volle breedte van het venster,
+   ook als "Readable line length" aan staat. Voor dashboards met brede tabellen. */
+.wide-page {
+  --file-line-width: 100%;
+}
+
+.wide-page .cm-sizer,
+.wide-page .markdown-preview-sizer {
+  max-width: 100% !important;
+}
