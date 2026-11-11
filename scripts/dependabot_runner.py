@@ -564,6 +564,8 @@ def main():
     parser.add_argument('--model', default=DEFAULT_MODEL, help='model voor claude --model (standaard %(default)s)')
     parser.add_argument('--timeout', type=int, default=DEFAULT_TIMEOUT, help='minuten per run (standaard %(default)s)')
     args = parser.parse_args()
+    # Onder launchd gaat stdout naar runner.log, en zonder dit staat een regel er pas na de run.
+    sys.stdout.reconfigure(line_buffering=True)
     if args.prepare:
         if not args.repo:
             raise SystemExit('--prepare vraagt om --repo')

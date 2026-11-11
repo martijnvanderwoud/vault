@@ -537,3 +537,43 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   Voor stap 8: zet in de skill een uitleg bij `Resume` in het pauze-comment, of laat de regel
   een prompt meegeven (`claude --resume <uuid> "<beslissing>, ga verder"`). Kijk ook of trust
   op `~/dependabot-runs` zelf de vraag voor de clones eronder voorkomt.
+- 2026-11-11, stap 8 (deels): de `Resume`-regel geeft nu een prompt mee,
+  `claude --resume <uuid> "<your decision>, continue from step <n>"`, met eronder een regel uitleg
+  over Resume, Fallback en de trust-vraag. Trust op `~/dependabot-runs` werkt niet door naar de
+  clones eronder (getest met `expect` op `ats`), dus de vraag komt één keer per clone. Een script
+  dat `~/.claude.json` per clone aanpast, vond ik te riskant: lopende `claude`-processen schrijven
+  daar zelf in.
+- De plist staat in `scripts/dependabot-runner/nl.crimsoncricket.dependabot-runner.plist` en is
+  met de hand gekopieerd naar `~/Library/LaunchAgents` en geladen met `launchctl bootstrap`.
+  Claude mag dat niet zelf (auto mode weigert een LaunchAgent). `RunAtLoad` staat aan. Een tweede
+  `bootstrap` geeft `5: Input/output error` als de job al geladen is. Controleren met
+  `launchctl list | grep crimson`. De plist bevat geen absolute paden: launchd breidt `~` en
+  `$HOME` niet uit, dus de job draait via `/bin/sh -c` met `$HOME`, en de log gaat met een
+  redirect naar `runner.log` in plaats van via `StandardOutPath`. Na het laden vroeg macOS één keer om wachtwoord of Touch ID,
+  zonder knop "Altijd toestaan", dus waarschijnlijk het goedkeuren van het achtergrond-item
+  (`sfltool dumpbtm`: `enabled, allowed`). Na het herladen met `/bin/sh` als programma kwam alleen een melding over app-activiteit op de
+  achtergrond, zonder iets goed te keuren. Kijk bij de volgende runs of de vraag terugkomt.
+- `launchctl kickstart gui/$(id -u)/nl.crimsoncricket.dependabot-runner` start de job meteen, in
+  dezelfde omgeving. Zo hoeft een test niet op het half uur te wachten.
+- `runner.log` kreeg de regels pas na de run, omdat stdout naar een bestand gaat. De runner zet
+  nu `line_buffering` aan.
+- De run op `ats` (Dependabot met de hand gestart, #316 en #317) startte via `kickstart`: beide
+  gemerged, build groen, OSV 0 bevindingen, daarna `paused` in stap 5 (PA-1105), 44 beurten,
+  $0,75, `geweigerd: 3`. Notitie, pauze-comment en melding klopten. Na hervatten met de nieuwe
+  `Resume`-regel zette de runner de notitie op `done`.
+- De pauze kwam door `-DoutputFile=~/...` in stap 5: na `=` breidt de shell `~` niet uit, dus
+  Maven schreef naar `./~/` in de clone. Het opruimen (`rm -rf ./~`) werd terecht geweigerd. De
+  skill geeft daar nu het absolute pad (`<pwd>/../.scratch/<repo>`). De andere weigering was
+  `mvn clean package > ... ; echo exit=$?`: de skill verbiedt nu `; echo $?`.
+- `check_overrides.py` gaf `OVERBODIG` voor `bcpkix` en `bcutil` in `ats`, maar zonder die
+  overrides werden ze 1.85, onder de fix 1.86. Debbie zette ze zelf terug. In de boom hangen ze
+  alleen onder `bcjmail`, dat zelf een override is, en die boom voorspelt dan niet wat er zonder
+  overrides gebeurt. Waar 1.85 precies vandaan kwam, is niet uitgezocht. Het script geeft nu
+  `twijfel: pad via de override van ..., blijft staan` als een pad onder een andere eigen
+  override loopt en de uitslag anders "kan weg" was. Besloten: bij twijfel blijft de override
+  staan en komt hij in het verslag (zonder `RUN_ATTENTION`). De andere `handmatig controleren`-
+  uitslagen blijven stil, want die komen elke week terug. De skill controleert na het weghalen ook
+  dat de opgeloste versie niet lager is dan de override.
+- Nog open voor stap 8: een run die echt door de schedule start, niet door `kickstart`, en
+  zonder pauze afloopt. De gewone Dependabot-ronde van maandag 16 november op `ats` is daarvoor
+  de kans. De allowlist blijft tot dan `ats`.

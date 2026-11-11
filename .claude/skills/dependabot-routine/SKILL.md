@@ -42,7 +42,8 @@ De autonome run mag alleen commando's uit een vaste lijst, en heeft geen eigen s
 - Schrijf paden zoals in deze skill, met `~/` en niet uitgeschreven, en `gh api` met
   `{owner}/{repo}` en niet met de naam van de repo. De lijst kent alleen die vorm.
 - Draai de commando's uit deze skill zoals ze er staan. Geen lussen, subshells of
-  command substitution (`$(...)`): die worden geweigerd. Splits zo'n commando op en neem
+  command substitution (`$(...)`): die worden geweigerd. Plak er ook geen `; echo $?` achter,
+  want de exitcode zie je al. Splits zo'n commando op en neem
   de uitkomst over in het volgende.
 - Wordt een commando toch geweigerd, zoek dan een weg met de commando's uit de skill.
   Lukt dat niet, dan is het een stop.
@@ -58,12 +59,14 @@ Seen: <wat je zag, met links naar PR's en runs>
 Decision needed: <welke beslissing>  Proposal: <je voorstel>
 State: merged #<n> #<n>, not merged #<n> (<reden>), branch <branch of none>, base <korte commit van de base branch>, uncommitted <bestanden of none>
 Report so far: <de verslagpunten tot nu toe, of none>
-Resume: cd <pwd> && claude --resume <uuid>
+Resume: cd <pwd> && claude --resume <uuid> "<your decision>, continue from step <n>"
 Fallback: cd <pwd> && claude "/dependabot-routine <subtask-id>" --add-dir ~/vault
+Resume opens this session interactively and continues once you have answered the decision in the prompt; Fallback starts a new session that rebuilds the state from this comment. The first interactive session in a clone asks whether you trust the folder: answer yes.
 ```
 
 - `<pwd>` is de map waarin je draait, `<uuid>` het `session=` uit het argument. Ontbreekt
-  dat, laat de regel `Resume` dan weg.
+  dat, laat de regel `Resume` dan weg, en in de laatste regel het deel over `Resume`.
+- Laat `<your decision>` letterlijk staan: dat vul ik in. `<n>` is de stap van de pauze.
 - Neem links naar PR's over uit `gh pr view <n> --json url --jq .url` en stel ze niet zelf
   samen. De naam van de organisatie wijkt soms af van wat je verwacht.
 - `base` is de lokale base branch: `git rev-parse --short <base-branch>`. Die vergelijkt
@@ -415,6 +418,11 @@ buildtool hieronder niet, volg dan `Stap 5` van het projectbestand.
 
 Maven:
 
+In `-DoutputFile=` breidt de shell `~` niet uit, want de tilde staat na `=`. Maven schrijft dan
+naar een map `~` in de working copy. Geef daar het absolute pad van de scratchpad. Autonoom:
+`<pwd>/../.scratch/<repo>`, met `<pwd>` de map waarin je draait, zoals `Resume` die noemt. Elders
+in een commando houd je `~/`.
+
 ```bash
 rm -f <scratchpad>/deps.txt
 mvn -q -o dependency:list -DoutputFile=<scratchpad>/deps.txt -DappendOutput=true -DoutputAbsoluteArtifactFilename=false
@@ -473,12 +481,20 @@ Verwijder zonder te vragen elke override met `VEROUDERD` of `OVERBODIG`, samen m
 comment erboven. Blijft er onder die comment nog een andere override staan, laat de comment
 dan staan. Bij Gradle staat een override op meerdere plekken: haal de versie uit
 `libs.versions.toml` weg, en ook de library-entry, de `extra`-regel en de constraint, voor
-zover niets anders ze gebruikt. Controleer daarna opnieuw: de build uit stap 4 is groen en
-een nieuwe scan vindt geen nieuwe bevindingen. Faalt een van beide, zet die override dan
-terug en noem hem in het verslag. De verwijderingen gaan mee in de PR van stap 6.
+zover niets anders ze gebruikt. Controleer daarna opnieuw: de build uit stap 4 is groen,
+een nieuwe scan vindt geen nieuwe bevindingen, en de opgeloste versie van elke weggehaalde
+dependency is niet lager dan de override was. Die versie staat in de lijst van de nieuwe scan
+(`deps.txt` of `tree.txt`). De boom met overrides voorspelt niet altijd wat er zonder overrides
+gebeurt. Faalt een van de drie, zet die override dan terug en noem hem in het verslag. De
+verwijderingen gaan mee in de PR van stap 6.
 
 Laat overrides met `nog nodig`, `blijft staan` of `handmatig controleren` staan en noem
-ze niet. Overrides op dependencies van Maven- of Gradle-plugins vallen buiten deze controle.
+ze niet.
+
+Laat ook overrides met `twijfel` staan, maar noem ze in het verslag, met de override waar het pad
+onder hangt. Die dependency vraagt zonder die andere override misschien een lagere versie, en
+dat is niet te zien in de boom. Bij twijfel laat je een override dus staan. Ook autonoom is dit
+alleen verslag, zonder `RUN_ATTENTION`. Overrides op dependencies van Maven- of Gradle-plugins vallen buiten deze controle.
 
 ### npm-projecten
 

@@ -9,7 +9,8 @@ sbt: `dependencyOverrides` in build.sbt, met de versies uit project/Versions.sca
 --tree de uitvoer van `dependencyTree list` zonder overrides.
 
 BOM-overrides worden vergeleken met de property in de BOM, transitieve overrides met
-de versies die de paden in de dependency-boom vragen (--tree, herhaalbaar). Een override
+de versies die de paden in de dependency-boom vragen (--tree, herhaalbaar). Een pad onder een
+andere eigen override telt bij Maven niet als bewijs dat hij weg kan. Een override
 is alleen weg te halen als alle paden minstens even hoog zijn. Wordt de versie zonder
 override hoger, dan mag hij alleen weg als de comment een security-patch noemt. Poms komen
 uit ~/.m2 of de Gradle-cache, dus draai dit na een build.
@@ -76,7 +77,7 @@ class Paths:
     """Per groupId:artifactId welke versies de paden in de boom vragen."""
 
     def __init__(self):
-        self.requested, self.direct, self.unknown, self.pins = {}, set(), set(), {}
+        self.requested, self.direct, self.unknown, self.pins, self.via = {}, set(), set(), {}, {}
 
     def pin(self, key, version):
         self.pins.setdefault(key, set()).add(version)
@@ -102,17 +103,33 @@ class Paths:
         for v in self.requested[key] | pins:
             if low is None or cmp(v, low) < 0:
                 low = v
-        return '%s (laagste pad %s)' % (verdict(value, low), low)
+        result = verdict(value, low)
+        if key in self.via and result != 'nog nodig':
+            # De ouder staat door die override op een andere versie, en vraagt zonder override misschien minder.
+            return 'twijfel: pad via de override van %s, blijft staan (laagste pad %s)' % (
+                ', '.join(sorted(self.via[key])), low)
+        return '%s (laagste pad %s)' % (result, low)
 
 
-def maven_paths(files):
+def maven_paths(files, overridden=()):
+    """`overridden`: de eigen overrides. Wat daaronder hangt, vraagt de versie van de override-ouder."""
     paths = Paths()
     for path in files:
+        stack = []
         for line in open(path):
             m = MAVEN_LINE.search(line)
-            if m:
-                managed = re.search(r'version managed from ([^;)\s]+)', line)
-                paths.add(m[1] + ':' + m[2], managed[1] if managed else m[3], re.match(r'[+\\]- ', line) is not None)
+            if not m:
+                continue
+            key = m[1] + ':' + m[2]
+            indent = re.match(r'([| ]*)[+\\]- ', line)
+            depth = len(indent[1]) // 3 + 1 if indent else 0
+            del stack[depth:]
+            via = {k for k in stack if k in overridden}
+            if via:
+                paths.via.setdefault(key, set()).update(via)
+            stack.append(key)
+            managed = re.search(r'version managed from ([^;)\s]+)', line)
+            paths.add(key, managed[1] if managed else m[3], depth == 1)
     return paths
 
 
@@ -206,7 +223,10 @@ def collect(pom, props, managed, seen):
 def check_maven(pom, trees):
     root = load(pom)
     props, managed = chain(root)
-    paths = maven_paths(trees)
+    block = root.find(NS + 'dependencyManagement/' + NS + 'dependencies')
+    overridden = {text(dep, 'groupId') + ':' + text(dep, 'artifactId') for dep in ([] if block is None else block)
+                  if not is_comment(dep) and text(dep, 'version') and text(dep, 'scope') != 'import'}
+    paths = maven_paths(trees, overridden)
 
     count, comment = 0, None
     block = root.find(NS + 'properties')
