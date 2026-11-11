@@ -5,6 +5,10 @@ description: Gegenereerde index van werk
 
 _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
+## Submappen
+
+- [[gebieden/werk/dependabot-runs/index|dependabot-runs]]
+
 ## Notities
 
 - [[dependabot-routine-autonoom-plan]] — Plan om de Dependabot-routine autonoom te laten draaien, opgedeeld in stappen van één sessie per stap

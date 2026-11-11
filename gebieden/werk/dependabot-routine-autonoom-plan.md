@@ -10,7 +10,7 @@ mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat 
 ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
 zijn afgelopen.
 
-Vastgelegd op 2026-11-10. Stap 1 tot en met 6 zijn klaar op 2026-11-11.
+Vastgelegd op 2026-11-10. Stap 1 tot en met 7 zijn klaar op 2026-11-11.
 
 ## Zo werken we dit af
 
@@ -29,7 +29,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 4. Handmatige headless-run met pauze en hervatting
 - [x] 5. Runner: repo's selecteren (dry-run)
 - [x] 6. Runner: eigen clones en omgeving
-- [ ] 7. Runner: run starten en status vastleggen
+- [x] 7. Runner: run starten en status vastleggen
 - [ ] 8. Schedule met launchd op één repo
 - [ ] 9. Dashboard in Obsidian
 - [ ] 10. Uitrollen naar alle repo's
@@ -264,8 +264,15 @@ Klaar als: een echte run via de runner de juiste notitie oplevert, ook bij een a
 
 Doel: de runner draait vanzelf, voorlopig voor één repo.
 
-- `~/Library/LaunchAgents/nl.crimsoncricket.dependabot-runner.plist`, elk half uur,
-  met een allowlist van één repo.
+- Maak het pauze-comment duidelijker (zie de bevindingen van stap 7): de `Resume`-regel opent
+  alleen de sessie, en bij een nieuwe clone komt eerst de trust-vraag.
+- `~/Library/LaunchAgents/nl.crimsoncricket.dependabot-runner.plist`, elk half uur
+  (`StartInterval` 1800), met een allowlist van één repo:
+  `/usr/bin/python3 -I ~/vault/scripts/dependabot_runner.py --repo <naam>`. De runner heeft geen
+  shellprofiel nodig (getest met `env -i HOME=$HOME`). Zet `StandardOutPath` en
+  `StandardErrorPath` in `~/dependabot-runs/.logs/runner.log`.
+- launchd stopt een job met SIGTERM. De runner zet de lopende run dan op `failed` en stopt
+  `claude`. Een tweede start terwijl er een runner loopt, stopt meteen (lock).
 - De Mac moet aan staan: een gemist interval tijdens slaap wordt bij het wakker worden
   ingehaald, staat de Mac uit dan niet. Omdat de runner pollt, is dat geen probleem.
 - Eén Dependabot-ronde meekijken.
@@ -281,6 +288,9 @@ Doel: één overzicht van alle runs.
   De kernplugin Bases staat al aan, dus geen community-plugin nodig. Controleer of
   mijn Obsidian-versie het aankan (vanaf 1.9).
 - Bepaal of de run-notities in git moeten. Bij elke run komen er commits bij.
+- Statussen: `running`, `done`, `paused`, `failed` en `resolved` (door mij vrijgegeven). Extra
+  velden naast die uit stap 7: `reason`, `kosten`, `beurten`, `geweigerd`, `log`, `pid` (alleen
+  bij `running`).
 
 Klaar als: lopende, gepauzeerde en afgeronde runs goed zichtbaar zijn.
 
@@ -479,3 +489,51 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   `--safe-mode` en `--bare` vallen af: die zetten skills uit of lezen de keychain niet.
 - `--setting-sources project,local` houdt ook mijn gebruikersinstellingen buiten de run
   (`defaultMode: auto`, plugins, taal). `--permission-mode dontAsk` blijft voor de zekerheid.
+- 2026-11-11, stap 7: `dependabot_runner.py [--repo <naam>] [--model <model>] [--timeout <min>]`
+  start de runs. Eerst `opruimen()`, dan per repo met `run` één run, achter elkaar. De notitie
+  heet `<jaar>-w<week>-<repo>.md`, een tweede in dezelfde week krijgt `-2` (log en sessienaam ook).
+  Strings in de frontmatter zijn JSON (geldige YAML), zodat een reden met quotes of een dubbele
+  punt niets breekt.
+- Getest met `env -i HOME=$HOME`, op `iam-login-ui` #31:
+  - Vuile clone: `paused` met de reden, geen run. De macOS-melding komt aan.
+  - Een tweede runner tijdens een run: `er draait al een runner` (`flock` op
+    `~/dependabot-runs/.runner.lock`).
+  - SIGTERM aan de runner, zoals launchd stopt: `failed`, en `claude` stopt mee. `claude` draait
+    in een eigen procesgroep, zodat ook zijn kinderen stoppen.
+  - `kill -9` op de runner: `claude` loopt door en de notitie blijft `running`. Pas als `claude`
+    weg is, zet de volgende runner hem op `failed`. Het `pid` in de notitie is dat van `claude`,
+    en telt alleen als het proces echt `claude` heet.
+  - Bij de tests met afbreken had Debbie nog niets gedaan, behalve het projectbestand lezen.
+  - De echte run: #31 gemerged, daarna `paused` in stap 4 (PKIAM-841), 24 beurten, $0,40, anderhalve
+    minuut, `geweigerd: 0`. Notitie, `resume`-regel en melding klopten.
+- De oorzaak van die pauze: `npm ci` gaf E401 op Nexus. Tien npm-repo's hebben `${NPM_TOKEN}` in
+  `.npmrc`, en dat zet alleen mijn `.zshrc`. De test van stap 6 draaide geen `npm ci`. De runner
+  geeft het nu mee uit `.env` (naam in `.env.example`). Ontbreekt het terwijl `.npmrc` erom vraagt,
+  dan is dat een `Stop` vóór de run. Maven en Gradle gebruiken geen omgevingsvariabelen voor hun
+  credentials.
+- Ook in een lege omgeving gevonden: `gh pr list` in de selectie had nog geen `PATH`.
+- Na een hervatting: de runner zet een `paused`- of `failed`-run met issue op `done` als er na
+  `ended` een comment `Debbie (Dependabot routine) report` in het issue staat (REST-API, token uit
+  `.env`). Getest na een echte hervatting: `NPM_TOKEN` in `.env`, PKIAM-841 hervat met
+  `claude --resume`, Debbie zette haar verslag in het issue, en de runner zette
+  `2026-w46-iam-login-ui-4` op `done`. `step`, `reason` en `resume` gaan dan naar de tekst. De
+  clone stond daarna schoon op `develop`.
+  Zonder issue, zoals bij een vuile clone, geef ik de repo zelf vrij met `status: "resolved"`.
+  `done` zou dat niet doen: de overslaglogica zou dan dezelfde PR's deze week overslaan.
+- Extra velden in de notitie: `reason`, `kosten`, `beurten`, `geweigerd` (aantal, de details in de
+  tekst), `log` en `pid` (alleen bij `running`). `step` alleen bij `paused`.
+- Een run duurt hooguit `--timeout` minuten (standaard 120), daarna `failed`. De runner blijft zo
+  lang op één run wachten, want hij werkt de repo's achter elkaar af.
+- De drie testnotities (`2026-w46-iam-login-ui`, `-2`, `-3`) staan op `resolved`. Ze kunnen weg
+  zodra het dashboard er is, of als voorbeelden blijven staan.
+- Hervatten met de `Resume`-regel uit het pauze-comment werkte niet meteen, om twee redenen:
+  - Een clone die de runner zelf heeft aangemaakt (zoals `iam-login-ui`), kent nog geen
+    interactieve sessie. `claude --resume` vraagt dan eerst "Do you trust this folder?". Een
+    headless run slaat die vraag over.
+  - `claude --resume` opent de sessie en wacht dan op mij. Debbie gaat pas verder als ik dat
+    zeg, meestal met mijn beslissing erbij ("NPM_TOKEN staat goed, ga verder vanaf stap 4").
+    Bij een pauze is dat zo bedoeld, maar uit het comment blijkt het niet.
+
+  Voor stap 8: zet in de skill een uitleg bij `Resume` in het pauze-comment, of laat de regel
+  een prompt meegeven (`claude --resume <uuid> "<beslissing>, ga verder"`). Kijk ook of trust
+  op `~/dependabot-runs` zelf de vraag voor de clones eronder voorkomt.
