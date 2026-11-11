@@ -684,3 +684,7 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   Onder `/bin/bash` (3.2) faalt `sdk env` met `${candidate_name^^}: bad substitution`, onder zsh
   niet. De runs gebruiken zsh, zie de echte Maven- en Gradle-runs onder launchd.
 
+- `laatste_markeren()` herschreef ook `debbie-dashboard.md`: `notities()` nam elk `.md`-bestand in
+  `dependabot-runs/`. Daarbij vielen `tags` en `cssclasses: [wide-page]` weg en kwam er
+  `laatste: true` bij. Leek op Obsidian, maar was de runner. `notities()` neemt nu alleen notities
+  met `agent: debbie`, net als het filter van `dashboard.base`. Andere notities mogen dus in die map.

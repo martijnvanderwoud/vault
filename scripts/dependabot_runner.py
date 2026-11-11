@@ -323,9 +323,11 @@ def notitie_lezen(path):
 
 
 def notities():
+    """De run-notities: alleen die met `agent: debbie`, zoals in dashboard.base. Andere notities in
+    de map, zoals debbie-dashboard.md, schrijft de runner zo nooit opnieuw."""
     if not RUNS.is_dir():
         return []
-    return [p for p in sorted(RUNS.glob('*.md')) if p.name != 'index.md']
+    return [p for p in sorted(RUNS.glob('*.md')) if frontmatter(p).get('agent') == 'debbie']
 
 
 def nieuwe_notitie(name, moment):
