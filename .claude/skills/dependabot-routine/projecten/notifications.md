@@ -29,7 +29,8 @@ sbt "clean; scalafmtCheckAll; compile; test"
   incrementele `test` van sbt 2 draait bij een dependency-update vaak geen enkele test. De
   integratietests draaien in de `Develop build` van stap 8.
 - Controleer dat de log `N tests passed` toont met N boven 0. `Passed: Total` zegt niets, want
-  ZIO meldt zijn tests alleen als `N tests passed`.
+  ZIO meldt zijn tests alleen als `N tests passed`. Is N 0, dan geldt de regel over 0 tests
+  uit stap 4 van de skill.
 - sbt 2 vereist `;` tussen taken.
 
 ## Stap 5. Kwetsbaarheden patchen zonder breaking changes
@@ -59,7 +60,8 @@ sbt shutdown
 
 - De projecten komen uit `sbt projects`, zodat een nieuwe module vanzelf meegaat. Controleer dat
   `echo $projects` alle modules toont (nu 10, zonder `root`): een lege lijst betekent dat sbt
-  de uitvoer anders opmaakt en het filter niet meer klopt.
+  de uitvoer anders opmaakt en het filter niet meer klopt. Leg dat aan mij voor. Autonoom:
+  stop.
 - Overrides staan in `ThisBuild / dependencyOverrides` in `build.sbt`, de versies in
   `project/Versions.scala`.
 - Patchen: een directe dependency pas je aan in `project/Versions.scala`. Een transitieve krijgt

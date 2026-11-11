@@ -14,6 +14,23 @@ geen regel is, leg je aan mij voor met wat je ziet, want dat zijn beoordelingen 
 ik zelf maak. Commit en push niets zonder dat ik erom vraag, behalve waar een stap
 hieronder of in het projectbestand dat voorschrijft.
 
+## Autonome modus
+
+Start ik de skill met het argument `autonoom` (`/dependabot-routine autonoom`), dan draait
+hij zonder dat ik meekijk. Stel dan nooit een vraag. Elk punt waar je mij iets voorlegt,
+heeft hieronder een klasse, achter `Autonoom:`:
+
+- **stop:** voer geen verdere stappen uit en wijzig niets meer. Meld wat je zag, welke
+  beslissing nodig is en je voorstel.
+- **verslag:** neem het punt op in het verslag van stap 9, met wat je zag en een voorstel
+  als ik iets moet beslissen, en ga door. Zo'n punt is altijd een aandachtspunt: ik moet er
+  iets mee.
+
+Een situatie zonder regel is autonoom een stop, tenzij hij maar één PR raakt en de rest van
+de routine gewoon door kan. Dan is hij verslag, en laat je die PR staan.
+
+Zonder het argument blijft alles zoals hieronder staat: je legt het mij voor en wacht.
+
 Branchnamen, commitberichten, de titel en beschrijving van PR's en alles wat je in YouTrack
 zet zijn altijd in het Engels.
 
@@ -42,6 +59,7 @@ Is dat 0, stop dan direct: geen issue en geen verdere stappen.
 
 Neem de YouTrack-gegevens uit `Stap 0` van `projecten/<repo>.md`: project, board, sprint,
 titels en vaste velden zoals Subsystem. Ontbreken die, vraag ze mij dan en neem niets aan.
+Autonoom: stop, nog voordat er een issue is.
 Bepaal het jaar en de ISO-week met `date '+%G w%V'`. Deze stap vraagt verder geen akkoord.
 
 ### Parent
@@ -63,7 +81,8 @@ Tel alleen issues waarvan de titel past op `Titel parent` uit het projectbestand
 - **Geen match:** maak de parent aan met `create_issue`: Type `Maintenance`, State
   `In Progress`, Assignee `Martijn_van_der_Woud`, de vaste velden, en als bereik alleen de
   huidige week. Zet hem op het board.
-- **Meer dan één match, of een ander jaar in de titel:** stop en vraag het mij.
+- **Meer dan één match, of een ander jaar in de titel:** stop en vraag het mij. Autonoom:
+  stop, nog voordat er een issue is.
 
 ### Subtask
 
@@ -73,7 +92,7 @@ Zoek onder de parent de subtask van deze week, met de exacte titel uit het proje
 
 - **Bestaat al:** de nieuwe run hoort in die subtask, ook het verslag van stap 9. Staat hij
   op `Done`, zet hem dan op `In Progress`, en daar blijft hij staan. Bij een andere state dan
-  `In Progress` of `Done`: vraag het mij.
+  `In Progress` of `Done`: vraag het mij. Autonoom: stop.
 - **Bestaat niet:** maak hem aan met `create_issue`, met `parentIssue` als er een parent is:
   Type `Task`, State `In Progress`, Assignee `Martijn_van_der_Woud`, de vaste velden, geen
   beschrijving. Zet hem op het board.
@@ -83,18 +102,15 @@ Het ID van de subtask gebruik je in stap 6 en stap 9.
 ### Op het board zetten
 
 `create_issue` zet een issue niet op het board, ook niet via `customFields`. Dat gaat alleen
-met de REST-API, met `YOUTRACK_TOKEN` uit `~/vault/.env`. Toon het token nooit:
+met een YouTrack-command via de REST-API. Het script leest het token zelf en toont het nooit:
 
 ```bash
-T=$(grep -E '^YOUTRACK_TOKEN=' ~/vault/.env | tail -1 | cut -d= -f2-)
-curl -fsS -X POST -H "Authorization: Bearer $T" -H 'Content-Type: application/json' \
-  -d '{"query":"add Board <board> <sprint>","issues":[{"idReadable":"<issue-id>"}]}' \
-  https://crimsoncricket.myjetbrains.com/youtrack/api/commands
+/usr/bin/python3 -I ~/vault/scripts/youtrack_command.py <issue-id> "add Board <board> <sprint>"
 ```
 
 Zet geen accolades om de sprintnaam. Controleer het met `search_issues`:
 `has: {Board <board>} issue ID: <issue-id>`. Ontbreekt het token of mislukt de aanroep, leg het
-mij dan voor.
+mij dan voor. Autonoom: verslag.
 
 ## 1. Groene PR's squash-mergen
 
@@ -121,7 +137,7 @@ gh pr merge <n> --squash
 
 - `mergeable=UNKNOWN` betekent meestal dat GitHub nog aan het herberekenen is na de
   vorige merge. Sla de PR dan niet over: kijk na een paar seconden opnieuw, en vraag het
-  mij pas als het na een paar pogingen nog zo is.
+  mij pas als het na een paar pogingen nog zo is. Autonoom: verslag.
 - Direct na een merge kan `gh pr list` de PR nog even als open tonen. Kijk dan per
   PR met `gh pr view <n> --json state`.
 - Toont een PR `0/0` checks, kijk dan eerst naar de runs van de head branch. Rode runs
@@ -130,8 +146,9 @@ gh pr merge <n> --squash
 - Leg aan mij voor: een PR die niet groen is en niet onder `Storing in CI` of
   `Rode PR's` valt (ook bij lopende, overgeslagen, neutrale, afgebroken of ontbrekende
   checks), `mergeable=CONFLICTING`, en een merge die mislukt. Merge de overige groene
-  PR's wel.
-- Hebben de PR's verschillende base branches, vraag dan hoe ik verder wil.
+  PR's wel. Autonoom: verslag.
+- Hebben de PR's verschillende base branches, vraag dan hoe ik verder wil. Autonoom: stop,
+  voordat je iets merget.
 
 ### Storing in CI
 
@@ -140,7 +157,7 @@ een van deze twee geldt:
 
 - De log toont een 5xx van GitHub, een registry of een andere externe dienst.
 - De run heeft 0 jobs, en er is dus geen log. Bevestig dat met een incident rond de
-  starttijd van de run. Is er geen incident, leg het mij dan voor.
+  starttijd van de run. Is er geen incident, leg het mij dan voor. Autonoom: verslag.
 
 ```bash
 gh api repos/{owner}/{repo}/actions/runs/<run-id>/jobs --jq .total_count
@@ -164,7 +181,7 @@ gh api -X POST repos/{owner}/{repo}/actions/runs/<run-id>/rerun
 ```
 
 Groen daarna: ga verder zoals bij elke groene PR. Nog steeds rood: behandel de PR als
-rode PR en leg hem aan mij voor. Gebruik geen `@dependabot recreate`: Dependabot reageerde
+rode PR en leg hem aan mij voor. Autonoom: verslag. Gebruik geen `@dependabot recreate`: Dependabot reageerde
 daar binnen enkele minuten niet op.
 
 ### Rode PR's
@@ -200,7 +217,7 @@ Voeg dan in stap 6 aan de juiste `updates`-regel in `.github/dependabot.yml` dez
 ```
 
 De PR sluit je in stap 6. Elke andere oorzaak, ook een minor- of patch-update met een
-peer-conflict, leg je in het verslag aan mij voor met een voorstel.
+peer-conflict, leg je in het verslag aan mij voor met een voorstel. Autonoom: verslag.
 
 ## 2. Lokale working copy bijwerken
 
@@ -215,7 +232,7 @@ git fetch --prune
 De `fetch --prune` ruimt de lokale verwijzingen naar de branches van de gemerged PR's op.
 
 Sta je op een andere branch, is de working copy niet schoon, of lukt een fast-forward
-niet, stop dan en vraag het mij.
+niet, stop dan en vraag het mij. Autonoom: stop.
 
 ## 3. `.sdkmanrc` bijwerken
 
@@ -243,16 +260,17 @@ Kijk in de root van het project welk buildbestand er staat:
 | `package-lock.json` | `npm ci` |
 
 Staan er meerdere, of staat de buildtool niet in deze tabel, volg dan het projectbestand.
-Staat het daar niet in, vraag het mij dan.
+Staat het daar niet in, vraag het mij dan. Autonoom: stop.
 
-Kijk of er errors of warnings zijn. Leg die aan mij voor voordat je verder gaat. Een
+Kijk of er errors of warnings zijn. Leg die aan mij voor voordat je verder gaat. Autonoom:
+errors zijn een stop, warnings zijn verslag. Een
 melding over vulnerabilities is geen reden om te stoppen: die is voor stap 5.
 Deprecation-warnings in gegenereerde API-clients negeer je, die hoef je niet te melden.
 
 Alleen bij npm-projecten: voor `npm warn deprecated` volg je `Deprecation-warnings van npm`.
 
 Meldt de build 0 uitgevoerde tests terwijl het project tests heeft, leg dat dan ook aan mij
-voor: exit 0 is dan geen geslaagde build.
+voor: exit 0 is dan geen geslaagde build. Autonoom: stop.
 
 ### Deprecation-warnings van npm
 
@@ -333,7 +351,8 @@ Het script toont per bevinding `doel=<versie>`, de laagste versie binnen de huid
   - Gradle: de tegenhanger via de version catalog of `constraints`, met
     `because("<CVE>")`.
 - **`doel=GEEN-BINNEN-MAJOR`:** is er wel een fix in een nieuwere major, vraag het mij dan.
-  Is er geen fix, of alleen een downgrade, noem het dan alleen in het verslag.
+  Autonoom: verslag. Is er geen fix, of alleen een downgrade, noem het dan alleen in het
+  verslag.
 
 Controleer na het patchen: de dependency-tree toont de nieuwe versie
 (`mvn dependency:tree -Dincludes=<groupId>:<artifactId>`), de build uit stap 4 is groen en
@@ -397,10 +416,11 @@ git status --short
 - Heeft het iets gewijzigd, laat dan de diff zien, draai nog één keer `npm ci` en ga door
   naar stap 6. Een nieuwe deprecation-warning handel je af volgens
   `Deprecation-warnings van npm`. Gaat er een versie omlaag, stop dan en leg het mij voor.
+  Autonoom: stop.
 - Blijven er kwetsbaarheden over, kijk dan wat `npm audit` als fix noemt. Fixes die een
   downgrade betekenen voer ik nooit door, dus die laat je staan en noem je alleen in het
   verslag. Vergelijk daarvoor de genoemde versie met `npm ls <package> --depth=0`. Is de
-  enige fix geen downgrade maar wel breaking, vraag het mij dan.
+  enige fix geen downgrade maar wel breaking, vraag het mij dan. Autonoom: verslag.
 
 ## 6. Openstaande wijzigingen via één PR
 
@@ -421,7 +441,7 @@ gh pr create --base <base-branch> --title "<issue-id> <titel>" --body "<beschrij
 
 - `<issue-id>` is het ID van de subtask uit stap 0.
 - Bij een base branch `develop` begint de branchnaam met `feature/`. Bij een andere base
-  branch: vraag het mij.
+  branch: vraag het mij. Autonoom: stop.
 - Zet in de beschrijving elke wijziging, en welke kwetsbaarheden blijven staan en waarom.
 
 Wacht tot de checks klaar zijn, controleer de status opnieuw zoals in stap 1 en
@@ -432,7 +452,7 @@ gh pr checks <n> --watch --interval 10
 gh pr merge <n> --squash
 ```
 
-Is de PR niet groen, of `mergeable=CONFLICTING`, leg het mij dan voor.
+Is de PR niet groen, of `mergeable=CONFLICTING`, leg het mij dan voor. Autonoom: stop.
 
 Sluit na de merge elke rode PR waarvoor je een `ignore`-regel hebt toegevoegd, met een
 Engelse opmerking die de oorzaak noemt en naar de PR met de `ignore`-regel verwijst:
@@ -454,10 +474,14 @@ git fetch --prune
   branch gemerged is, en die verwijzing haalt `fetch --prune` weg.
 - De waarschuwing `not yet merged to HEAD` is normaal na een squash-merge. Weigert
   `-d` de branch echt te verwijderen, gebruik dan geen `-D` maar leg het mij voor.
+  Autonoom: verslag.
 
 ## 7. Projectstappen
 
 Staan er in het projectbestand extra stappen, voer die hier uit. Anders ga je door.
+
+Voor een PR uit de projectstappen gelden de regels van stap 6: is hij niet groen, of
+`mergeable=CONFLICTING`, leg het mij dan voor. Autonoom: stop.
 
 ## 8. Build op de base branch
 
@@ -473,9 +497,9 @@ gh run watch <id> --exit-status --interval 10
 ```
 
 - Staat er nog geen run, kijk dan na een paar seconden opnieuw. Komt er na een paar
-  pogingen geen, leg het mij voor.
+  pogingen geen, leg het mij voor. Autonoom: stop.
 - Loopt de run nog, wacht dan tot hij klaar is. Voor een run die rood wordt of niet
-  afloopt is geen regel: leg die aan mij voor.
+  afloopt is geen regel: leg die aan mij voor. Autonoom: stop.
 
 ## 9. Afronden
 

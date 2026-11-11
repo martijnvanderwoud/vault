@@ -24,7 +24,8 @@ git fetch -q origin
 git log --oneline origin/master..origin/develop
 ```
 
-Is die lijst leeg, leg het mij dan voor. Anders maak je een PR van `develop` naar
+Is die lijst leeg, leg het mij dan voor. Autonoom: verslag, en sla de rest van stap 7
+over. Anders maak je een PR van `develop` naar
 `master`, met als titel `Release <versie>`, de versie uit `package.json`. Noem in de
 beschrijving alle commits uit de lijst.
 
@@ -39,7 +40,7 @@ git switch -c feature/next-version
 Hoog de minor-versie in `package.json` op, bijvoorbeeld 4.4.0 naar 4.5.0. Het bestand
 springt in met tabs. Draai daarna `npm install`, zodat `package-lock.json` meegaat.
 Controleer met `git diff` dat alleen de versieregels wijzigen: één in `package.json`,
-twee in `package-lock.json`. Wijzigt er meer, leg het mij dan voor.
+twee in `package-lock.json`. Wijzigt er meer, leg het mij dan voor. Autonoom: stop.
 
 Commit, push en maak een PR naar `develop`, met als titel
 `Update for next development version`.

@@ -37,7 +37,8 @@ dependency van de nieuwste `@apollo/server`:
 npm view @apollo/server peerDependencies.graphql
 ```
 
-Staat die graphql 17 toe, leg mij dan voor om de `ignore`-regel te verwijderen.
+Staat die graphql 17 toe, leg mij dan voor om de `ignore`-regel te verwijderen. Autonoom:
+verslag.
 
 ## Stap 8. Build op de base branch
 

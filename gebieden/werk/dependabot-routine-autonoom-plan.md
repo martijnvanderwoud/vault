@@ -10,7 +10,7 @@ mij nodig heeft, stopt hij met een comment in het YouTrack-issue, en vanuit dat 
 ik op het juiste punt verder. Een overzicht in Obsidian toont welke runs lopen en hoe ze
 zijn afgelopen.
 
-Vastgelegd op 2026-11-10. Er is nog niets van gebouwd.
+Vastgelegd op 2026-11-10. Stap 1 is klaar op 2026-11-11.
 
 ## Zo werken we dit af
 
@@ -23,7 +23,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 ## Voortgang
 
-- [ ] 1. Stoppunten indelen in de skill
+- [x] 1. Stoppunten indelen in de skill
 - [ ] 2. Pauzeren en hervatten in de skill
 - [ ] 3. Handmatige headless-run zonder pauze
 - [ ] 4. Handmatige headless-run met pauze en hervatting
@@ -131,10 +131,13 @@ Doel: een gepauzeerde run is vanuit het issue voort te zetten.
 - Laat de run in autonome modus eindigen met een regel die de runner kan lezen, bijvoorbeeld
   `RUN_STATUS: paused step=6 issue=PCATA-617`. Mogelijke statussen: `done`, `paused`.
 - Laat de run elk verslagpunt waar ik iets mee moet ook apart melden, per punt een regel
-  `RUN_ATTENTION: <korte tekst>`. Bijvoorbeeld: op het board zetten mislukt, een rode PR met
-  een voorstel, een PR die niet gemerged kon worden. Zo valt een run met status `done` die
+  `RUN_ATTENTION: <korte tekst>`. Volgens stap 1 is dat elk punt met `Autonoom: verslag`.
+  Punten die de skill al "alleen in het verslag" noemt, krijgen geen regel. Bijvoorbeeld: op
+  het board zetten mislukt, een rode PR met een voorstel, een PR die niet gemerged kon worden. Zo valt een run met status `done` die
   toch iets van mij nodig heeft op in het dashboard, ook als het issue niet op het bord staat.
 - Stoppen vóór de subtask bestaat: geen comment, alleen de statusregel met de reden.
+- Vervang in `Autonome modus` van `SKILL.md` de voorlopige omschrijving van `stop` ("meld wat
+  je zag ...") door een verwijzing naar het pauze-comment.
 - Stap 9: in autonome modus geen chatverslag nodig, het comment is het verslag.
 
 Klaar als: de teksten staan in de skill en de interactieve werking niet is veranderd.
@@ -282,3 +285,18 @@ Deze punten staan niet of niet duidelijk in de documentatie. Controleren in stap
   ```
 
   Laat de tekst van `notifications.md` over de twee auteurs dan naar die frontmatter verwijzen.
+- 2026-11-11, stap 1: de klassen staan in `SKILL.md` als `Autonoom: stop` of `Autonoom: verslag`
+  direct achter elk voorlegpunt, en de definities in een nieuwe sectie `Autonome modus`. Elk
+  `verslag`-punt is een aandachtspunt, omdat het een vraag aan mij vervangt. Een aparte markering
+  per punt was dus niet nodig.
+- De voorgestelde tabel is ongewijzigd overgenomen. Erbij gekomen: een PR uit de projectstappen
+  die niet groen of `CONFLICTING` is, is een stop. Daarvoor stond nog geen regel in stap 7.
+- Eigen stoppunten in de projectbestanden, die de eerste grep miste:
+  - `react-notifications` en `profile-presentation-design`: lege release-lijst is verslag, en dan
+    vervalt de rest van stap 7 (ook de versiebump). Een versiebump die meer wijzigt dan de
+    versieregels is een stop.
+  - `rostering-api`: graphql 17 toegestaan is verslag, met het voorstel de `ignore` weg te halen.
+  - `notifications`: een lege lijst projecten in stap 5 is een stop, en `0 tests passed` volgt de
+    regel over 0 tests uit stap 4.
+- `Op het board zetten` gebruikt nu `youtrack_command.py`. Dat script stopt met een melding als
+  het token ontbreekt, wat onder `mislukt` valt.
