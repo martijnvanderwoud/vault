@@ -33,9 +33,9 @@ in `data/`. Plannen staan in [[vault-roadmap]].
 
 ## Script
 
-`scripts/uren.py [--tot JJJJ-MM-DD] [--vanaf JJJJ-MM-DD] [--details]` toont per klant de declarabele uren,
+`scripts/uren.py [--tot JJJJ-MM-DD] [--vanaf JJJJ-MM-DD] [--details] [--schrijf]` toont per klant de declarabele uren,
 het target en de vrij opgenomen uren (standaard 1-1 t/m vandaag). Gebruik
-`/usr/bin/python3 -I ~/vault/scripts/uren.py`. Het script is alleen-lezen, rondt niet af en leest de sleutel zelf
+`/usr/bin/python3 -I ~/vault/scripts/uren.py`. Met `--schrijf` (alleen standaardperiode) schrijft het ook [[uren-overzicht]] weg: stand, per klant, per maand en de vrije uren. Het script is alleen-lezen richting LogMyTime, rondt niet af en leest de sleutel zelf
 uit `.env`. Gevalideerd tegen de Excel: per 10-11-2026 identiek (zie validatiepunt hierboven); per 6-11-2026
 Pompkracht 1079,65 u en Construct 0,55 u.
 
@@ -46,7 +46,7 @@ Pompkracht 1079,65 u en Construct 0,55 u.
 
 ## Skill
 
-`/uren` (`.claude/skills/uren/SKILL.md`) draait `uren.py`, vertaalt "per 6 november" of "details" naar de
+`/uren` (`.claude/skills/uren/SKILL.md`) draait `uren.py --schrijf` (ververst dus ook [[uren-overzicht]]), vertaalt "per 6 november" of "details" naar de
 juiste opties en vat de stand samen. Alleen lezen; uren loggen valt erbuiten.
 
 ## Export-observaties

@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 """Toont de urenstand uit LogMyTime (alleen lezen), als vervanger van de Excel-urenstand.
 
-Gebruik: uren.py [--tot JJJJ-MM-DD] [--vanaf JJJJ-MM-DD] [--details]
+Gebruik: uren.py [--tot JJJJ-MM-DD] [--vanaf JJJJ-MM-DD] [--details] [--schrijf]
 Standaard van 1 januari van dit jaar tot en met vandaag. Tijden worden niet afgerond:
 de som van DurationSeconds, zoals ik ze zelf al afgerond log.
-De sleutel komt uit LOGMYTIME_API_KEY in ~/vault/.env en wordt nooit getoond.
+Met --schrijf (alleen voor de standaardperiode) wordt de stand ook weggeschreven naar
+gebieden/werk/uren-overzicht.md. De sleutel komt uit LOGMYTIME_API_KEY in ~/vault/.env en wordt nooit getoond.
 """
 import argparse
 import csv
@@ -23,6 +24,8 @@ TZ = ZoneInfo('Europe/Amsterdam')
 UREN_PER_WEEKDAG = [6.5, 6.5, 4.5, 6.25, 4.25]
 VRIJ_BUDGET = 196
 VRIJE_DAGEN = os.path.expanduser('~/vault/data/vrije-dagen-2026.csv')
+OVERZICHT = os.path.expanduser('~/vault/gebieden/werk/uren-overzicht.md')
+MAANDEN = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
 
 
 def key():
@@ -73,10 +76,111 @@ def target_uren(vanaf, tot):
     return totaal
 
 
+def vrije_dagen():
+    """Regels uit data/vrije-dagen-2026.csv als (omschrijving, gepland, nog gereserveerd)."""
+    with open(VRIJE_DAGEN, newline='') as f:
+        return [(r['omschrijving'], float(r['gepland_uren']), float(r['nog_gereserveerd_uren']))
+                for r in csv.DictReader(f)]
+
+
 def gereserveerd_uren():
     """Som van de nog gereserveerde vrije uren uit data/vrije-dagen-2026.csv."""
-    with open(VRIJE_DAGEN, newline='') as f:
-        return sum(float(r['nog_gereserveerd_uren']) for r in csv.DictReader(f))
+    return sum(nog for _, _, nog in vrije_dagen())
+
+
+def haal_stand(vanaf, tot):
+    klanten = {k['ID']: k['Name'] for k in get_all('Clients', {'$select': 'ID,Name'})}
+    # Projecten zonder klant (zoals "Niet declarabel") tellen niet mee als declarabel.
+    projecten = {p['ID']: klanten.get(p['ClientID']) for p in get_all('Projects', {'$select': 'ID,ClientID'})}
+    # Ruim filteren op UTC; de lokale datum wordt hieronder exact bepaald.
+    entries = get_all('TimeEntries', {
+        '$filter': 'StartTime ge %s and StartTime lt %s' % (
+            odata_datum(vanaf - timedelta(days=1)), odata_datum(tot + timedelta(days=2))),
+        '$select': 'ProjectID,StartTime,DurationSeconds,TypeID,AbsenceID',
+    })
+
+    stand = {'per_klant': defaultdict(float), 'per_maand': defaultdict(float),
+             'niet_declarabel': 0.0, 'per_type': defaultdict(float)}
+    for e in entries:
+        dag = lokale_datum(e['StartTime'])
+        if not vanaf <= dag <= tot:
+            continue
+        uren = e['DurationSeconds'] / 3600
+        stand['per_type'][(e['TypeID'], e['AbsenceID'] is not None)] += uren
+        if e['AbsenceID'] is not None:
+            continue
+        klant = projecten.get(e['ProjectID'])
+        if klant is None:
+            stand['niet_declarabel'] += uren
+        else:
+            stand['per_klant'][klant] += uren
+            stand['per_maand'][(dag.month, klant)] += uren
+    stand['declarabel'] = sum(stand['per_klant'].values())
+    stand['target'] = target_uren(vanaf, tot)
+    stand['vrij'] = stand['target'] - stand['declarabel']
+    stand['gereserveerd'] = gereserveerd_uren()
+    return stand
+
+
+def nl(getal):
+    return ('%.2f' % getal).replace('.', ',')
+
+
+def schrijf_overzicht(vanaf, tot, stand):
+    klanten = sorted(stand['per_klant'], key=lambda k: -stand['per_klant'][k])
+    over = VRIJ_BUDGET - stand['vrij']
+    na_reservering = over - stand['gereserveerd']
+    regels = [
+        '---',
+        'description: Urenoverzicht %s met declarabel per klant, target, vrij-budget en gereserveerde vrije uren' % vanaf.year,
+        'tags: [werk, uren]',
+        '---',
+        '',
+        '# Urenoverzicht %s' % vanaf.year,
+        '',
+        '> Gegenereerd door `scripts/uren.py --schrijf` (skill `/uren`) uit LogMyTime. Niet met de hand bewerken.',
+        '> Peildatum **%s**. Achtergrond en logica: [[urenregistratie]].' % tot.strftime('%d-%m-%Y'),
+        '',
+        '## Stand',
+        '',
+        '| Stand | Uren | | Declarabel per klant | Uren |',
+        '|---|---:|---|---|---:|',
+    ]
+    stand_rijen = [
+        ('Declarabel', nl(stand['declarabel'])),
+        ('Target (werkuren)', nl(stand['target'])),
+        ('Vrij opgenomen', nl(stand['vrij'])),
+        ('Vrij-budget', '%d,00' % VRIJ_BUDGET),
+        ('Vrij over', nl(over)),
+        ('Nog gereserveerd', nl(stand['gereserveerd'])),
+        ('**Vrij na reservering**', '**%s**' % nl(na_reservering)),
+    ]
+    klant_rijen = [(k, nl(stand['per_klant'][k])) for k in klanten]
+    klant_rijen += [('**Totaal declarabel**', '**%s**' % nl(stand['declarabel'])),
+                    ('Niet declarabel', nl(stand['niet_declarabel']))]
+    klant_rijen += [('', '')] * (len(stand_rijen) - len(klant_rijen))
+    regels += ['| %s | %s | | %s | %s |' % (sl, su, kl, ku)
+               for (sl, su), (kl, ku) in zip(stand_rijen, klant_rijen)]
+    regels += ['',
+               '## Vrije uren: gepland en gereserveerd',
+               '',
+               '| Omschrijving | Gepland | Nog gereserveerd |',
+               '|---|---:|---:|']
+    dagen = vrije_dagen()
+    regels += ['| %s | %s | %s |' % (o, nl(g), nl(n)) for o, g, n in dagen]
+    regels += ['| **Totaal** | **%s** | **%s** |' % (nl(sum(g for _, g, _ in dagen)), nl(stand['gereserveerd'])),
+               '',
+               'Bron: `data/vrije-dagen-2026.csv`. Is een geplande dag voorbij, zet dan `nog_gereserveerd_uren` op 0.']
+    regels += ['',
+               '## Declarabel per maand',
+               '',
+               '| Maand | %s | Totaal |' % ' | '.join(klanten),
+               '|---|%s---:|' % ('---:|' * len(klanten))]
+    for m in range(1, tot.month + 1):
+        cellen = [stand['per_maand'].get((m, k), 0.0) for k in klanten]
+        regels.append('| %s | %s | %s |' % (MAANDEN[m - 1], ' | '.join(nl(c) for c in cellen), nl(sum(cellen))))
+    with open(OVERZICHT, 'w') as f:
+        f.write('\n'.join(regels) + '\n')
 
 
 def main():
@@ -85,51 +189,30 @@ def main():
     ap.add_argument('--vanaf', type=date.fromisoformat, default=date(vandaag.year, 1, 1))
     ap.add_argument('--tot', type=date.fromisoformat, default=vandaag)
     ap.add_argument('--details', action='store_true', help='toon ook uren per TypeID en afwezigheid')
+    ap.add_argument('--schrijf', action='store_true', help='schrijf de stand naar gebieden/werk/uren-overzicht.md')
     args = ap.parse_args()
+    if args.schrijf and (args.vanaf != date(vandaag.year, 1, 1) or args.tot != vandaag):
+        raise SystemExit('--schrijf kan alleen voor de standaardperiode (1 januari t/m vandaag)')
 
-    klanten = {k['ID']: k['Name'] for k in get_all('Clients', {'$select': 'ID,Name'})}
-    # Projecten zonder klant (zoals "Niet declarabel") tellen niet mee als declarabel.
-    projecten = {p['ID']: klanten.get(p['ClientID']) for p in get_all('Projects', {'$select': 'ID,ClientID'})}
-    # Ruim filteren op UTC; de lokale datum wordt hieronder exact bepaald.
-    entries = get_all('TimeEntries', {
-        '$filter': 'StartTime ge %s and StartTime lt %s' % (
-            odata_datum(args.vanaf - timedelta(days=1)), odata_datum(args.tot + timedelta(days=2))),
-        '$select': 'ProjectID,StartTime,DurationSeconds,TypeID,AbsenceID',
-    })
-
-    per_klant = defaultdict(float)
-    niet_declarabel = 0.0
-    per_type = defaultdict(float)
-    for e in entries:
-        if not args.vanaf <= lokale_datum(e['StartTime']) <= args.tot:
-            continue
-        uren = e['DurationSeconds'] / 3600
-        per_type[(e['TypeID'], e['AbsenceID'] is not None)] += uren
-        if e['AbsenceID'] is not None:
-            continue
-        klant = projecten.get(e['ProjectID'])
-        if klant is None:
-            niet_declarabel += uren
-        else:
-            per_klant[klant] += uren
-
-    declarabel = sum(per_klant.values())
-    target = target_uren(args.vanaf, args.tot)
-    vrij = target - declarabel
+    stand = haal_stand(args.vanaf, args.tot)
     print('Stand van %s t/m %s' % (args.vanaf, args.tot))
-    for naam, uren in sorted(per_klant.items(), key=lambda kv: -kv[1]):
+    for naam, uren in sorted(stand['per_klant'].items(), key=lambda kv: -kv[1]):
         print('  %-20s %9.2f u' % (naam, uren))
-    print('Declarabel           %9.2f u' % declarabel)
-    print('Niet declarabel      %9.2f u' % niet_declarabel)
-    print('Target (werkuren)    %9.2f u' % target)
-    print('Vrij opgenomen       %9.2f u (budget %d u, over %.2f u)' % (vrij, VRIJ_BUDGET, VRIJ_BUDGET - vrij))
-    gereserveerd = gereserveerd_uren()
-    print('Vrij gereserveerd    %9.2f u' % gereserveerd)
-    print('Vrij na reservering  %9.2f u (vrij over min gereserveerd)' % (VRIJ_BUDGET - vrij - gereserveerd))
+    print('Declarabel           %9.2f u' % stand['declarabel'])
+    print('Niet declarabel      %9.2f u' % stand['niet_declarabel'])
+    print('Target (werkuren)    %9.2f u' % stand['target'])
+    print('Vrij opgenomen       %9.2f u (budget %d u, over %.2f u)' % (
+        stand['vrij'], VRIJ_BUDGET, VRIJ_BUDGET - stand['vrij']))
+    print('Vrij gereserveerd    %9.2f u' % stand['gereserveerd'])
+    print('Vrij na reservering  %9.2f u (vrij over min gereserveerd)' % (
+        VRIJ_BUDGET - stand['vrij'] - stand['gereserveerd']))
     if args.details:
         print('Per TypeID (afwezigheid ja/nee):')
-        for (type_id, afwezig), uren in sorted(per_type.items()):
+        for (type_id, afwezig), uren in sorted(stand['per_type'].items()):
             print('  TypeID %s, afwezigheid=%s: %.2f u' % (type_id, afwezig, uren))
+    if args.schrijf:
+        schrijf_overzicht(args.vanaf, args.tot, stand)
+        print('Geschreven naar %s' % OVERZICHT)
 
 
 main()
