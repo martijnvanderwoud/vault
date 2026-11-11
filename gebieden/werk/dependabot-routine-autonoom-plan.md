@@ -382,8 +382,11 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
     `git rev-parse --short <base-branch>`.
   - `iam` zette een zelfgebouwde PR-link (`pompkracht/iam`) in het comment, wilde die
     corrigeren met `youtrack_edit_comment.py` uit mijn globale CLAUDE.md (geweigerd) en
-    plaatste toen een correctie-comment zonder de `Debbie`-kop. De skill zegt nu: links uit
-    `gh pr view <n> --json url`, geen correctie-comments en geen bewerkte comments.
+    plaatste toen een correctie-comment zonder de `Debbie`-kop. Dat correctie-comment was
+    zinnig. De skill zegt nu: links uit `gh pr view <n> --json url`, geen bewerkte comments,
+    en een correctie als nieuw comment met de kop `Debbie (Dependabot routine) correction`.
+    `Hervatten` telt correcties niet mee bij het zoeken naar het pauze-comment, maar laat ze
+    voorgaan op wat erin staat.
   - Controleer in stap 7 en 8 opnieuw `permission_denials` in de log.
 - De `Fallback`-regel werkte niet: buiten de vault kent een sessie de skill alleen met
   `--add-dir ~/vault`, en `--add-dir` slikt een prompt die erachter staat op als map. De regel

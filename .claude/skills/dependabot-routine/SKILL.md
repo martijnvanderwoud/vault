@@ -65,9 +65,9 @@ Fallback: cd <pwd> && claude "/dependabot-routine <subtask-id>" --add-dir ~/vaul
   samen. De naam van de organisatie wijkt soms af van wat je verwacht.
 - `base` is de lokale base branch: `git rev-parse --short <base-branch>`. Die vergelijkt
   `Hervatten` met git.
-- Plaats geen correctie-comment en wijzig geen comment. Staat er iets verkeerd in, zet de
-  correctie dan in het volgende comment van Debbie (het verslag of een nieuw pauze-comment).
-  Elk comment van Debbie begint met `Debbie (Dependabot routine)`.
+- Wijzig geen comment. Staat er iets verkeerd in, plaats dan een correctie-comment dat begint
+  met `Debbie (Dependabot routine) correction`. Elk comment van Debbie begint met
+  `Debbie (Dependabot routine)`.
 - `Report so far` maakt het verslag compleet als ik via `Fallback` hervat: die sessie kent de
   verslagpunten van voor de pauze niet.
 - Stop je voordat de subtask bestaat, plaats dan geen comment. De reden staat dan alleen in
@@ -95,9 +95,10 @@ Start ik de skill met het ID van een subtask (`/dependabot-routine PCATA-617`), 
 een gepauzeerde run. Lees eerst het projectbestand, zoals bij `Projectspecifieke aanvullingen`.
 
 1. Lees de comments van de subtask (`get_issue_comments`). De comments van Debbie staan onder
-   mijn account en beginnen met `Debbie (Dependabot routine)`. Het laatste daarvan moet een
-   pauze-comment zijn. Is het een verslag, of is er geen, dan is er niets te hervatten: meld
-   dat en stop.
+   mijn account en beginnen met `Debbie (Dependabot routine)`. Het laatste daarvan, correcties
+   niet meegeteld, moet een pauze-comment zijn. Is het een verslag, of is er geen, dan is er
+   niets te hervatten: meld dat en stop. Correcties na het pauze-comment gaan voor wat erin
+   staat.
 2. Controleer de `State` tegen GitHub en git: welke PR's nu gemerged of nog open zijn, op
    welke branch je staat, de commit van de base branch en `git status --short`. Wijkt iets
    af, meld dan wat ik intussen veranderd lijk te hebben.
