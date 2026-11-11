@@ -298,13 +298,18 @@ Klaar als: lopende, gepauzeerde en afgeronde runs goed zichtbaar zijn.
 
 Doel: alle 21 repo's uit `projecten/` draaien autonoom.
 
-- In groepjes: eerst npm, dan Maven en Gradle, als laatste `notifications` (sbt, Scala
-  Steward) en de projecten met eigen stappen (`react-notifications`,
-  `profile-presentation-design`, `rostering-api`).
-- Controleer per groepje of de eigen stappen zonder vragen kunnen.
-- Allowlist weghalen zodra een groepje goed is gelopen.
+- ~~In groepjes~~: besloten op 2026-11-11 om alles in één keer aan te zetten (zie `Bevindingen`).
 
-Klaar als: de allowlist weg is en een hele ronde is gedraaid.
+De allowlist is de frontmatter `autonoom: true` in `projecten/*.md`. Die blijft staan als
+uitknop per repo: regel weg, en de runner slaat de repo over.
+
+- [x] Alle 21 repo's op `autonoom: true`, clones klaargezet met `--prepare` in `env -i HOME=$HOME`.
+- [ ] Een hele ronde (maandag tot en met donderdag) gedraaid en in het dashboard nagekeken:
+  verslagen, `geweigerd` en `aandacht`. Let vooral op de eigen stappen die nog nooit autonoom
+  liepen: de release-PR's van `react-notifications` en `profile-presentation-design`, de codegen
+  van `rostering-api` en sbt met Scala Steward in `notifications`.
+
+Klaar als: alle repo's aan staan en een hele ronde is gedraaid.
 
 ## Nog te verifiëren
 
@@ -644,3 +649,38 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   ("nested mappings are not allowed"). Formules staan daarom tussen enkele quotes.
 - De drie testnotities uit stap 7 (`2026-w46-iam-login-ui`, `-2`, `-3`) zijn weggehaald. Hun logs staan nog in
   `~/dependabot-runs/.logs/`.
+- 2026-11-11, stap 10: de allowlist staat niet meer in de plist maar in de frontmatter
+  `autonoom: true` van de projectbestanden. Zonder `--repo` neemt de runner alleen die projecten,
+  met `--repo` precies de genoemde, ook zonder `autonoom` (voor een test). `--dry-run` noemt
+  onderaan de projecten die niet autonoom zijn. Zo hoeft de plist niet bij elk groepje met de
+  hand gekopieerd en herladen te worden, en is één repo uitzetten ook een wijziging in de vault.
+  De plist start de runner nu zonder `--repo`, en is nog één keer met de hand herladen. Laadt de
+  oude plist nog, dan draaien alleen `ats` en `portal-employee-ui`: niets breekt.
+- Herladen lukte niet met `bootout` en `bootstrap` in één regel: `bootstrap` gaf
+  `5: Input/output error` en de oude job bleef geladen. Wat wel werkt, in twee stappen:
+  `launchctl bootout gui/$(id -u)/nl.crimsoncricket.dependabot-runner`, dan controleren dat
+  `launchctl print` `Could not find service` geeft (de eerste regel is `Bad request.`), en pas dan
+  `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/nl.crimsoncricket.dependabot-runner.plist`.
+  Om 16:51 controleerde de runner na het laden de acht autonome projecten.
+- De skill zegt dat `autonoom` voor de runner is, zodat Debbie er niets mee doet.
+- Groepje 1 klaargezet: vijf nieuwe clones met `--prepare` in `env -i HOME=$HOME`, allemaal schoon
+  op `develop` met Node 24. Vijf van de zes hebben `${NPM_TOKEN}` in `.npmrc` (niet
+  `rostering-ui`), en dat staat in `.env`. Geen van deze repo's heeft een CLAUDE.md, en hun
+  projectbestanden hebben alleen YouTrack-gegevens, dus geen eigen stappen die een vraag stellen.
+- Voor groepje 2: in `cata` en `roep` gaat een nieuwe Maven-versie ook naar
+  `.github/workflows/*.yml`, en het token van `gh` mag dat niet pushen (geen `workflow`-scope,
+  zie stap 6). De projectbestanden zeggen nu: autonoom de Maven-versie in `.sdkmanrc` laten staan
+  en in het verslag noemen. De scope toevoegen viel af: de run leest CI-logs die niet te
+  vertrouwen zijn, en met die scope kan een run workflows wijzigen die bij de secrets kunnen.
+- Na groepje 1 besloten: alles meteen aan, niet in groepjes. Een run die vastloopt, pauzeert en
+  blokkeert alleen zijn eigen repo. De releases naar `master` in `react-notifications` en
+  `profile-presentation-design` zijn niet gevaarlijk (zie "Groen is groen" bij `Beslissingen`).
+  Het risico van een fout in de skill die in veel repo's tegelijk terugkomt, is opruimwerk, geen
+  schade. De eigen stappen van groepje 3 zijn daarom niet vooraf nagelopen. Dat gebeurt bij het
+  bekijken van de eerste ronde.
+- De dertien nieuwe repo's zijn klaargezet met `--prepare` in `env -i HOME=$HOME`: alle 21 clones
+  schoon op hun base branch, git via HTTPS werkt. `--prepare` toont nu ook `sbt`. In
+  `notifications` geeft `env.sh` sbt 2.0.12, Java 25.0.5 en Scala 3.10.0 uit `.sdkmanrc`.
+  Onder `/bin/bash` (3.2) faalt `sdk env` met `${candidate_name^^}: bad substitution`, onder zsh
+  niet. De runs gebruiken zsh, zie de echte Maven- en Gradle-runs onder launchd.
+

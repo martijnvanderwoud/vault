@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor portal-employee-ui (YouTrack-gegevens)
 repo: Flow-Cloud-Systems/portal-employee-ui
+autonoom: true
 ---
 
 # Dependabot-routine: portal-employee-ui

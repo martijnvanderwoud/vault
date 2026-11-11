@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor portal (YouTrack-gegevens)
 repo: Flow-Cloud-Systems/portal
+autonoom: true
 ---
 
 # Dependabot-routine: portal

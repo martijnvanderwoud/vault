@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor profile-presentation-ui (YouTrack-gegevens)
 repo: Flow-Cloud-Systems/profile-presentation-ui
+autonoom: true
 ---
 
 # Dependabot-routine: profile-presentation-ui

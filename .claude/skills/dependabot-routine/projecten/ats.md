@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor ats (YouTrack-gegevens)
 repo: Flow-Cloud-Systems/ats
+autonoom: true
 ---
 
 # Dependabot-routine: ats

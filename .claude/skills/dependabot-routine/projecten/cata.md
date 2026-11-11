@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor cata (YouTrack-gegevens, Maven, webjars negeren, Maven-versie in de workflows)
 repo: Flow-Cloud-Systems/cata
+autonoom: true
 ---
 
 # Dependabot-routine: cata
@@ -20,6 +21,10 @@ repo.
 
 Wijzigt de Maven-versie, werk dan ook `maven_version` bij in `.github/workflows/*.yml`
 (`pr.yml`, `develop.yml` en `pre-release.yml`).
+
+Autonoom kan dat niet: het token van de run mag `.github/workflows/` niet pushen. Laat de
+Maven-versie in `.sdkmanrc` dan staan en werk alleen de andere SDK's bij. Autonoom: verslag,
+met de nieuwe Maven-versie en de bestanden die ik met de hand moet bijwerken.
 
 ## Stap 4. Schone install
 

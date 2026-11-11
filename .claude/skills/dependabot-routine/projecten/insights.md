@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor insights (YouTrack-gegevens)
 repo: Flow-Cloud-Systems/insights
+autonoom: true
 ---
 
 # Dependabot-routine: insights

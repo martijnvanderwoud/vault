@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor portal-enrollment-ui (YouTrack-gegevens)
 repo: Flow-Cloud-Systems/portal-enrollment-ui
+autonoom: true
 ---
 
 # Dependabot-routine: portal-enrollment-ui

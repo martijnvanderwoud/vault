@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor roep (YouTrack-gegevens, Maven, webjars negeren, Maven-versie in de workflows)
 repo: Flow-Cloud-Systems/roep
+autonoom: true
 ---
 
 # Dependabot-routine: roep
@@ -19,6 +20,10 @@ repo.
 ## Stap 3. `.sdkmanrc` bijwerken
 
 Wijzigt de Maven-versie, werk dan ook `maven_version` bij in `.github/workflows/*.yml`.
+
+Autonoom kan dat niet: het token van de run mag `.github/workflows/` niet pushen. Laat de
+Maven-versie in `.sdkmanrc` dan staan en werk alleen de andere SDK's bij. Autonoom: verslag,
+met de nieuwe Maven-versie en de bestanden die ik met de hand moet bijwerken.
 
 ## Stap 4. Schone install
 

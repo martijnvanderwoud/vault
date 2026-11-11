@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor notifications (Scala Steward in plaats van Dependabot)
 repo: Flow-Cloud-Systems/notifications
+autonoom: true
 authors: [app/dependabot, app/flow-cloud-scala-steward]
 ---
 

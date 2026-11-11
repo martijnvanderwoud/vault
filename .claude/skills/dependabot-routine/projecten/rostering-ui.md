@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor rostering-ui (YouTrack-gegevens)
 repo: Flow-Cloud-Systems/rostering-ui
+autonoom: true
 ---
 
 # Dependabot-routine: rostering-ui

@@ -1,6 +1,7 @@
 ---
 description: Aanvullingen op de Dependabot-routine voor rostering-api (Gradle-codegen en de graphql-uitzondering)
 repo: Flow-Cloud-Systems/rostering-api
+autonoom: true
 ---
 
 # Dependabot-routine: rostering-api

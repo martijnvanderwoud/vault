@@ -2,7 +2,7 @@
 """Runner van de autonome Dependabot-routine (Debbie): repo's selecteren, runs starten en vastleggen.
 
 Gebruik: dependabot_runner.py [--repo NAAM ...] [--model MODEL] [--timeout MINUTEN]
-Werkt eerst de run-notities bij (zie `opruimen`) en start dan per repo die in aanmerking komt een
+Zonder --repo alleen de projecten met `autonoom: true` in de frontmatter. Werkt eerst de run-notities bij (zie `opruimen`) en start dan per repo die in aanmerking komt een
 run, één tegelijk. Per run een notitie in gebieden/werk/dependabot-runs/<jaar>-w<week>-<repo>.md
 en een log in ~/dependabot-runs/.logs/. Bij `paused` of `failed` een macOS-melding. Een tweede
 runner-proces stopt meteen (lock). Een `paused`- of `failed`-run blokkeert de repo. Na een
@@ -98,7 +98,8 @@ def projecten():
         fm = frontmatter(path)
         if 'repo' not in fm:
             raise SystemExit('frontmatter `repo` ontbreekt in ' + str(path))
-        result.append({'name': path.stem, 'repo': fm['repo'], 'authors': fm.get('authors') or DEFAULT_AUTHORS})
+        result.append({'name': path.stem, 'repo': fm['repo'], 'authors': fm.get('authors') or DEFAULT_AUTHORS,
+                       'autonoom': fm.get('autonoom') == 'true'})
     return result
 
 
@@ -254,7 +255,7 @@ def claude_args(project, clone):
 
 def tools_tonen(clone, env):
     """Draait de tools zoals een Bash-commando van de run ze ziet: met env.sh in de clone."""
-    script = ('. "$CLAUDE_ENV_FILE"; for t in git gh claude java mvn gradle node npm; do printf "%-7s" $t; '
+    script = ('. "$CLAUDE_ENV_FILE"; for t in git gh claude java mvn gradle sbt node npm; do printf "%-7s" $t; '
               'command -v $t || echo ontbreekt; done; java -version 2>&1 | head -1; mvn -v 2>/dev/null | head -1; '
               'node -v 2>/dev/null; claude --version; gh auth status 2>&1 | grep -E "Logged in|Token scopes"; '
               'claude auth status 2>&1 | grep -i -E "logged|login|method" | head -2; '
@@ -623,8 +624,9 @@ def lock_nemen():
 
 
 def selecteer(namen):
+    """Met namen precies die projecten, anders alleen die met `autonoom: true` (de allowlist)."""
     nu = datetime.now(timezone.utc)
-    lijst = [p for p in projecten() if not namen or p['name'] in namen]
+    lijst = [p for p in projecten() if p['name'] in namen or not namen and p['autonoom']]
     onbekend = set(namen) - {p['name'] for p in lijst}
     if onbekend:
         raise SystemExit('onbekend project: ' + ', '.join(sorted(onbekend)))
@@ -641,7 +643,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--dry-run', action='store_true', help='alleen tonen welke repo\'s een run krijgen')
     parser.add_argument('--prepare', action='store_true', help='clone klaarzetten en de tools tonen')
-    parser.add_argument('--repo', action='append', default=[], help='alleen dit project (herhaalbaar)')
+    parser.add_argument('--repo', action='append', default=[], help='alleen dit project, ook zonder autonoom: true (herhaalbaar)')
     parser.add_argument('--model', default=DEFAULT_MODEL, help='model voor claude --model (standaard %(default)s)')
     parser.add_argument('--timeout', type=int, default=DEFAULT_TIMEOUT, help='minuten per run (standaard %(default)s)')
     args = parser.parse_args()
@@ -666,6 +668,9 @@ def main():
             print('zou bijwerken: ' + regel)
         for project, prs, besluit, reden in selecteer(args.repo):
             print(regel_tonen(project, prs, besluit, reden))
+        uit = [p['name'] for p in projecten() if not p['autonoom']]
+        if not args.repo and uit:
+            print('niet autonoom: ' + ', '.join(uit))
         return
     # Zo is in runner.log te zien of launchd elk half uur start.
     print('-- %s' % nu_lokaal().isoformat())

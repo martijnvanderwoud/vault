@@ -1,6 +1,7 @@
 ---
 description: Extra stappen van de Dependabot-routine voor react-notifications (GitFlow met release naar master)
 repo: Flow-Cloud-Systems/react-notifications
+autonoom: true
 ---
 
 # Dependabot-routine: react-notifications
