@@ -71,6 +71,12 @@ Handmatig (stoppunten):
 - Het overzicht van de hoofdissues controleren: klopt het dat dit uitgerold wordt?
 - De `rc`-branches van infra mergen en conflicten oplossen.
 
+## Volgende stap
+
+Stap 1 (overzicht) is klaar op 2026-11-12. Volgende sessie: stap 2, release branches maken.
+Start in `~/vault` met: "Ga verder met stap 2 uit [[release-candidates-staging]]". Begin met
+één project (`ats`), samen met de hand, en leg vast wat per project verschilt.
+
 ## Open vragen
 
 - Welke repo's staan precies op de vaste lijst? (Voorstel staat in het antwoord van
