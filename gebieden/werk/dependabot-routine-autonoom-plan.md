@@ -308,6 +308,18 @@ uitknop per repo: regel weg, en de runner slaat de repo over.
   verslagen, `geweigerd` en `aandacht`. Let vooral op de eigen stappen die nog nooit autonoom
   liepen: de release-PR's van `react-notifications` en `profile-presentation-design`, de codegen
   van `rostering-api` en sbt met Scala Steward in `notifications`.
+- [ ] Controlepunt na donderdag 2026-11-19: alle runs van week 47 nagekeken in het dashboard
+  (verslagen, `geweigerd` en `aandacht`). Week 46 telt niet als hele ronde: alles stond pas aan
+  op woensdag 2026-11-11 om 16:51, en de repo's van maandag en dinsdag hebben nog geen autonome
+  run gehad. Loop daarbij na:
+  - de release-PR's van `react-notifications` en `profile-presentation-design`
+  - de codegen van `rostering-api`
+  - sbt met Scala Steward in `notifications`
+  - `cata` en `roep`: Maven-versie in `.sdkmanrc` blijft staan en staat in het verslag
+  - een tweede run in dezelfde week krijgt een eigen bestandsnaam (op 2026-11-12 stond
+    `ats` #318 klaar voor een tweede run in week 46)
+
+  Gaat dat goed, dan zijn stap 10 en het plan klaar.
 
 Klaar als: alle repo's aan staan en een hele ronde is gedraaid.
 
