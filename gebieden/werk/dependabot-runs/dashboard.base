@@ -43,7 +43,7 @@ views:
       - formula.wanneer
       - aandacht
     sort:
-      - property: repo
+      - property: formula.wanneer
         direction: ASC
     columnSize:
       formula.project: 220
