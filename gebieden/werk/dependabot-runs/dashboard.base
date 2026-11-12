@@ -42,9 +42,7 @@ views:
       - formula.issue_link
       - formula.wanneer
       - aandacht
-    sort:
-      - property: formula.wanneer
-        direction: ASC
+    sort: []
     columnSize:
       formula.project: 220
       formula.toestand: 240
