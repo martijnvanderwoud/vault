@@ -49,6 +49,20 @@ Pompkracht 1079,65 u en Construct 0,55 u.
 `/uren` (`.claude/skills/uren/SKILL.md`) draait `uren.py --schrijf` (ververst dus ook [[uren-overzicht]]), vertaalt "per 6 november" of "details" naar de
 juiste opties en vat de stand samen. Alleen lezen; uren loggen valt erbuiten.
 
+## Uren naar YouTrack
+
+`/uren-naar-youtrack` (`.claude/skills/uren-naar-youtrack/SKILL.md`) draait
+`scripts/uren_naar_youtrack.py [--dag JJJJ-MM-DD] [--uitvoeren]` en vervangt het dagelijks met de hand
+overnemen van de tijd per taak naar YouTrack. Zonder `--uitvoeren` toont het alleen het plan.
+
+- Issue-ID = begin van de taaknaam (`Tasks.Description`, via `TimeEntries.TaskID`). Taken zonder ID worden gemeld en overgeslagen.
+- Per issue en dag precies één work item van mij (zoals ik het altijd met de hand deed: zonder tekst en
+  zonder type, datum = middernacht UTC van de lokale dag). Idempotent: aanmaken als het ontbreekt,
+  duur bijwerken als die afwijkt, niets doen als die klopt. Meerdere items met een andere som worden
+  gemeld, niet aangepast. Er wordt nooit iets verwijderd.
+- Gevalideerd 12-11-2026: voor 10-11 en 11-11 komt het script precies uit op mijn handmatige boekingen.
+- De LogMyTime-toegang (`key`, `get_all`, datums) staat in `scripts/logmytime.py` en wordt gedeeld met `uren.py`.
+
 ## Export-observaties
 
 - Het issuenummer zit alleen in het begin van de taaknaam (`PKP-890 …`); kolom `issue_id` is leeg.
