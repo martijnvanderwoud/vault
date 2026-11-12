@@ -16,4 +16,4 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[dependabot-routine]] — Werknotitie van mijn Dependabot-routine, als basis voor een projectoverstijgende skill
 - [[release-candidates-staging]] — Werkwijze en logboek voor het voorbereiden van release candidates voor een uitrol naar staging bij Pompkracht, met kandidaten voor automatisering
 - [[uren-overzicht]] — Urenoverzicht 2026 met declarabel per klant, target, vrij-budget en gereserveerde vrije uren
-- [[urenregistratie]] — Urenregistratie in LogMyTime, de logica van de Excel-urenstand en de LogMyTime API
+- [[urenregistratie]] — Urenregistratie in LogMyTime, de logica van de urenstand (voorheen Excel) en de LogMyTime API

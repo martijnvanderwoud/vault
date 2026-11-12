@@ -1,39 +1,55 @@
 ---
-description: Huidige stand, volgende stap (vrije dagen als CSV, skill /uren) en backlog van de vault
+description: Overzicht van alle plannen in de vault (lopend, afgerond) en de backlog van ideeën
 tags: [vault, roadmap]
 ---
 
 # Roadmap van de vault
 
-Zie [[vault-doel]] voor het waarom en [[vault-beslissingen]] voor de gemaakte keuzes.
+Overzicht van alle plannen, niet de plannen zelf. Elk plan heeft een eigen notitie met stappen,
+voortgang en bevindingen. Hier staat per plan alleen de stand en de volgende stap. Zie [[vault-doel]] voor
+het waarom en [[vault-beslissingen]] voor de gemaakte keuzes.
 
-## Huidige stand (10-11-2026)
+Bijgewerkt op 12-11-2026.
 
-- Structuur: `inbox/ dagboek/ gebieden/ lijsten/ data/ scripts/ .claude/skills/`, elke map een gegenereerde `index.md`.
-- Hooks werken (getest): PostToolUse Write|Edit → index; SessionEnd → index + commit.
-- `.gitignore` uitgebreid (secrets, `.claude/settings.local.json`, `.trash/`, Office-lockbestanden `~$*`).
-- Gepusht naar GitHub.
-- Daily notes: Obsidian staat ingesteld op `dagboek/` met formaat `YYYY/YYYY-MM-DD`.
-- `data/declarabele-uren-2026.xlsx` staat in de vault als tussenoplossing (binair, slecht te diffen); toegevoegd op 7-11-2026.
-- `scripts/uren.py` (10-11-2026) leest de uren uit de LogMyTime API en reproduceert de Excel-stand exact (gevalideerd per 10-11-2026). `LOGMYTIME_API_KEY` staat in `.env`.
-- `data/vrije-dagen-2026.csv` (10-11-2026): gereserveerde vrije uren uit de Excel; `uren.py` toont vrij gereserveerd (33,0 u) en wat er na reserveringen overblijft (0,45 u).
+## Lopend
 
-## Volgende stap: vrije dagen en skill `/uren`
+| Plan | Stand | Volgende stap |
+|---|---|---|
+| [[dependabot-routine-autonoom-plan]] (Debbie) | Stap 1 t/m 9 klaar; alle 21 repo's staan sinds 11-11 op autonoom | Stap 10: controlepunt na donderdag 19-11, alle runs van week 47 nakijken in het dashboard |
+| [[release-candidates-staging]] | Stap 1 (overzicht) klaar; stap 2 (release branches) bezig: `ats` klaar, `insights` lokaal klaar | `insights` pushen, daarna per soort repo met de hand en dan een script |
+| [[agents-dashboard-plan]] | Vastgelegd 11-11, nog niet begonnen | Stap 1: statusvorm en gedeelde module |
 
-Details en achtergrond in [[urenregistratie]].
+## Afgerond
 
-1. ~~`scripts/uren.py` (stdlib, alleen lezen) dat de Excel-stand reproduceert~~ (klaar 10-11-2026).
-2. ~~Gereserveerde vrije uren (Excel kolom J, K, L) naar `data/vrije-dagen-2026.csv`, en `uren.py` laten tonen: vrij gereserveerd en het verschil met vrij over~~ (klaar 10-11-2026).
-3. ~~Skill `/uren`~~ (`.claude/skills/uren/SKILL.md`, klaar 10-11-2026): draait `uren.py` en vat de stand samen; nog niet getest vanuit een nieuwe sessie.
-4. ~~Cijfers gevalideerd tegen de Excel~~ (klaar 11-11-2026).
-5. ~~Overzichtsnotitie [[uren-overzicht]]~~ (klaar 11-11-2026): `uren.py --schrijf` schrijft stand, per klant, per maand en vrije uren weg; `/uren` ververst die bij elke run.
-6. Excel uitfaseren.
+| Wat | Klaar | Waar |
+|---|---|---|
+| Fundament: mappen, indexen, hooks, GitHub | 7-11-2026 | [[vault-beslissingen]] |
+| Urenstand uit LogMyTime, skill `/uren`, Excel uitgefaseerd | 12-11-2026 | [[urenregistratie]], [[uren-overzicht]] |
+| Uren naar YouTrack, skill `/uren-naar-youtrack` | 12-11-2026 | [[urenregistratie]] |
+| Dependabot-routine als skill `/dependabot-routine` | 9-11-2026, testruns t/m 10-11 | [[dependabot-routine]] |
+
+Werkwijze om een terugkerende taak uit een project om te zetten in een skill:
+[[vault-skill-maken-vanuit-project]].
 
 ## Backlog / ideeën (nog niet beslist)
 
-- **Uren, vervolg:** stopwatch starten/stoppen via API (`/start PKP-123`) met afronding op 3 min — eerst checken of de API een starttijd accepteert. Alternatief: tijd schrijven in YouTrack zelf (heeft time tracking + REST API).
-- **Nirvana** (GTD-taakbeheer): community-MCP `@sgoettschkes/nirvana-mcp`, 17 leestools, schrijven nog niet. Gebruikt de ongedocumenteerde API; login via MD5 van wachtwoord → langlevend token. Eerst afwegen of ik dat token aan een third-party package geef. Gebruik: ochtendoverzicht, weekly review.
-- **TrainingPeaks:** trainingen klaarzetten is veel handwerk. Automatiseren via browser, Playwright of interne API is **verboden** door de Terms of Use (art. 13, 18, 23; versie 28-7-2026). Officiële API alleen voor goedgekeurde ontwikkelaars. Opties: berekening in de vault die trainingen invoerklaar opmaakt; of platform met open API (bv. intervals.icu). Nog uitzoeken.
+- **Uren, vervolg:** stopwatch starten/stoppen via de API (`/start PKP-123`), met afronding op
+  3 min. Eerst checken of de API een starttijd accepteert.
+- **Nirvana** (GTD-taakbeheer): community-MCP `@sgoettschkes/nirvana-mcp`, 17 leestools, schrijven
+  nog niet. Gebruikt de ongedocumenteerde API; login via MD5 van wachtwoord → langlevend token.
+  Eerst afwegen of ik dat token aan een third-party package geef. Gebruik: ochtendoverzicht,
+  weekly review.
+- **TrainingPeaks:** trainingen klaarzetten is veel handwerk. Automatiseren via browser, Playwright
+  of interne API is **verboden** door de Terms of Use (art. 13, 18, 23; versie 28-7-2026).
+  Officiële API alleen voor goedgekeurde ontwikkelaars. Opties: berekening in de vault die
+  trainingen invoerklaar opmaakt; of platform met open API (bv. intervals.icu). Nog uitzoeken.
 - **Lijsten:** boeken om te lezen, bewaarplekken ("waar ligt wat").
 - **Semantisch zoeken** zodra grep tekortschiet.
 - **Push** automatiseren (cron of hook) als ik vertrouwd ben met de flow.
+
+## Onderhoud
+
+- Nieuw plan: eigen notitie met voortgang (zoals [[agents-dashboard-plan]]) en een regel onder
+  `Lopend`.
+- Plan klaar: regel naar `Afgerond`. Stappen en bevindingen blijven in de notitie van het plan.
+- Idee wordt een plan: weg uit de backlog, regel onder `Lopend`.

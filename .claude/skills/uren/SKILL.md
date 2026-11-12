@@ -1,6 +1,6 @@
 ---
 name: uren
-description: Toont mijn urenstand uit LogMyTime - declarabele uren per klant, het target, vrij opgenomen uren, gereserveerde vrije uren en wat er overblijft van het vrij-budget. Gebruik deze skill zodra ik vraag naar mijn uren, mijn urenstand, hoeveel ik declarabel ben, hoeveel vrije uren ik heb opgenomen of over heb, of de stand per een bepaalde datum, ook als ik het woord skill of /uren niet gebruik. Niet voor het loggen of corrigeren van uren, en niet voor vragen over de Excel zelf.
+description: Toont mijn urenstand uit LogMyTime - declarabele uren per klant, het target, vrij opgenomen uren, gereserveerde vrije uren en wat er overblijft van het vrij-budget. Gebruik deze skill zodra ik vraag naar mijn uren, mijn urenstand, hoeveel ik declarabel ben, hoeveel vrije uren ik heb opgenomen of over heb, of de stand per een bepaalde datum, ook als ik het woord skill of /uren niet gebruik. Niet voor het loggen of corrigeren van uren.
 allowed-tools: Bash(/usr/bin/python3 -I ~/vault/scripts/uren.py*)
 ---
 

@@ -25,3 +25,4 @@ in [[vault-roadmap]].
 | Urenscript haalt elke run alle uren van de periode op, geen incrementele cache (10-11-2026) | Eén klein request (`$filter` + `$select`, ~3 requests totaal, limiet 500 per dag). Incrementeel via `LastChangeTime` mist verwijderde entries, waardoor een totaal stil fout kan zijn. Alleen afgesloten maanden cachen kan later als het te zwaar wordt. |
 | Urenscript rondt niets af (10-11-2026) | Ik rond zelf al af bij het loggen (3 minuten); het script telt `DurationSeconds` op. |
 | Uren van projecten zonder klant tellen als niet-declarabel (10-11-2026) | Het LogMyTime-project "Niet declarabel" heeft geen klant en wordt in de Excel ook niet meegeteld. |
+| Excel-urenstand uitgefaseerd (12-11-2026) | `uren.py` reproduceert de stand exact (gevalideerd per 10-11 en 11-11), reserveringen staan in `data/vrije-dagen-2026.csv`. Binair bestand in git was slecht te diffen; history bewaart de laatste versie. |

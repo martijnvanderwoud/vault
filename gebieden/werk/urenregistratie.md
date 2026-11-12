@@ -1,5 +1,5 @@
 ---
-description: Urenregistratie in LogMyTime, de logica van de Excel-urenstand en de LogMyTime API
+description: Urenregistratie in LogMyTime, de logica van de urenstand (voorheen Excel) en de LogMyTime API
 tags: [werk, uren]
 ---
 
@@ -7,13 +7,14 @@ tags: [werk, uren]
 
 Ik registreer tijd in LogMyTime (stopwatch per YouTrack-issue). Tijden rond ik zelf al af
 bij het loggen (naar beneden op 3 minuten = 0,05 u); scripts rekenen dus niet nog eens af
-en tellen `DurationSeconds` gewoon op. Dagelijks werk ik de Excel bij vanuit de
-LogMyTime-export. Cijfers nooit uit het hoofd rekenen: altijd via een script op data
+en tellen `DurationSeconds` gewoon op. De stand komt uit `/uren`; de Excel is uitgefaseerd
+op 12-11-2026. Cijfers nooit uit het hoofd rekenen: altijd via een script op data
 in `data/`. Plannen staan in [[vault-roadmap]].
 
-## Excel-logica
+## Excel-logica (historisch)
 
-`declarabele-uren-2026.xlsx`, Blad1:
+De Excel `declarabele-uren-2026.xlsx` is op 12-11-2026 uit de vault verwijderd (staat nog in de
+git-history). `uren.py` volgt deze logica:
 
 - Target = werkdagen sinds 1-1 × uren per weekdag: ma 6,5 / di 6,5 / wo 4,5 / do 6,25 / vr 4,25 (28 u/week).
 - Declarabel = cumulatief per klant (Pompkracht, Construct), handmatig overgenomen.
@@ -23,6 +24,8 @@ in `data/`. Plannen staan in [[vault-roadmap]].
 - Target telt `NETWORKDAYS.INTL` van startdatum tot en met einddatum (beide inclusief), zonder feestdagen.
 - Validatiepunt: stand per 10-11-2026 (einddatum in B6): Pompkracht 1092,40 u, Construct 0,55 u
   (samen 1092,95 u declarabel), werkuren 1255,5 u, vrij opgenomen 162,55 u van 196 u, gereserveerd 33,0 u.
+- Laatste validatiepunt vóór uitfaseren, stand per 11-11-2026: Pompkracht 1097,05 u, Construct 0,55 u,
+  werkuren 1260,0 u, vrij opgenomen 162,4 u, gereserveerd 33,0 u. `uren.py --tot 2026-11-11` identiek.
 
 ## LogMyTime API
 
@@ -42,7 +45,7 @@ Pompkracht 1079,65 u en Construct 0,55 u.
 - Klant volgt uit project; projecten zonder klant ("Niet declarabel", 8,75 u per 10-11) tellen niet als declarabel.
 - Entries met een `AbsenceID` worden overgeslagen. Alle 2026-entries hebben `TypeID` 2 en geen afwezigheid.
 - Lokale datum (Europe/Amsterdam) bepaalt bij welke dag een entry hoort.
-- Gereserveerde vrije uren staan in `data/vrije-dagen-2026.csv` (kolommen `omschrijving`, `gepland_uren`, `nog_gereserveerd_uren`, in uren; uit Excel kolom J, K, L ×24). Het script telt `nog_gereserveerd_uren` op en toont ook vrij over min gereserveerd. Gepland totaal 196 u (= budget), nog gereserveerd 33,0 u (Dag voor kerst 5,0 u, Kerstvakantie 28,0 u). Bij een geplande dag die voorbij is: `nog_gereserveerd_uren` op 0 zetten.
+- Gereserveerde vrije uren staan in `data/vrije-dagen-2026.csv` (kolommen `omschrijving`, `gepland_uren`, `nog_gereserveerd_uren`, in uren; oorspronkelijk uit Excel kolom J, K, L ×24; nu de bron). Het script telt `nog_gereserveerd_uren` op en toont ook vrij over min gereserveerd. Gepland totaal 196 u (= budget), nog gereserveerd 33,0 u (Dag voor kerst 5,0 u, Kerstvakantie 28,0 u). Bij een geplande dag die voorbij is: `nog_gereserveerd_uren` op 0 zetten.
 
 ## Skill
 
