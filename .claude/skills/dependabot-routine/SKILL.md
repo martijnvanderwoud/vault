@@ -224,8 +224,13 @@ de status opnieuw, want de vorige merge kan die veranderen:
 ```bash
 gh pr view <n> --json mergeable,statusCheckRollup \
   --jq '"mergeable=\(.mergeable) checks=\([.statusCheckRollup[]|select((.conclusion // .state)=="SUCCESS")]|length)/\(.statusCheckRollup|length)"'
-gh pr merge <n> --squash
+gh pr merge <n> --squash --subject "<issue-id> <PR-titel> (#<n>)"
 ```
+
+- `<issue-id>` is het ID van de subtask uit stap 0, `<PR-titel>` de titel van de PR zoals
+  hij is. Het issuenummer moet in de squash-commit staan: die commit blijft, en het
+  staging-overzicht (`scripts/staging_overzicht.py`) koppelt commits via dat nummer aan
+  een hoofdissue.
 
 - `mergeable=UNKNOWN` betekent meestal dat GitHub nog aan het herberekenen is na de
   vorige merge. Sla de PR dan niet over: kijk na een paar seconden opnieuw, en vraag het
@@ -559,8 +564,11 @@ squash-merge als de PR groen is:
 
 ```bash
 gh pr checks <n> --watch --interval 10
-gh pr merge <n> --squash
+gh pr merge <n> --squash --subject "<issue-id> <titel> (#<n>)"
 ```
+
+Gebruik als `--subject` dezelfde titel als de PR, zodat het issuenummer ook in de
+squash-commit staat (zie stap 1).
 
 Is de PR niet groen, of `mergeable=CONFLICTING`, leg het mij dan voor. Autonoom: stop.
 

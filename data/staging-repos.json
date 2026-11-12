@@ -1,0 +1,24 @@
+{
+  "org": "Flow-Cloud-Systems",
+  "infra": "infra",
+  "repos": [
+    {"repo": "ats", "rol": "image"},
+    {"repo": "cata", "rol": "image"},
+    {"repo": "iam", "rol": "image"},
+    {"repo": "iam-login-ui", "rol": "frontend", "in": "iam"},
+    {"repo": "insights", "rol": "image"},
+    {"repo": "more", "rol": "image"},
+    {"repo": "notifications", "rol": "image"},
+    {"repo": "portal", "rol": "image"},
+    {"repo": "portal-ui-common", "rol": "frontend", "in": "portal-employee-ui portal-worker-ui"},
+    {"repo": "portal-employee-ui", "rol": "frontend", "in": "portal"},
+    {"repo": "portal-enrollment-ui", "rol": "frontend", "in": "portal"},
+    {"repo": "portal-worker-ui", "rol": "frontend", "in": "portal"},
+    {"repo": "profile-presentation-ui", "rol": "image"},
+    {"repo": "roep", "rol": "image"},
+    {"repo": "rostering-api", "rol": "image"},
+    {"repo": "rostering-application", "rol": "image"},
+    {"repo": "rostering-engine", "rol": "image"},
+    {"repo": "rostering-ui", "rol": "image"}
+  ]
+}
