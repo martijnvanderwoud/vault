@@ -9,15 +9,15 @@
           "ctime": 1794411681695,
           "path": "gebieden/werk/dependabot-runs/debbie-dashboard.md",
           "title": "Debbie dashboard"
-        },
-        {
-          "type": "file",
-          "ctime": 1794411755553,
-          "path": "gebieden/werk/dependabot-routine-autonoom-plan.md",
-          "title": "Depandabot routine autonoom plan"
         }
       ],
       "title": "Pompkracht"
+    },
+    {
+      "type": "file",
+      "ctime": 1794486552253,
+      "path": "gebieden/werk/uren-overzicht.md",
+      "title": "Urenoverzicht 2026"
     }
   ]
 }
