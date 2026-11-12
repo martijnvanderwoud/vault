@@ -44,6 +44,11 @@ Geef de cijfers uit de output kort weer in het Nederlands, in dezelfde volgorde:
 declarabel (per klant), target, vrij opgenomen met het budget van 196 u, gereserveerd
 en wat er na reservering overblijft. Gebruik een decimale komma. Noem de peildatum en dat het overzicht in `gebieden/werk/uren-overzicht.md` is bijgewerkt.
 
+Vraag ik of ik voor of achter loop op target, kijk dan alleen naar "Vrij na reservering":
+positief is voor (met dat aantal uren), 0 is op target, negatief is achter. Declarabel
+versus target zegt daar niets over, want de opgenomen vrije uren zitten in dat verschil.
+Zie "Voor- of achterlopen op target" in `gebieden/werk/urenregistratie.md`.
+
 Wijkt een stand af van wat ik eerder noemde of van het validatiepunt in de notitie,
 zeg dat dan, maar trek zelf geen conclusie over de oorzaak.
 

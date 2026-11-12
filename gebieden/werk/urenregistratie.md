@@ -27,6 +27,18 @@ git-history). `uren.py` volgt deze logica:
 - Laatste validatiepunt vóór uitfaseren, stand per 11-11-2026: Pompkracht 1097,05 u, Construct 0,55 u,
   werkuren 1260,0 u, vrij opgenomen 162,4 u, gereserveerd 33,0 u. `uren.py --tot 2026-11-11` identiek.
 
+## Voor- of achterlopen op target
+
+"Voor of achter op target" betekent bij mij: kijk naar **Vrij na reservering** (vrij over min
+gereserveerd), niet naar declarabel versus target. Declarabel ligt door de opgenomen vrije uren
+altijd onder het target; dat is geen achterstand.
+
+- Positief: ik loop voor, met dat aantal uren (er zijn meer vrije uren over dan ik nog gereserveerd heb).
+- 0: precies op target.
+- Negatief: ik loop achter, met dat aantal uren.
+
+Voorbeeld per 12-11-2026: vrij na reservering 0,60 u, dus 0,60 u voor op target.
+
 ## LogMyTime API
 
 - Sleutel: beheeromgeving → "Eigenes Profil bearbeiten" → "Neuen API-Schlüssel generieren"; in `.env` als `LOGMYTIME_API_KEY`.
