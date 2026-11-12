@@ -50,6 +50,16 @@ Gestart op 2026-11-12.
   bouwen: tag zetten in de RC-stap, en de zoekregel in de Dependabot-skill aanpassen.)
 - **Configuratie in infra staat bovenaan in het overzicht**, want daar controleer ik het. Voor
   de rc-branches in infra maak ik nooit vooraf een PR; daar hoeft niet naar gezocht te worden.
+- **Release branches via één generiek script in de vault**, met de verschillen per repo als
+  configuratie in `data/staging-repos.json`. Geen just-recipe per project: er zijn geen
+  programmerende collega's, en zo blijft het snel aan te passen zolang we nog leren. Het script
+  werkt in schone clones (niet in `~/IdeaProjects`) en pusht met mijn eigen credentials, zodat
+  `pre-release.yml` gewoon start. (Een CI-workflow die pusht met `GITHUB_TOKEN` zou dat niet
+  doen.)
+- **Eén stoppunt voor alle repo's, niet één per repo.** Het script bereidt alle release
+  branches voor zonder te pushen en controleert per repo zelf of de diff alleen de versieregel
+  en hoogstens de base-imageregel raakt. De samenvatting (afwijkingen bovenaan) komt in dezelfde
+  notitie als het staging-overzicht: één controlemoment. Daarna één keer `--push`.
 - **Hoofdissues worden afgeleid uit de commits.** Uit de issuenummers in de commits sinds de
   vorige release volg je de parent, en zo nodig weer de parent daarvan, tot je bij het
   hoofdissue uitkomt dat op het bord staat.
@@ -73,18 +83,31 @@ Handmatig (stoppunten):
 
 ## Volgende stap
 
-Stap 1 (overzicht) is klaar op 2026-11-12. Volgende sessie: stap 2, release branches maken.
-Start in `~/vault` met: "Ga verder met stap 2 uit [[release-candidates-staging]]". Begin met
-één project (`ats`), samen met de hand, en leg vast wat per project verschilt.
+Stap 1 (overzicht) is klaar op 2026-11-12. Stap 2 (release branches) is bezig: per soort repo
+één repo met de hand, daarna een script (zie de beslissingen). Start in `~/vault` met: "Ga verder
+met stap 2 uit [[release-candidates-staging]]".
+
+Stand aan het eind van 2026-11-12:
+
+- `ats` (Maven + plugin): klaar, RC `12.10.0-rc.0`.
+- `insights` (Gradle zonder plugin): `release/1.31.0` staat **lokaal, nog niet gepusht**. De diff
+  is gecontroleerd en goedgekeurd. Eerst pushen en de run volgen.
+- Daarna met de hand: `rostering-application` (Gradle + plugin; kijk ook of `rostering-engine`
+  dezelfde plugin heeft), `notifications` (sbt), `rostering-api` (npm met image).
+- Dan het script; de overige Maven-repo's (`cata`, `more`, `roep`) en de npm-images
+  (`profile-presentation-ui`, `rostering-ui`) gaan daar meteen doorheen.
+- Als laatste de frontendketen naar `portal` en `iam`.
+- De lokale checkouts van `ats` en `insights` staan op hun release branch, niet op `develop`.
 
 ## Open vragen
 
 - Welke repo's staan precies op de vaste lijst? (Voorstel staat in het antwoord van
   2026-11-12; nog bevestigen.)
-- Hoe maak je per project een release branch, en waar zitten de verschillen?
-- Frontend-releases: hoe maak je die (git-flow, `npm version`, CI)? Hoe komt de versie in de
-  POM (property, handmatig)?
-- Hoe zien de RC-tags eruit, en waar lees je ze af (CI-run, git-tag, registry)?
+- Hoe maak je per project een release branch, en waar zitten de verschillen? (Maven met
+  gitflow-maven-plugin, Gradle met een gitflow-plugin of met command-line git-flow; per repo
+  vastleggen.)
+- Frontend-releases: hoe komt de versie in de POM van `portal` (bij `iam`: property
+  `iam.login-ui.version` in het `pre-release`-profiel)?
 - Infra: hoe heet de repo, waar staan de worktrees, en welke bestanden bevatten de image tags?
 - Hoe bepaal je "sinds de vorige release": vanaf `master`, of vanaf de laatste tag?
 
@@ -94,11 +117,24 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
 
 1. **Overzicht maken** (script): `/usr/bin/python3 -I scripts/staging_overzicht.py --uit
    gebieden/werk/staging-releases/<datum>.md`. Daarna controleer ik het zelf (stoppunt).
+2. **Release branch per image-repo** (per repo, nu nog met de hand):
+   1. `master` en `develop` bijwerken (`git pull --ff-only`).
+   2. `sdk env` (anders draait de verkeerde Maven- of Java-versie), dan de release branch
+      maken met de gitflow-tool van het project. Die haalt `-SNAPSHOT` van de versie af en
+      commit ("Update versions for release").
+   3. Het base Docker image in het `pre-release`-profiel naar de nieuwste versie pinnen en
+      committen ("Update base Docker image for production builds"). Dit is het enige wat in
+      deze workflow wordt bijgewerkt; de parent doet Dependabot.
+   4. Stoppunt: de diff `develop..release/X.Y.Z` controleren.
+   5. Pushen. `pre-release.yml` leidt `X.Y.Z-rc.N` af, bouwt met Jib en zet de git-tag. Die
+      git-tag is de image tag.
 
 ## Automatiseringskandidaten
 
 | Stap | Wat herhaalt zich | Idee | Status |
 | --- | --- | --- | --- |
+| 2 | Nieuwste base image + digest opzoeken | Docker Hub tags-API, `sort -V` op `25.0.x_y-jdk` | idee |
+| 2 | Release branch, pin, push, wachten op tag | script per repo in een schone checkout | idee |
 
 ## Logboek
 
@@ -149,4 +185,31 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
 - De GitHub-API faalt soms kortstondig. Daardoor viel PKI-906 bij één run weer uit het
   overzicht. `gh()` probeert het nu drie keer, en een PR-lookup die echt mislukt, meldt het
   script op stderr.
+
+### 2026-11-12, stap 2: `ats`
+
+- Vorige release (`release/12.9.0`) nagekeken: twee commits, "Update versions for release" (de
+  gitflow-maven-plugin) en "Update base Docker image for production builds" (met de hand).
+- `ats`: Maven, gitflow-maven-plugin 1.21.0. `mvn -B gitflow:release-start` maakte
+  `release/12.10.0` zonder vragen (de versie uit de POM, zonder `-SNAPSHOT`) en pusht niet zelf.
+- Zonder `sdk env` draaide Maven 3.9.16 in plaats van 3.10.0 uit `.sdkmanrc`.
+- Base image: `jib.from.image` in het `pre-release`-profiel van `eclipse-temurin:25.0.4_7-jdk`
+  naar `25.0.5_8-jdk@sha256:b8705e93…`. Het veld `digest` uit
+  `hub.docker.com/v2/repositories/library/eclipse-temurin/tags` is de multi-arch index: voor
+  `25.0.4_7` gaf het precies de digest die al in de POM stond.
+- Gepusht; run 43250762775 was groen. RC-tag **`12.10.0-rc.0`** (op `c6fb246c`).
+- Lokale checkout was prima voor deze ronde. Bij automatiseren een schone checkout gebruiken.
+
+### 2026-11-12, stap 2: `insights`
+
+- Gradle (multi-module), geen gitflow-plugin; command-line `git flow` 0.4.1 met de config in de
+  repo. Vorige release (`1.30.0`) had één commit "Update for the upcoming release": de versie in
+  `gradle.properties` en het base image in `application/build.gradle.kts` (de tak
+  `buildProfile == "preRelease"` in `jib.from.image`). Afgerond via een PR naar `master` (#236).
+- `git flow release start 1.31.0`, daarna dezelfde commit met `1.31.0` en temurin `25.0.5_8`.
+  Nog niet gepusht.
+- Inventaris per soort: Maven + plugin (`ats`, `cata`, `iam`, `more`, `portal`, `roep`), Gradle +
+  plugin (`rostering-application` `hyas.gitflow`, `rostering-engine` `libs.plugins.gitflow`),
+  Gradle zonder plugin (`insights`), sbt (`notifications`), npm met image (`rostering-api`,
+  `profile-presentation-ui`, `rostering-ui`).
 
