@@ -18,6 +18,7 @@
       "Bash(gh pr view *)",
       "Bash(gh pr checks *)",
       "Bash(gh pr merge * --squash)",
+      "Bash(gh pr merge * --squash --subject *)",
       "Bash(gh pr merge * --merge --subject *)",
       "Bash(gh pr create *)",
       "Bash(gh pr close *)",
