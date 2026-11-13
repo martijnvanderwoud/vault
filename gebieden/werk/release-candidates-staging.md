@@ -158,9 +158,8 @@ met de frontendketen). Alles staat in de uitrolnotitie [[2026-11-12]]. Start de 
 `~/vault` met: "Ga verder met stap 5 (infra-PR) van [[release-candidates-staging]]". Volgende acties:
 
 1. ~~Frontendketen, `iam` en `portal`~~: klaar op 2026-11-13, alle dertien RC's zijn er.
-2. Stap 5: gescript op 2026-11-13 (`staging_infra_pr.py`), droog getest. Nog te doen: de allow-regel
-   voor het script in `.claude/settings.json` (doe ik zelf), dan `staging_release_branches.py --tag`
-   (tag op 32 hoofdissues) en `staging_infra_pr.py --uit …` voor de echte PR.
+2. ~~Stap 5~~: klaar op 2026-11-13. Tag op 32 hoofdissues, infra-PR
+   [#999](https://github.com/Flow-Cloud-Systems/infra/pull/999). Nakijken en mergen doe ik zelf.
 3. Als de werkwijze af is: deze planpagina omzetten naar duidelijke documentatie (werkwijze,
    schema, commando's), en het logboek en de afwegingen apart houden of inkorten.
 
@@ -559,3 +558,13 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
 - Dependabot-skill: de zoekregel voor de parent sluit `tag: -{release candidate}` uit.
 - Claude mocht de allow-regel voor het nieuwe script niet zelf in `.claude/settings.json` zetten; die
   zet ik zelf.
+
+### 2026-11-13, stap 5: eerste echte run
+
+- `--tag`: 32 hoofdissues getagd. **Bug:** het command `tag {release candidate}` maakte een tag met de
+  accolades in de naam. De tag (`123-6`) hernoemd naar `release candidate`; de issues hielden hem. Het
+  script voegt de tag nu toe via de REST-API (`POST issues/<id>/tags` met het id van de bestaande tag)
+  en stopt als die tag niet precies één keer bestaat. Opnieuw droog: 32 stonden er al.
+- `staging_infra_pr.py --opnieuw`: beide rc-branches zonder conflict gerebased, gepusht, PR
+  [#999](https://github.com/Flow-Cloud-Systems/infra/pull/999) naar `develop`: drie commits, dertien
+  bestanden, mergeable.

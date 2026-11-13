@@ -35,6 +35,8 @@ import re
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.parse
 import urllib.request
 
 DATA = os.path.expanduser('~/vault/data/staging-repos.json')
@@ -323,6 +325,12 @@ def taggen(cfg, state, droog=False):
         _, per_root, _, _, _ = overzicht.analyseer(cfg['org'], repo, keys, base, head)
         for root_id, ids in per_root.items():
             hoofd.setdefault(root_id, {}).setdefault(repo, sorted(ids - {root_id}))
+    # Via de REST-API met het id: een command als `tag {release candidate}` neemt de accolades mee in de naam.
+    tag_ids = [t['id'] for t in overzicht.youtrack('tags', 'id,name', '&query=%s&$top=50' % urllib.parse.quote(TAG))
+               if t['name'] == TAG]
+    if len(tag_ids) != 1 and not droog:
+        raise SystemExit('Tag "%s" niet precies één keer gevonden in YouTrack (%d); maak hem eerst aan' % (TAG, len(tag_ids)))
+    tag_id = tag_ids[0] if tag_ids else None
     getagd, al, fouten = [], [], []
     for root_id in sorted(hoofd):
         issue = overzicht.issue(root_id)
@@ -336,13 +344,11 @@ def taggen(cfg, state, droog=False):
         if droog:
             getagd.append(root_id + ' (droog)')
             continue
-        r = subprocess.run(['/usr/bin/python3', '-I', os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                                   'youtrack_command.py'),
-                            root_id, 'tag {%s}' % TAG], capture_output=True, text=True)
-        if r.returncode == 0:
+        try:
+            overzicht.youtrack_post('issues/%s/tags' % root_id, {'id': tag_id})
             getagd.append(root_id)
-        else:
-            fouten.append('%s: %s' % (root_id, (r.stderr.strip().splitlines() or ['onbekende fout'])[-1]))
+        except urllib.error.HTTPError as e:
+            fouten.append('%s: HTTP %s' % (root_id, e.code))
     state['hoofdissues'] = {r: {'summary': (overzicht.issue(r) or {}).get('summary', ''),
                                 'upgrade': overzicht.is_upgrade(r), 'repos': hoofd[r]} for r in sorted(hoofd)}
     state['tag'] = {'release_inhoud': {r: list(bh) for r, bh in inhoud.items()}, 'getagd': getagd,

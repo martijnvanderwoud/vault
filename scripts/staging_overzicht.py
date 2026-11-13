@@ -45,6 +45,13 @@ def youtrack(path, fields, extra=''):
     return json.load(urllib.request.urlopen(urllib.request.Request(url, headers=headers)))
 
 
+def youtrack_post(path, data, fields='id'):
+    url = '%s/%s?fields=%s' % (BASE, path, urllib.parse.quote(fields))
+    headers = {'Authorization': 'Bearer ' + TOKEN, 'Accept': 'application/json', 'Content-Type': 'application/json'}
+    return json.load(urllib.request.urlopen(urllib.request.Request(url, data=json.dumps(data).encode(),
+                                                                   headers=headers, method='POST')))
+
+
 def gh(path, pogingen=5):
     """gh api met een paar herkansingen: de GitHub-API faalt soms kortstondig."""
     for poging in range(pogingen):
