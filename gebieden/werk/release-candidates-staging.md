@@ -60,6 +60,33 @@ Gestart op 2026-11-12.
   branches voor zonder te pushen en controleert per repo zelf of de diff alleen de versieregel
   en hoogstens de base-imageregel raakt. De samenvatting (afwijkingen bovenaan) komt in dezelfde
   notitie als het staging-overzicht: één controlemoment. Daarna één keer `--push`.
+- **Het script pusht zelf, met een allow-regel op alleen dat script.** Geen algemene
+  `git push`-toestemming voor Claude: in `.claude/settings.json` komt een allow-regel op
+  `/usr/bin/python3 -I ~/vault/scripts/<release-script>.py`. Het script bepaalt wat er gepusht
+  mag worden: alleen `release/*`-branches van repo's uit `data/staging-repos.json`, en alleen
+  na een geslaagde diff-controle. Met de hand pushen is geen onderdeel van de werkwijze.
+- **Het script maakt de release branches zelf, zonder gitflow-tools** (besloten 2026-11-13). Alle
+  Maven-repo's hebben één `pom.xml`, dus de tools doen niets anders dan een branch vanaf
+  `develop`, `-SNAPSHOT` van één regel afhalen en committen. Zelf doen is sneller (geen
+  `sdk env`, geen Maven- of Gradle-start), voorkomt de CRLF-valkuil van `releaseStart` en geeft
+  één codepad. De snapshot-controle van de plugins neemt het script over: na het aanpassen van
+  de versie mag er geen `-SNAPSHOT` meer in de buildbestanden staan.
+- **Eén commit per repo: "Prepare release X.Y.Z"**, met de versie en het base image samen. De
+  berichten die per soort verschilden, vervallen.
+- **Clones in `~/staging-runs/<repo>`**, naar het voorbeeld van `~/dependabot-runs`. Niet in
+  `~/.cache`: tussen het klaarzetten en `--push` staat daar de enige kopie van de release
+  branches en het state-bestand.
+- **Verschillen per repo als configuratie in `data/staging-repos.json`:** per repo het bestand
+  en de regex van de versieregel (bij npm alleen lezen uit `package.json`) en het bestand en de
+  soort van het base image. De soorten (`temurin`, `node`, `node-slim`, `nginx-alpine`) staan één
+  keer bovenaan, met de Docker Hub-repo, het tagpatroon en het patroon van de huidige regel.
+- **Diff-controle per repo:** alleen de geconfigureerde bestanden veranderen, elke gewijzigde
+  regel past voor en na in het verwachte patroon, en elke regex matcht precies één keer. Een
+  repo die niet slaagt, slaat `--push` over. `--push` controleert ook dat de branch en
+  `origin/develop` nog gelijk zijn aan de stand bij het klaarzetten, pusht alleen
+  `release/X.Y.Z` (nooit `--force`) en verzamelt de RC-tags in de notitie en in JSON voor stap 5.
+- **`iam` en `portal` vallen buiten de eerste versie** (`"handmatig": true`): eerst moet de
+  frontendversie in het `pre-release`-profiel worden aangepast. Het script meldt ze alleen.
 - **Hoofdissues worden afgeleid uit de commits.** Uit de issuenummers in de commits sinds de
   vorige release volg je de parent, en zo nodig weer de parent daarvan, tot je bij het
   hoofdissue uitkomt dat op het bord staat.
@@ -83,21 +110,38 @@ Handmatig (stoppunten):
 
 ## Volgende stap
 
-Stap 1 (overzicht) is klaar op 2026-11-12. Stap 2 (release branches) is bezig: per soort repo
-één repo met de hand, daarna een script (zie de beslissingen). Start in `~/vault` met: "Ga verder
-met stap 2 uit [[release-candidates-staging]]".
+Stap 1 (overzicht) is klaar op 2026-11-12. Stap 2 (release branches) is klaar voor alle
+image-repo's behalve `iam` en `portal`: elf RC's, waarvan zes via `staging_release_branches.py`.
+Nu volgt de frontendketen. Start in `~/vault` met: "Ga verder met de frontendketen uit stap 2
+van [[release-candidates-staging]]".
 
-Stand aan het eind van 2026-11-12:
+Aanpak voor de frontendketen, net als eerder: eerst met de hand kijken en de stappen voorleggen,
+dan pas iets veranderen.
+
+- Echte releases (geen RC) naar de private npm-repo van `iam-login-ui`, `portal-ui-common`,
+  `portal-employee-ui`, `portal-worker-ui` en `portal-enrollment-ui`. `portal-ui-common` gaat eerst,
+  want die zit in `portal-employee-ui` en `portal-worker-ui`.
+- De nieuwe versies in de POM van `iam` (property `iam.login-ui.version` in het
+  `pre-release`-profiel) en van `portal` (nog uitzoeken), en dan de release branches van `iam` en
+  `portal`.
+- Daarna bekijken of dit in het script kan (nu `"handmatig"` in `data/staging-repos.json`).
+- Daarna stap 5: de infra-PR met alle image tags, uit `~/staging-runs/state.json` plus de vijf
+  RC's die met de hand gemaakt zijn (zie de stand).
+
+Stand op 2026-11-13:
 
 - `ats` (Maven + plugin): klaar, RC `12.10.0-rc.0`.
-- `insights` (Gradle zonder plugin): `release/1.31.0` staat **lokaal, nog niet gepusht**. De diff
-  is gecontroleerd en goedgekeurd. Eerst pushen en de run volgen.
-- Daarna met de hand: `rostering-application` (Gradle + plugin; kijk ook of `rostering-engine`
-  dezelfde plugin heeft), `notifications` (sbt), `rostering-api` (npm met image).
-- Dan het script; de overige Maven-repo's (`cata`, `more`, `roep`) en de npm-images
-  (`profile-presentation-ui`, `rostering-ui`) gaan daar meteen doorheen.
+- `insights` (Gradle zonder plugin): klaar op 2026-11-13, RC `1.31.0-rc.0`.
+- `rostering-application` (Gradle + plugin): klaar op 2026-11-13, RC `1.13.0-rc.0`.
+  `rostering-engine` heeft dezelfde plugin.
+- `notifications` (sbt): klaar op 2026-11-13, RC `1.6.0-rc.0`.
+- `rostering-api` (npm met image): klaar op 2026-11-13, RC `1.10.0-rc.0`.
+- Via het script (2026-11-13): `cata` `4.16.0-rc.0`, `more` `3.16.0-rc.0`, `roep` `7.29.0-rc.0`,
+  `rostering-engine` `1.13.0-rc.0`, `profile-presentation-ui` `1.21.0-rc.0`, `rostering-ui`
+  `1.6.0-rc.0`.
 - Als laatste de frontendketen naar `portal` en `iam`.
-- De lokale checkouts van `ats` en `insights` staan op hun release branch, niet op `develop`.
+- De lokale checkouts van `ats`, `insights`, `rostering-application`, `notifications` en
+  `rostering-api` staan op hun release branch, niet op `develop`.
 
 ## Open vragen
 
@@ -117,7 +161,12 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
 
 1. **Overzicht maken** (script): `/usr/bin/python3 -I scripts/staging_overzicht.py --uit
    gebieden/werk/staging-releases/<datum>.md`. Daarna controleer ik het zelf (stoppunt).
-2. **Release branch per image-repo** (per repo, nu nog met de hand):
+2. **Release branches** (script, eenmalig): `/usr/bin/python3 -I scripts/staging_release_branches.py
+   --uit gebieden/werk/staging-releases/<datum>.md`, na stap 1. Daarna de sectie "Release
+   branches" controleren (stoppunt) en daarna hetzelfde commando met `--push`. Hieronder de oude werkwijze met
+   de hand, ter referentie.
+
+   Met de hand (per repo):
    1. `master` en `develop` bijwerken (`git pull --ff-only`).
    2. `sdk env` (anders draait de verkeerde Maven- of Java-versie), dan de release branch
       maken met de gitflow-tool van het project. Die haalt `-SNAPSHOT` van de versie af en
@@ -133,8 +182,8 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
 
 | Stap | Wat herhaalt zich | Idee | Status |
 | --- | --- | --- | --- |
-| 2 | Nieuwste base image + digest opzoeken | Docker Hub tags-API, `sort -V` op `25.0.x_y-jdk` | idee |
-| 2 | Release branch, pin, push, wachten op tag | script per repo in een schone checkout | idee |
+| 2 | Nieuwste base image + digest opzoeken | Docker Hub tags-API, per soort een tagpatroon | klaar (`staging_release_branches.py`) |
+| 2 | Release branch, pin, push, wachten op tag | één script voor alle repo's, in schone clones | klaar (`staging_release_branches.py`) |
 
 ## Logboek
 
@@ -213,3 +262,94 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
   Gradle zonder plugin (`insights`), sbt (`notifications`), npm met image (`rostering-api`,
   `profile-presentation-ui`, `rostering-ui`).
 
+### 2026-11-13, stap 2: `insights` gepusht
+
+- `release/1.31.0` gepusht (`develop` was sinds gisteren niet veranderd). Run 43404376764 van
+  "Pre-release build" was groen in ongeveer 5 minuten. RC-tag **`1.31.0-rc.0`** (op `ea99bee`).
+- Claude kreeg geen toestemming voor `git push`, dus deze keer pushte ik met de hand via
+  `! git -C … push`. Voor het script is dat geen optie; zie de beslissing over de allow-regel.
+
+### 2026-11-13, stap 2: `rostering-application`
+
+- Gradle 9.9.0 en Java 25.0.5 uit `.sdkmanrc`, plugin `com.hyas.gitflow` 1.0.2 (alias
+  `hyas.gitflow`). `rostering-engine` heeft dezelfde plugin onder de alias `gitflow`. De
+  taak heet `releaseStart`, zonder opties. Uit de bytecode blijkt dat hij niet pusht: hij
+  controleert op snapshot-dependencies, haalt `-SNAPSHOT` van de versie in `gradle.properties`
+  af, maakt `release/X.Y.Z` en commit "Updated gradle.properties for vX.Y.Z release".
+- **Valkuil:** de commit van `releaseStart` nam ook `gradlew.bat` mee, CRLF → LF (globaal
+  `core.autocrlf=input`, en het bestand staat met CRLF in de repo). Opgelost door de twee
+  commits opnieuw te maken met `gradlew.bat` van `develop`. Het script moet dit opvangen: de
+  diff-controle op alleen de versie- en base-imageregel vangt het, en het script zet
+  `core.autocrlf=false` in zijn schone clones. Structureel: `.gitattributes` in `insights`,
+  `rostering-api`, `rostering-application` en `rostering-engine` (PKI-1125, op het bord).
+- Base image in `application/build.gradle.kts` (preRelease-tak van `jib.from.image`) van
+  `25.0.4_7-jdk` naar `25.0.5_8-jdk@sha256:b8705e93…`. De Docker Hub-digest van `25.0.4_7`
+  kwam overeen met de bestaande pin.
+- `release/1.13.0` (`a26b3fc`, `5238682`) gepusht. Run 43406389260 van "Pre-release build" was
+  groen in ongeveer 4 minuten. RC-tag **`1.13.0-rc.0`** (op `5238682`). De back-upbranch van
+  voor de fix is weggegooid.
+
+### 2026-11-13, stap 2: `notifications`
+
+- sbt 2.0.12, geen gitflow- of `sbt-release`-plugin. Command-line `git flow` met de config in
+  de repo, net als bij `insights`. De vorige release (`1.5.0`) had één commit "Update for the
+  upcoming release": `ThisBuild / version` en de preRelease-tak van `jibBaseImage`, beide in
+  `build.sbt`. Geen CRLF-bestanden in de index.
+- `git flow release start 1.6.0` maakte alleen de branch. Daarna dezelfde commit (`d80de6e`) met
+  `1.6.0` en temurin `25.0.5_8-jdk@sha256:b8705e93…`. Alleen `build.sbt` gestaged.
+- Voor het script: dit is dezelfde soort als `insights` ("git flow + bestanden aanpassen"),
+  alleen met andere bestanden en regex'en. Het verschil kan in `data/staging-repos.json`.
+- Gepusht. Run 43407696727 van "Pre-release build" was groen in ongeveer 2 minuten. RC-tag
+  **`1.6.0-rc.0`** (op `d80de6e`).
+
+### 2026-11-13, stap 2: `rostering-api`
+
+- npm (Node 24), command-line `git flow`. De versie in `package.json` staat op `develop` al op
+  de releaseversie (`1.10.0`; npm kent geen `-SNAPSHOT`). Na de release zet "Update for next
+  development version" de versie verder en de `Dockerfile` terug op `FROM node:24`. De release
+  zelf is daardoor één commit: "Pin base Docker image".
+- Base image: `FROM node:24` → `node:24.22.3@sha256:9d266751…` (Docker Hub, regex `24\.\d+\.\d+`).
+- De oude pin (`node:24.21.0@sha256:64af38…`, gezet op 2026-09-22) is niet meer de digest die
+  Docker Hub nu voor `24.21.0` geeft: de tag is op 2026-10-06 opnieuw gebouwd. De oude index
+  bestaat nog. De digest onder een volledige versietag kan dus verschuiven; pinnen op de digest
+  blijft daarom zinvol, en de controle "oude digest = Hub-digest" werkt niet voor node.
+- Voor het script: bij npm de versie in `package.json` vergelijken met de branchnaam en alleen
+  de `FROM`-regel aanpassen.
+- `git flow release start 1.10.0`, commit `40f1928`, alleen de `Dockerfile` gestaged. Gepusht;
+  run 43408965593 van "Pre-release build" was groen in ongeveer 2 minuten. RC-tag
+  **`1.10.0-rc.0`** (op `40f1928`).
+
+### 2026-11-13, stap 2: script, klaarzetfase
+
+- `data/staging-repos.json` uitgebreid: bovenaan `versies` (maven, gradle, sbt, npm: bestand,
+  regex van de versieregel, globs voor de snapshot-controle) en `images` (temurin, node,
+  node-slim, nginx-alpine: Docker Hub-repo, tagpatroon, patroon van de huidige referentie,
+  sjabloon). Per repo `versie`, `image` (bestand en soort) en bij `iam` en `portal` `handmatig`.
+- `scripts/staging_release_branches.py [--repos A,B] [--uit BESTAND]`: clones in
+  `~/staging-runs/<repo>`, state in `~/staging-runs/state.json`. Met `--uit` komt de samenvatting
+  als sectie tussen markers in de uitrolnotitie (vóór de eerste `##`), en een volgende run
+  vervangt die sectie. Let op: `staging_overzicht.py --uit` overschrijft het hele bestand, dus
+  eerst het overzicht maken en daarna de release branches.
+- Eerste run: `cata`, `more`, `roep`, `rostering-engine`, `profile-presentation-ui` en
+  `rostering-ui` klaar voor push. De vijf repo's van vandaag kwamen als afwijking (release branch
+  staat al op de remote), `iam` en `portal` onder "Met de hand". Diffs van `cata`,
+  `profile-presentation-ui` en `rostering-engine` met de hand nagekeken: alleen de versie- en
+  imageregel. `rostering-ui`: `nginx:alpine` → `nginx:1.31.8-alpine@sha256:713fc2eb…`.
+
+### 2026-11-13, stap 2: script, `--push`
+
+- `--push` gebouwd: per repo uit de state controleert het of de lokale branch en `origin/develop`
+  nog dezelfde SHA hebben als bij het klaarzetten en of er geen release branch op de remote staat.
+  Daarna pusht het alleen `refs/heads/release/X.Y.Z` (zonder `--force`). Het volgt de runs met
+  `gh run list` (elke 30 seconden, maximaal 40 minuten) en haalt de RC-tag op die naar de gepushte
+  commit wijst. Alles komt in `~/staging-runs/state.json` (de bron voor stap 5) en in de sectie
+  in de uitrolnotitie.
+- Allow-regel in `.claude/settings.json` op `/usr/bin/python3 -I …/staging_release_branches.py`
+  (relatief, met `~` en absoluut). De deny op `git push*` blijft staan: alleen het script mag
+  pushen.
+- Eerste echte run: alle zes groen. RC's: `cata` `4.16.0-rc.0`, `more` `3.16.0-rc.0`,
+  `profile-presentation-ui` `1.21.0-rc.0`, `roep` `7.29.0-rc.0`, `rostering-engine`
+  `1.13.0-rc.0`, `rostering-ui` `1.6.0-rc.0`.
+- De vijf repo's die vandaag met de hand gingen, staan in de uitrolnotitie onder "Afwijkingen"
+  (release branch stond al op de remote). Hun RC's staan in de stand hierboven. Bij de volgende
+  uitrol gaan ze gewoon door het script.
