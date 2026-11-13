@@ -3,18 +3,27 @@
 
 Leest de image-repo's uit data/staging-repos.json en maakt per repo in ~/staging-runs/<repo>
 een branch release/X.Y.Z vanaf origin/develop, met één commit "Prepare release X.Y.Z": de
-versie zonder -SNAPSHOT (bij npm blijft package.json zoals hij is) en het base image gepind op
-de nieuwste tag met digest van Docker Hub. Daarna controleert het per repo of de diff alleen
-die regels raakt, en legt het de stand vast in ~/staging-runs/state.json. Er wordt niets
-gepusht.
+versie zonder -SNAPSHOT (bij npm blijft package.json zoals hij is), het base image gepind op
+de nieuwste tag met digest van Docker Hub, en bij iam en portal de frontendversies in het
+pre-release-profiel (uit package.json op master van de frontend). Daarna controleert het per repo
+of de diff alleen die regels raakt, en legt het de stand vast in ~/staging-runs/state.json. Van
+de image-repo's wordt niets gepusht: dat is het stoppunt.
+Tegelijk start het de frontendketen uit staging_frontends.py, parallel en zonder stoppunt. Die
+released de frontends naar de npm-repo en pusht en merget daarvoor zelf, alleen bij frontends
+uit de config: feature/prepare-release-* en feature/next-version-*, en PR's naar develop en
+master. De repo's
+zonder frontends worden meteen klaargezet, iam en portal pas als hun eigen frontends
+gepubliceerd zijn.
 Met --push worden de klaargezette branches uit de state gepusht, alleen als de branch en
 origin/develop nog precies zo zijn als bij het klaarzetten. Daarna volgt het script de
 pre-release-runs en zet het de RC-tags in de state.
 Gebruik: staging_release_branches.py [--push] [--repos A,B] [--uit BESTAND]. Zonder --uit gaat
 de samenvatting naar stdout; met --uit komt hij als sectie in die notitie.
 """
+import base64
 import datetime
 import fnmatch
+import importlib.util
 import json
 import os
 import re
@@ -26,6 +35,7 @@ import urllib.request
 DATA = os.path.expanduser('~/vault/data/staging-repos.json')
 RUNS = os.path.expanduser('~/staging-runs')
 STATE = os.path.join(RUNS, 'state.json')
+FRONTENDS = os.path.join(RUNS, 'frontends.json')
 START, EIND = '<!-- release-branches:start -->', '<!-- release-branches:eind -->'
 
 
@@ -142,6 +152,16 @@ def klaarzetten(cfg, entry):
                                              lambda m: image)
     if oud_image != nieuw_image:
         wijzigingen.append((oud_image, nieuw_image))
+
+    frontends = []
+    for prop, frontend in sorted(entry.get('frontends', {}).items()):
+        nieuw_f = frontend_versie(org, frontend)
+        oud_f, nieuw_regel = vervang_eenmaal(pad, soort['bestand'],
+                                             r'(?<=<%s>)\d+\.\d+\.\d+(?=</%s>)' % (re.escape(prop), re.escape(prop)),
+                                             lambda m: nieuw_f)
+        if oud_f != nieuw_regel:
+            wijzigingen.append((oud_f, nieuw_regel))
+        frontends.append((frontend, re.search(r'\d+\.\d+\.\d+', oud_f).group(0), nieuw_f))
     if not wijzigingen:
         raise Afwijking('niets te wijzigen: versie en base image zijn al goed')
 
@@ -155,11 +175,29 @@ def klaarzetten(cfg, entry):
     if not bestanden <= verwacht:
         raise Afwijking('diff raakt onverwachte bestanden: %s' % ', '.join(sorted(bestanden - verwacht)))
     if weg != sorted(w[0] for w in wijzigingen) or erbij != sorted(w[1] for w in wijzigingen):
-        raise Afwijking('diff bevat andere regels dan de versie en het base image')
+        raise Afwijking('diff bevat andere regels dan de versie, het base image en de frontends')
     return {'versie': versie, 'branch': branch, 'sha': git(pad, 'rev-parse', 'HEAD').strip(),
             'develop': git(pad, 'rev-parse', 'origin/develop').strip(), 'commits': nieuw,
             'image_oud': base_ref(oud_image, cfg['images'][entry['image']['soort']]['huidig']),
-            'image_nieuw': image, 'versie_gewijzigd': entry['versie'] != 'npm'}
+            'image_nieuw': image, 'versie_gewijzigd': entry['versie'] != 'npm', 'frontends': frontends}
+
+
+def frontend_versie(org, frontend):
+    """De gereleasede versie van een frontend: package.json op master, na een geslaagde master-build.
+
+    Staat de frontend in het plan van staging_frontends.py maar is hij nog niet gepubliceerd, dan
+    eerst die keten afmaken: anders komt de vorige versie in de release branch.
+    """
+    if os.path.exists(FRONTENDS):
+        m = json.load(open(FRONTENDS))['repos'].get(frontend, {})
+        if m and 'gepubliceerd' not in m:
+            raise Afwijking('frontend %s is nog niet gepubliceerd (zie %s)' % (frontend, FRONTENDS))
+    pkg = json.loads(base64.b64decode(gh_json('api', 'repos/%s/%s/contents/package.json?ref=master' % (org, frontend))['content']))
+    runs = gh_json('run', 'list', '-R', '%s/%s' % (org, frontend), '--branch', 'master', '--workflow', 'master.yml',
+                   '--limit', '1', '--json', 'status,conclusion')
+    if not runs or runs[0]['conclusion'] != 'success':
+        raise Afwijking('laatste master-build van %s is niet geslaagd' % frontend)
+    return pkg['version']
 
 
 def pushen(org, repo, m):
@@ -236,14 +274,15 @@ def samenvatting(datum, resultaten, handmatig):
     klaar = [(r, m) for r, m in resultaten.items() if 'fout' not in m]
     if klaar:
         regels += ['### Branches', '',
-                   '| Repo | Branch | Commits | Versie | Base image | Status |',
-                   '| --- | --- | --- | --- | --- | --- |']
+                   '| Repo | Branch | Commits | Versie | Base image | Frontends | Status |',
+                   '| --- | --- | --- | --- | --- | --- | --- |']
         for r, m in klaar:
             status = ('RC `%s`' % m['rc'] if 'rc' in m else 'gepusht, run loopt' if 'gepusht' in m
                       else 'klaar voor push')
-            regels.append('| `%s` | `%s` | %d | %s | `%s` → `%s` | %s |' % (
+            frontends = '<br>'.join('`%s` %s → %s' % tuple(f) for f in m.get('frontends', [])) or '-'
+            regels.append('| `%s` | `%s` | %d | %s | `%s` → `%s` | %s | %s |' % (
                 r, m['branch'], m['commits'], '-SNAPSHOT eraf' if m['versie_gewijzigd'] else 'ongewijzigd (npm)',
-                kort(m['image_oud']), kort(m['image_nieuw']), status))
+                kort(m['image_oud']), kort(m['image_nieuw']), frontends, status))
         regels.append('')
     if handmatig:
         regels += ['### Met de hand', '']
@@ -297,11 +336,16 @@ def main():
 
     datum = datetime.date.today().isoformat()
     resultaten = {}
-    for entry in images:
+    keten = frontendketen(cfg, images)
+    # Repo's zonder frontends eerst; iam en portal wachten alleen op hun eigen frontends.
+    for entry in sorted(images, key=lambda e: bool(e.get('frontends'))):
         if entry.get('handmatig'):
             continue
         print('%s …' % entry['repo'], file=sys.stderr)
         try:
+            mislukt = [f for f in sorted(set(entry.get('frontends', {}).values())) if not keten.gepubliceerd(f)]
+            if mislukt:
+                raise Afwijking('frontend %s is niet gepubliceerd (zie de sectie Frontends)' % ', '.join(mislukt))
             resultaten[entry['repo']] = klaarzetten(cfg, entry)
         except Afwijking as e:
             resultaten[entry['repo']] = {'fout': str(e)}
@@ -313,7 +357,29 @@ def main():
     if vorige.get('datum') == datum:
         resultaten = {**vorige['repos'], **resultaten}
     json.dump({'datum': datum, 'repos': resultaten}, open(STATE, 'w'), indent=2)
+    if keten:
+        keten.afwachten()
+        keten.uitvoer(uit)
     uitvoer(uit, samenvatting(datum, resultaten, handmatig))
+
+
+def frontendketen(cfg, images):
+    """Start de frontendketen uit staging_frontends.py voor de frontends van deze image-repo's.
+
+    Laden via het pad: met python3 -I staat de map van het script niet op sys.path.
+    """
+    nodig = {f for e in images for f in e.get('frontends', {}).values()}
+    if not nodig:
+        return None
+    spec = importlib.util.spec_from_file_location(
+        'staging_frontends', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'staging_frontends.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.controleer_token()
+    keten = module.Keten(cfg, nodig)
+    keten.plannen()
+    keten.starten()
+    return keten
 
 
 def uitvoer(uit, sectie):

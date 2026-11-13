@@ -1,6 +1,7 @@
 ---
 description: Werkwijze en logboek voor het voorbereiden van release candidates voor een uitrol naar staging bij Pompkracht, met kandidaten voor automatisering
 tags: [pompkracht, release, staging, routine]
+cssclasses: [wide-page]
 ---
 
 # Release candidates voor staging
@@ -85,8 +86,32 @@ Gestart op 2026-11-12.
   repo die niet slaagt, slaat `--push` over. `--push` controleert ook dat de branch en
   `origin/develop` nog gelijk zijn aan de stand bij het klaarzetten, pusht alleen
   `release/X.Y.Z` (nooit `--force`) en verzamelt de RC-tags in de notitie en in JSON voor stap 5.
-- **`iam` en `portal` vallen buiten de eerste versie** (`"handmatig": true`): eerst moet de
-  frontendversie in het `pre-release`-profiel worden aangepast. Het script meldt ze alleen.
+- **Frontendversies in de release branch van `iam` en `portal`** (besloten 2026-11-13), niet als
+  losse commit op `develop`. Per repo staat in `data/staging-repos.json` onder `frontends` welke
+  property bij welke frontend hoort. `staging_release_branches.py` haalt de versie uit
+  `package.json` op `master` van de frontend (niet uit de dist-tag `latest`, die soms verkeerd
+  staat in Nexus), vervangt alleen een X.Y.Z-waarde (de property bovenaan met `develop` blijft
+  staan) en neemt die regels mee in de diff-controle. Staat de frontend in het plan van
+  `staging_frontends.py` maar is hij nog niet gepubliceerd, dan slaat het de repo over.
+- **Frontends zonder stoppunt, parallel; image-repo's met één gezamenlijk stoppunt** (besloten
+  2026-11-13). `staging_release_branches.py` (klaarzetten) start de frontendketen uit
+  `staging_frontends.py`: elke frontend in een eigen thread, die alleen wacht op de frontends die
+  hij nodig heeft. Intussen worden de image-repo's zonder frontends meteen klaargezet; `iam` wacht
+  alleen op `iam-login-ui`, `portal` op zijn drie frontends. Starten is niet pushen: alle
+  image-repo's samen hebben één stoppunt met de diff-controle, en daarna één `--push`.
+- **De frontendketen pusht en merget zelf**, onder de allow-regel van het releasescript, maar alleen
+  bij frontends uit de config: `prepare-release/*` en `next-version/*` (nooit `--force`) en PR's naar
+  `develop` en `master`, na groene checks. Automatische controles in plaats van een stoppunt:
+  develop moet nog op de stand uit het plan staan, de diff mag alleen de verwachte regels raken,
+  en de versie moet daarna precies zo in de npm-repo staan.
+- **Volgorde in de frontendketen:** eerst publiceren, dan pinnen. "Prepare release" van
+  `portal-employee-ui` en `portal-worker-ui` kan pas als `portal-ui-common` echt in de npm-repo
+  staat. De versie wordt letterlijk ingezet (`npm install --package-lock-only --prefer-online
+  pkg@X.Y.Z`, wat `^X.Y.Z` oplevert). "Update for next development version" volgt per frontend
+  direct na zijn publicatie, behalve bij `portal-ui-common`: die wacht ook op employee en worker.
+  Elke push naar `develop` van `portal-ui-common` start namelijk (via de dispatch na de build)
+  `update-lock-file` in employee en worker, en dat zet `portal-ui-common` weer op `@develop`. Te
+  vroeg zou dat de pin ongedaan maken voordat de release-PR gemerged is.
 - **Hoofdissues worden afgeleid uit de commits.** Uit de issuenummers in de commits sinds de
   vorige release volg je de parent, en zo nodig weer de parent daarvan, tot je bij het
   hoofdissue uitkomt dat op het bord staat.
@@ -110,13 +135,18 @@ Handmatig (stoppunten):
 
 ## Volgende stap
 
-Stap 1 (overzicht) is klaar op 2026-11-12. Stap 2 (release branches) is klaar voor alle
-image-repo's behalve `iam` en `portal`: elf RC's, waarvan zes via `staging_release_branches.py`.
-Nu volgt de frontendketen. Start in `~/vault` met: "Ga verder met de frontendketen uit stap 2
-van [[release-candidates-staging]]".
+Stap 1 (overzicht) is klaar op 2026-11-12. Stap 2 (release branches) is klaar op 2026-11-13 voor
+alle dertien image-repo's, waarvan acht via `staging_release_branches.py` (`iam` en `portal` samen
+met de frontendketen). Alles staat in de uitrolnotitie [[2026-11-12]]. Start de volgende sessie in
+`~/vault` met: "Ga verder met stap 5 (infra-PR) van [[release-candidates-staging]]". Volgende acties:
 
-Aanpak voor de frontendketen, net als eerder: eerst met de hand kijken en de stappen voorleggen,
-dan pas iets veranderen.
+1. ~~Frontendketen, `iam` en `portal`~~: klaar op 2026-11-13, alle dertien RC's zijn er.
+2. Stap 5: de infra-PR met alle image tags, uit `~/staging-runs/state.json` plus de vijf RC's die
+   met de hand gemaakt zijn (zie de stand).
+3. Als de werkwijze af is: deze planpagina omzetten naar duidelijke documentatie (werkwijze,
+   schema, commando's), en het logboek en de afwegingen apart houden of inkorten.
+
+Oorspronkelijke aanpak, ter referentie:
 
 - Echte releases (geen RC) naar de private npm-repo van `iam-login-ui`, `portal-ui-common`,
   `portal-employee-ui`, `portal-worker-ui` en `portal-enrollment-ui`. `portal-ui-common` gaat eerst,
@@ -139,7 +169,8 @@ Stand op 2026-11-13:
 - Via het script (2026-11-13): `cata` `4.16.0-rc.0`, `more` `3.16.0-rc.0`, `roep` `7.29.0-rc.0`,
   `rostering-engine` `1.13.0-rc.0`, `profile-presentation-ui` `1.21.0-rc.0`, `rostering-ui`
   `1.6.0-rc.0`.
-- Als laatste de frontendketen naar `portal` en `iam`.
+- Via het script met de frontendketen (2026-11-13): `iam` `6.23.0-rc.0` (met `iam-login-ui` 1.1.0),
+  `portal` `2.71.0-rc.0` (met employee 2.0.0, worker 1.1.0 en enrollment 2.0.0).
 - De lokale checkouts van `ats`, `insights`, `rostering-application`, `notifications` en
   `rostering-api` staan op hun release branch, niet op `develop`.
 
@@ -155,14 +186,77 @@ Stand op 2026-11-13:
 - Infra: hoe heet de repo, waar staan de worktrees, en welke bestanden bevatten de image tags?
 - Hoe bepaal je "sinds de vorige release": vanaf `master`, of vanaf de laatste tag?
 
+## Verloop van een run
+
+Wat er parallel loopt en wat op elkaar wacht bij `staging_release_branches.py` (klaarzetten), en
+waar het stoppunt zit:
+
+```mermaid
+flowchart LR
+    plan["Plan frontends<br>(±1 min)"]
+
+    subgraph S1["Spoor 1: frontends — parallel, geen stoppunt"]
+        puc["portal-ui-common<br>release → gepubliceerd"]
+        ilu["iam-login-ui<br>release → gepubliceerd"]
+        pen["portal-enrollment-ui<br>release → gepubliceerd"]
+        emp["portal-employee-ui<br>prepare → release → gepubliceerd"]
+        wrk["portal-worker-ui<br>prepare → release → gepubliceerd"]
+        puc --> emp
+        puc --> wrk
+    end
+
+    subgraph S2["Spoor 2: image-repo's — na elkaar klaargezet"]
+        rest["ats, cata, insights, more, notifications,<br>roep, rostering-*, profile-presentation-ui"]
+        iam["iam"]
+        portal["portal"]
+    end
+
+    plan --> puc
+    plan --> ilu
+    plan --> pen
+    plan --> rest
+    ilu -. wacht op .-> iam
+    emp -. wacht op .-> portal
+    wrk -. wacht op .-> portal
+    pen -. wacht op .-> portal
+
+    rest --> stop{{"STOP<br>diff-controle van alle image-repo's"}}
+    iam --> stop
+    portal --> stop
+    stop --> push["staging_release_branches.py --push<br>(apart commando)"]
+```
+
+Doorgetrokken pijlen: afhankelijkheden binnen een spoor en naar het stoppunt. Stippellijnen: de
+enige plekken waar een image-repo op een frontend wacht. De image-repo's hangen onderling niet
+van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zie hieronder).
+
+- Eerst het plan van de frontends (clones bijwerken, versies lezen, `npm view`). Daarna lopen
+  twee sporen tegelijk: de frontends elk in een eigen thread, en in de hoofdlijn van het script
+  de image-repo's na elkaar, eerst die zonder frontends en dan `iam` en `portal`.
+- De sporen raken elkaar op maar twee plekken: `iam` wacht op `iam-login-ui`, en `portal` op
+  employee, worker en enrollment. De andere image-repo's merken niets van de frontends.
+- Binnen de frontends: employee en worker wachten op de publicatie van `portal-ui-common`. De
+  volgende versie volgt per frontend direct na zijn publicatie; alleen die van `portal-ui-common`
+  wacht ook op employee en worker (zie de beslissing over de volgorde). Die volgende versies
+  staan niet in het schema; ze kunnen nog doorlopen terwijl ik de diffs bekijk. Het script
+  wacht wel op ze voordat het de samenvatting schrijft.
+- De frontends hebben geen stoppunt. Daar doen automatische controles het werk: de stand van
+  `develop`, de diff, groene checks, en precies die versie in de npm-repo. Het enige stoppunt is
+  de diff-controle van alle image-repo's samen. Daarna volgt `--push` als apart commando.
+- Dat de image-repo's na elkaar worden klaargezet en niet parallel, is bewust: dat kost een paar
+  seconden per repo (fetch, Docker Hub, één commit), terwijl de frontends minuten nodig hebben
+  voor checks en builds. Spoor 2 staat dus het grootste deel van de tijd te wachten op `portal`;
+  parallel klaarzetten zou nauwelijks iets schelen.
+
 ## Procedure
 
 Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
 
 1. **Overzicht maken** (script): `/usr/bin/python3 -I scripts/staging_overzicht.py --uit
    gebieden/werk/staging-releases/<datum>.md`. Daarna controleer ik het zelf (stoppunt).
-2. **Release branches** (script, eenmalig): `/usr/bin/python3 -I scripts/staging_release_branches.py
-   --uit gebieden/werk/staging-releases/<datum>.md`, na stap 1. Daarna de sectie "Release
+2. **Release branches en frontends** (script, eenmalig): `/usr/bin/python3 -I scripts/staging_release_branches.py
+   --uit gebieden/werk/staging-releases/<datum>.md`, na stap 1. Dit released ook de frontends
+   (zonder stoppunt); `staging_frontends.py --plan` toont vooraf wat dat wordt. Daarna de sectie "Release
    branches" controleren (stoppunt) en daarna hetzelfde commando met `--push`. Hieronder de oude werkwijze met
    de hand, ter referentie.
 
@@ -353,3 +447,75 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
 - De vijf repo's die vandaag met de hand gingen, staan in de uitrolnotitie onder "Afwijkingen"
   (release branch stond al op de remote). Hun RC's staan in de stand hierboven. Bij de volgende
   uitrol gaan ze gewoon door het script.
+
+### 2026-11-13, frontendketen: inventaris (nog niets veranderd)
+
+- Werkwijze tot nu toe (uit de geschiedenis van `portal-employee-ui`): (1) een PR "Prepare release"
+  naar `develop` die `portal-ui-common` van een develop-build naar de releaseversie zet (alleen bij
+  `portal-employee-ui` en `portal-worker-ui`), (2) een PR `develop` → `master` "Release X.Y.Z" met
+  een merge-commit, waarna `master.yml` `npm publish --tag latest` draait, (3) een PR "Update for
+  next development version" naar `develop`: minor-versie omhoog en `portal-ui-common` terug naar
+  een develop-build. Geen git-tags, geen branch protection.
+- De releaseversie staat al op `develop` (npm kent geen `-SNAPSHOT`): `portal-ui-common` 2.0.0,
+  `iam-login-ui` 1.1.0, `portal-employee-ui` 2.0.0, `portal-worker-ui` 1.1.0,
+  `portal-enrollment-ui` 2.0.0. Geen van deze versies staat al in de npm-repo. Alle develop-builds
+  zijn groen.
+- **Valkuil:** de dist-tag `latest` wijst bij alle vijf naar een develop-build (bijvoorbeeld
+  `2.0.0-develop.fc37b2e`). Een publish vanaf `master` zet hem weer goed. Een releaseversie dus
+  altijd uit `package.json` op `master` halen, niet uit `latest`.
+- `portal`: de properties `ui.worker.version`, `ui.enrollment.version` en `ui.employee.version` in
+  het `pre-release`-profiel (nu 1.0.0, 1.0.0 en 1.13.0); `download-ui.sh` doet `npm pack` op die
+  versie. Bij de vorige keer stond de wijziging als losse commit op `develop` ("Upgrade employee
+  UI", 2026-08-11). `iam`: `iam.login-ui.version` in het `pre-release`-profiel (nu 1.0.0).
+
+### 2026-11-13, frontendketen: gescript
+
+- `scripts/staging_frontends.py`: plan (alleen clones en `npm view`) en `--uitvoeren`. De volgorde
+  komt uit de `in`-velden: `portal-ui-common` eerst, daarna `iam-login-ui` en `portal-enrollment-ui`,
+  daarna employee en worker. Status in `~/staging-runs/frontends.json`, sectie tussen
+  `<!-- frontends:start -->`-markers in de uitrolnotitie, boven de release branches.
+- Of een versie gepubliceerd is, controleert het script met `npm view pkg@X.Y.Z version
+  --prefer-online` (exacte versie, geen dist-tag). Het script stopt als `NPM_TOKEN` ontbreekt.
+- Lokaal getest in de clone van `portal-employee-ui` (daarna teruggezet): de pin-stap met een
+  bestaande develop-build als stand-in verandert één regel in `package.json` (plus de lock file),
+  en `npm version 2.1.0 --no-git-tag-version` verandert alleen de drie versieregels. Een pin op
+  1.1.0 faalt terecht: die heeft een peer dependency op react-notifications 3.
+- `staging_release_branches.py`: `"handmatig"` bij `iam` en `portal` vervangen door `frontends`.
+  De regex is getest op de huidige POM's: hij vindt precies één regel per property, die in het
+  `pre-release`-profiel. De tabel met release branches heeft een kolom Frontends.
+- Omgebouwd naar een graaf: `Keten` in `staging_frontends.py` draait elke frontend in een eigen
+  thread met `threading.Event`s voor "gepubliceerd". `staging_release_branches.py` laadt de module
+  via het pad (`importlib`, want `-I` zet de scriptmap niet op `sys.path`) en wacht per image-repo
+  alleen op zijn eigen frontends. Droog getest met nep-stappen: `portal-ui-common`, `iam-login-ui`
+  en `portal-enrollment-ui` starten tegelijk, employee en worker zodra `portal-ui-common`
+  gepubliceerd is, en de volgende versie van `portal-ui-common` pas na employee en worker. Faalt
+  `portal-ui-common`, dan stoppen employee en worker en krijgt `portal-ui-common` geen volgende
+  versie; de rest gaat door.
+
+### 2026-11-13, frontendketen: eerste echte run
+
+- Gepubliceerd: `portal-ui-common` 2.0.0 (#45), `iam-login-ui` 1.1.0 (#34) en
+  `portal-enrollment-ui` 2.0.0 (#37); de release-PR's naar `master` gingen goed. `iam` staat klaar
+  voor push met `iam-login-ui` 1.0.0 → 1.1.0.
+- **Mislukt:** alle PR's naar `develop` (prepare release van employee #257 en worker #56, volgende
+  versie van iam-login-ui #35 en enrollment #38). De org-brede verplichte workflow "GitFlow Pull
+  Request Validator" (`Flow-Cloud-Systems/.github`, `git-workflow.yml`) accepteert naar `develop`
+  alleen `feature/*`, `hotfix/*` en `dependabot/*`. **Opgelost:** branches heten nu
+  `feature/prepare-release-X.Y.Z` en `feature/next-version-X.Y.Z`. Daardoor bleef `portal` liggen
+  en kreeg `portal-ui-common` terecht geen volgende versie.
+- **Bug:** het releasescript schreef de sectie Frontends met zijn eigen markers, waardoor de
+  uitrolnotitie door elkaar raakte. Met de hand hersteld; de keten schrijft nu zelf
+  (`Keten.uitvoer`).
+- **Aangepast:** een frontend die al in de npm-repo stond terwijl `develop` nog op die versie staat,
+  krijgt alsnog de volgende versie (bij een herstart na een halve run).
+- Herstart na het sluiten van de vier mislukte PR's: alles groen. Employee 2.0.0 en worker 1.1.0
+  gepubliceerd (prepare #258/#57, release #259/#58). Volgende versies: `portal-ui-common` 2.1.0
+  (#46, als laatste, na employee en worker), `iam-login-ui` 1.2.0 (#36), enrollment 2.1.0 (#39),
+  employee 2.1.0 (#260), worker 1.2.0 (#59). `iam` (`release/6.23.0`) en `portal`
+  (`release/2.71.0`) klaar voor push; diffs alleen versie, base image en frontendversies.
+- `--push` van `iam` en `portal`: beide groen, RC's `6.23.0-rc.0` en `2.71.0-rc.0`. Daarna crashte
+  het wegschrijven van de samenvatting: na de JSON-round-trip zijn de frontend-tuples lijsten
+  (`% tuple(f)` opgelost). Opnieuw `--push` slaat gepushte repo's over en schreef alleen de
+  samenvatting.
+- Sectiemarkers als Obsidian-commentaar (`%% … %%`) geprobeerd en teruggedraaid: ook die zijn in
+  Live Preview zichtbaar. De HTML-markers blijven; in de leesweergave zijn ze onzichtbaar.
