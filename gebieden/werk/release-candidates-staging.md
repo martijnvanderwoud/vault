@@ -152,16 +152,33 @@ Handmatig (stoppunten):
 
 ## Volgende stap
 
-Stap 1 (overzicht) is klaar op 2026-11-12. Stap 2 (release branches) is klaar op 2026-11-13 voor
-alle dertien image-repo's, waarvan acht via `staging_release_branches.py` (`iam` en `portal` samen
-met de frontendketen). Alles staat in de uitrolnotitie [[2026-11-12]]. Start de volgende sessie in
-`~/vault` met: "Ga verder met stap 5 (infra-PR) van [[release-candidates-staging]]". Volgende acties:
+Alle vijf automatische stappen zijn gebouwd en op 2026-11-13 gebruikt voor de eerste uitrol: overzicht,
+release branches met de frontendketen, de tag `release candidate` (32 hoofdissues) en infra-PR
+[#999](https://github.com/Flow-Cloud-Systems/infra/pull/999). Alles staat in de uitrolnotitie [[2026-11-12]].
+Start de volgende sessie in `~/vault` met: "Maak de skill voor [[release-candidates-staging]]". Volgende
+acties:
 
-1. ~~Frontendketen, `iam` en `portal`~~: klaar op 2026-11-13, alle dertien RC's zijn er.
-2. ~~Stap 5~~: klaar op 2026-11-13. Tag op 32 hoofdissues, infra-PR
-   [#999](https://github.com/Flow-Cloud-Systems/infra/pull/999). Nakijken en mergen doe ik zelf.
-3. Als de werkwijze af is: deze planpagina omzetten naar duidelijke documentatie (werkwijze,
-   schema, commando's), en het logboek en de afwegingen apart houden of inkorten.
+1. De skill `staging-release-candidates` maken in `.claude/skills/`, in de stijl van `dependabot-routine`,
+   met de vijf stappen en hun stoppunten:
+   1. overzicht (`staging_overzicht.py --uit …`), stoppunt: de hoofdissues controleren;
+   2. release branches en frontends (`staging_release_branches.py --uit …`), stoppunt: de afwijkingen en
+      diffs in de uitrolnotitie;
+   3. `--push`: pushen, tag zetten, wachten op de RC's;
+   4. infra-PR (`staging_infra_pr.py --uit …`), bij een conflict stoppen tot ik het heb opgelost, dan
+      opnieuw;
+   5. afsluiten met de link naar de PR; mergen doe ik zelf.
+
+   Eerst het concept voorleggen, pas daarna committen.
+2. De skill neemt het grootste deel van de documentatie over (werkwijze, commando's, stoppunten). Deze
+   planpagina daarna inkorten tot de beslissingen en het logboek, en "Open vragen" afsluiten: die zijn
+   allemaal beantwoord.
+3. Testen bij de volgende uitrol, met de skill. Let vooral op `ats`, `insights`, `notifications`,
+   `rostering-api` en `rostering-application`: die gingen deze keer met de hand en zijn nog niet door het
+   script klaargezet.
+
+Buiten dit plan: de tag weghalen bij de productie-uitrol (hoort bij de productiestap, nog niets gebouwd),
+de lokale checkouts van die vijf repo's in `~/IdeaProjects` terug naar `develop`, en PKI-1125
+(`.gitattributes`).
 
 Oorspronkelijke aanpak, ter referentie:
 
