@@ -6,8 +6,8 @@ description: Bereidt bij Pompkracht de release candidates voor een staging-uitro
 # Release candidates voor staging
 
 Draai vanuit `~/vault`. Alle stappen gaan via scripts in `scripts/`; jij start ze, leest hun
-uitvoer en legt de stoppunten aan mij voor. Achtergrond en beslissingen:
-[[release-candidates-staging]].
+uitvoer en legt de stoppunten aan mij voor. Het proces in het kort:
+[[release-candidates-staging]]; de beslissingen erachter: [[release-candidates-staging-beslissingen]].
 
 Uitgangspunt: voer alleen uit wat hieronder als regel staat. Een situatie zonder regel leg je
 aan mij voor met wat je ziet. Ga nooit om een fout van een script heen.
@@ -29,13 +29,13 @@ aan mij voor met wat je ziet. Ga nooit om een fout van een script heen.
 
 ## Uitrolnotitie
 
-De uitrolnotitie is `gebieden/werk/staging-releases/<datum>.md`, met `<datum>` de dag van
+De uitrolnotitie is `gebieden/werk/release-candidates-staging/staging-releases/<datum>.md`, met `<datum>` de dag van
 stap 1. Bepaal bij de start eerst of er nog een uitrol loopt. Neem de nieuwste notitie in die map
 (de namen zijn datums, dus de laatste op naam) en kijk of de infra-PR er al in staat:
 
 ```bash
-ls gebieden/werk/staging-releases/ | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}\.md$' | tail -1
-grep -c 'Gepusht op .*/pull/' gebieden/werk/staging-releases/<nieuwste>.md
+ls gebieden/werk/release-candidates-staging/staging-releases/ | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}\.md$' | tail -1
+grep -c 'Gepusht op .*/pull/' gebieden/werk/release-candidates-staging/staging-releases/<nieuwste>.md
 ```
 
 - **Geen notitie, of de PR staat erin (1):** de vorige uitrol is af. Begin een nieuwe bij stap 1,
@@ -53,7 +53,7 @@ Staat de uitrolnotitie van vandaag er al, draai dit dan niet zonder mijn akkoord
 `staging_overzicht.py --uit` overschrijft het hele bestand, ook de secties van stap 2–4.
 
 ```bash
-/usr/bin/python3 -I scripts/staging_overzicht.py --uit gebieden/werk/staging-releases/<datum>.md
+/usr/bin/python3 -I scripts/staging_overzicht.py --uit gebieden/werk/release-candidates-staging/staging-releases/<datum>.md
 /usr/bin/python3 -I scripts/staging_frontends.py --plan
 ```
 
@@ -75,7 +75,7 @@ released de frontends meteen en zonder stoppunt.
 ## 2. Release branches en frontends
 
 ```bash
-/usr/bin/python3 -I scripts/staging_release_branches.py --uit gebieden/werk/staging-releases/<datum>.md
+/usr/bin/python3 -I scripts/staging_release_branches.py --uit gebieden/werk/release-candidates-staging/staging-releases/<datum>.md
 ```
 
 Op de achtergrond. Dit start de frontendketen (released, pusht en merget zelf) en zet de
@@ -104,7 +104,7 @@ akkoord geef.
 ## 3. Pushen, taggen en wachten op de RC's
 
 ```bash
-/usr/bin/python3 -I scripts/staging_release_branches.py --push --uit gebieden/werk/staging-releases/<datum>.md
+/usr/bin/python3 -I scripts/staging_release_branches.py --push --uit gebieden/werk/release-candidates-staging/staging-releases/<datum>.md
 ```
 
 Op de achtergrond (tot 40 minuten). Het script controleert per repo of de branch en
@@ -117,7 +117,7 @@ een rode run (met de link). Een rode run of een fout leg je voor; zonder fouten 
 stap 4. Mislukte het taggen, dan kan het apart, eerst droog:
 
 ```bash
-/usr/bin/python3 -I scripts/staging_release_branches.py --tag --droog --uit gebieden/werk/staging-releases/<datum>.md
+/usr/bin/python3 -I scripts/staging_release_branches.py --tag --droog --uit gebieden/werk/release-candidates-staging/staging-releases/<datum>.md
 ```
 
 En pas na mijn akkoord zonder `--droog`.
@@ -128,7 +128,7 @@ De eerste keer in een uitrol met `--opnieuw`: `~/staging-runs/infra.json` bevat 
 stand van de vorige uitrol.
 
 ```bash
-/usr/bin/python3 -I scripts/staging_infra_pr.py --opnieuw --uit gebieden/werk/staging-releases/<datum>.md
+/usr/bin/python3 -I scripts/staging_infra_pr.py --opnieuw --uit gebieden/werk/release-candidates-staging/staging-releases/<datum>.md
 ```
 
 Het script rebaset de rc-branches van de hoofdissues in de release op een nieuwe

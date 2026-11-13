@@ -16,7 +16,7 @@ Bijgewerkt op 12-11-2026.
 | Plan | Stand | Volgende stap |
 |---|---|---|
 | [[dependabot-routine-autonoom-plan]] (Debbie) | Stap 1 t/m 9 klaar; alle 21 repo's staan sinds 11-11 op autonoom | Stap 10: controlepunt na donderdag 19-11, alle runs van week 47 nakijken in het dashboard |
-| [[release-candidates-staging]] | Stap 1 (overzicht) klaar; stap 2 (release branches) bezig: `ats` klaar, `insights` lokaal klaar | `insights` pushen, daarna per soort repo met de hand en dan een script |
+| [[release-candidates-staging]] | Alle stappen gescript, eerste uitrol op 13-11 (infra-PR #999), skill `staging-release-candidates` | Testen bij de volgende uitrol, met de skill |
 | [[agents-dashboard-plan]] | Vastgelegd 11-11, nog niet begonnen | Stap 1: statusvorm en gedeelde module |
 
 ## Afgerond

@@ -1,201 +1,15 @@
 ---
-description: Beslissingen en logboek van het voorbereiden van release candidates voor een staging-uitrol bij Pompkracht; de werkwijze staat in de skill staging-release-candidates
-tags: [pompkracht, release, staging, routine]
+description: Logboek van het opbouwen en automatiseren van de release candidates voor staging bij Pompkracht
+tags: [pompkracht, release, staging]
 cssclasses: [wide-page]
 ---
 
-# Release candidates voor staging
+# Release candidates voor staging: logboek
 
-Het voorbereiden van release candidates voor een staging-uitrol, stap voor stap vastgelegd en
-geautomatiseerd, net zoals bij [[dependabot-routine]]. Gestart op 2026-11-12.
+Hoe [[release-candidates-staging]] stap voor stap tot stand kwam, vanaf de eerste ronde met de hand
+op 2026-11-12. De beslissingen die eruit volgden, staan in [[release-candidates-staging-beslissingen]].
 
-De werkwijze, de commando's en de stoppunten staan in de skill `staging-release-candidates`
-(`.claude/skills/staging-release-candidates/SKILL.md`). Hier staan de beslissingen erachter en
-het logboek. De uitrolnotities staan in `staging-releases/`.
-
-## Beslissingen
-
-- **Altijd alle repo's van een vaste lijst.** Niet per swimlane selecteren: door Dependabot
-  verandert er na een paar weken toch overal iets. Dat er geen half werk in `develop` staat,
-  bewaak ik zelf.
-- **Eén PR met alle image tags** naar `develop` van infra.
-- **Configuratiewijzigingen in de `rc`-branches van infra mergen blijft handwerk.** Conflicten
-  zitten vaak in secrets-bestanden die in hun geheel versleuteld zijn (één veld met de
-  volledige properties van een applicatie). Oplossen kan alleen na decrypten en begrijpen.
-- **Scripts eerst.** Wat deterministisch kan, gaat in een script in `scripts/`: dat scheelt
-  tokens. Een LLM komt er alleen aan te pas waar die iets toevoegt.
-- **"Nog niet uitgerold" = commits in `develop` die nog niet in `master` staan.**
-- **Het overzicht van de hoofdissues komt op twee plekken:** eerst in een vault-notitie per
-  uitrol om het te controleren, daarna in de beschrijving van de infra-PR.
-- **De vaste lijst bestaat alleen uit repo's met een Docker image**, dus niet de lijst van de
-  Dependabot-routine. Frontends die in een image meegaan, krijgen een echte release (geen
-  RC) naar de private npm-repo. Die versie komt in de POM van het project dat het image
-  bouwt, en dat gaat mee in de release branch:
-  - `iam-login-ui` → `iam`
-  - `portal-ui-common` → `portal-employee-ui` en `portal-worker-ui` → `portal`
-    (een extra laag)
-  - `portal-enrollment-ui` → `portal` (zonder `portal-ui-common`)
-- **Tag `release candidate` op de hoofdissues** zodra de RC's gemaakt zijn. De
-  Dependabot-skill slaat parents met die tag over, zodat Debbie daarna een nieuwe swimlane
-  begint. Alles blijft op het bord tot de productie-uitrol; dan gaat de tag eraf.
-- **Configuratie in infra staat bovenaan in het overzicht**, want daar controleer ik het. Voor
-  de rc-branches in infra maak ik nooit vooraf een PR; daar hoeft niet naar gezocht te worden.
-- **Release branches via één generiek script in de vault**, met de verschillen per repo als
-  configuratie in `data/staging-repos.json`. Geen just-recipe per project: er zijn geen
-  programmerende collega's, en zo blijft het snel aan te passen zolang we nog leren. Het script
-  werkt in schone clones (niet in `~/IdeaProjects`) en pusht met mijn eigen credentials, zodat
-  `pre-release.yml` gewoon start. (Een CI-workflow die pusht met `GITHUB_TOKEN` zou dat niet
-  doen.)
-- **Eén stoppunt voor alle repo's, niet één per repo.** Het script bereidt alle release
-  branches voor zonder te pushen en controleert per repo zelf of de diff alleen de versieregel
-  en hoogstens de base-imageregel raakt. De samenvatting (afwijkingen bovenaan) komt in dezelfde
-  notitie als het staging-overzicht: één controlemoment. Daarna één keer `--push`.
-- **Het script pusht zelf, met een allow-regel op alleen dat script.** Geen algemene
-  `git push`-toestemming voor Claude: in `.claude/settings.json` komt een allow-regel op
-  `/usr/bin/python3 -I ~/vault/scripts/<release-script>.py`. Het script bepaalt wat er gepusht
-  mag worden: alleen `release/*`-branches van repo's uit `data/staging-repos.json`, en alleen
-  na een geslaagde diff-controle. Met de hand pushen is geen onderdeel van de werkwijze.
-- **Het script maakt de release branches zelf, zonder gitflow-tools** (besloten 2026-11-13). Alle
-  Maven-repo's hebben één `pom.xml`, dus de tools doen niets anders dan een branch vanaf
-  `develop`, `-SNAPSHOT` van één regel afhalen en committen. Zelf doen is sneller (geen
-  `sdk env`, geen Maven- of Gradle-start), voorkomt de CRLF-valkuil van `releaseStart` en geeft
-  één codepad. De snapshot-controle van de plugins neemt het script over: na het aanpassen van
-  de versie mag er geen `-SNAPSHOT` meer in de buildbestanden staan.
-- **Eén commit per repo: "Prepare release X.Y.Z"**, met de versie en het base image samen. De
-  berichten die per soort verschilden, vervallen.
-- **Clones in `~/staging-runs/<repo>`**, naar het voorbeeld van `~/dependabot-runs`. Niet in
-  `~/.cache`: tussen het klaarzetten en `--push` staat daar de enige kopie van de release
-  branches en het state-bestand.
-- **Verschillen per repo als configuratie in `data/staging-repos.json`:** per repo het bestand
-  en de regex van de versieregel (bij npm alleen lezen uit `package.json`) en het bestand en de
-  soort van het base image. De soorten (`temurin`, `node`, `node-slim`, `nginx-alpine`) staan één
-  keer bovenaan, met de Docker Hub-repo, het tagpatroon en het patroon van de huidige regel.
-- **Diff-controle per repo:** alleen de geconfigureerde bestanden veranderen, elke gewijzigde
-  regel past voor en na in het verwachte patroon, en elke regex matcht precies één keer. Een
-  repo die niet slaagt, slaat `--push` over. `--push` controleert ook dat de branch en
-  `origin/develop` nog gelijk zijn aan de stand bij het klaarzetten, pusht alleen
-  `release/X.Y.Z` (nooit `--force`) en verzamelt de RC-tags in de notitie en in JSON voor stap 5.
-- **Frontendversies in de release branch van `iam` en `portal`** (besloten 2026-11-13), niet als
-  losse commit op `develop`. Per repo staat in `data/staging-repos.json` onder `frontends` welke
-  property bij welke frontend hoort. `staging_release_branches.py` haalt de versie uit
-  `package.json` op `master` van de frontend (niet uit de dist-tag `latest`, die soms verkeerd
-  staat in Nexus), vervangt alleen een X.Y.Z-waarde (de property bovenaan met `develop` blijft
-  staan) en neemt die regels mee in de diff-controle. Staat de frontend in het plan van
-  `staging_frontends.py` maar is hij nog niet gepubliceerd, dan slaat het de repo over.
-- **Frontends zonder stoppunt, parallel; image-repo's met één gezamenlijk stoppunt** (besloten
-  2026-11-13). `staging_release_branches.py` (klaarzetten) start de frontendketen uit
-  `staging_frontends.py`: elke frontend in een eigen thread, die alleen wacht op de frontends die
-  hij nodig heeft. Intussen worden de image-repo's zonder frontends meteen klaargezet; `iam` wacht
-  alleen op `iam-login-ui`, `portal` op zijn drie frontends. Starten is niet pushen: alle
-  image-repo's samen hebben één stoppunt met de diff-controle, en daarna één `--push`.
-- **De frontendketen pusht en merget zelf**, onder de allow-regel van het releasescript, maar alleen
-  bij frontends uit de config: `prepare-release/*` en `next-version/*` (nooit `--force`) en PR's naar
-  `develop` en `master`, na groene checks. Automatische controles in plaats van een stoppunt:
-  develop moet nog op de stand uit het plan staan, de diff mag alleen de verwachte regels raken,
-  en de versie moet daarna precies zo in de npm-repo staan.
-- **Volgorde in de frontendketen:** eerst publiceren, dan pinnen. "Prepare release" van
-  `portal-employee-ui` en `portal-worker-ui` kan pas als `portal-ui-common` echt in de npm-repo
-  staat. De versie wordt letterlijk ingezet (`npm install --package-lock-only --prefer-online
-  pkg@X.Y.Z`, wat `^X.Y.Z` oplevert). "Update for next development version" volgt per frontend
-  direct na zijn publicatie, behalve bij `portal-ui-common`: die wacht ook op employee en worker.
-  Elke push naar `develop` van `portal-ui-common` start namelijk (via de dispatch na de build)
-  `update-lock-file` in employee en worker, en dat zet `portal-ui-common` weer op `@develop`. Te
-  vroeg zou dat de pin ongedaan maken voordat de release-PR gemerged is.
-- **Infra-PR: rc-branches gerebased, niet gemerged** (besloten 2026-11-13). `staging_infra_pr.py` maakt
-  `feature/staging-rc-<datum>` vanaf `develop` (de GitFlow-validator laat naar `develop` alleen
-  `feature/*` toe), rebaset daar de rc-branches op van hoofdissues die in de release zitten, en zet
-  daarna in één commit de image tags. Lineaire geschiedenis, geen merge-commits. Conflicten los ik
-  met de hand op in `~/staging-runs/infra` (`git rebase --continue`, daarna het script opnieuw).
-  Geen apart stoppunt: slaagt alles, dan pusht het script en maakt het de PR naar `develop`. Mergen
-  doe ik zelf.
-- **RC-tags uit GitHub, niet uit de state:** per image-repo met een open release branch de hoogste
-  `X.Y.Z-rc.N`, en die moet op de tip van de branch staan (anders loopt de build nog). Zo tellen ook
-  de RC's mee die met de hand gemaakt zijn. Het pad van de tag-regel per repo staat onder `infra`
-  in `data/staging-repos.json`.
-- **De tag `release candidate` komt direct na het pushen van de release branches** (besloten
-  2026-11-13), in `staging_release_branches.py --push`, niet pas bij de infra-PR. Vanaf dat moment
-  gaat nieuw werk op `develop`, ook van Dependabot, niet meer mee. De hoofdissues komen uit wat
-  echt in de release zit: `master...release/X.Y.Z` per image-repo, en bij een frontend de
-  release-merge naar `master` ten opzichte van zijn eerste parent. Niet uit het overzicht van
-  stap 1: daarna kan `develop` nog veranderd zijn.
-- **Hoofdissues worden afgeleid uit de commits.** Uit de issuenummers in de commits sinds de
-  vorige release volg je de parent, en zo nodig weer de parent daarvan, tot je bij het
-  hoofdissue uitkomt dat op het bord staat.
-
-## Volgende stap
-
-Testen bij de volgende uitrol, met de skill. Let vooral op `ats`, `insights`, `notifications`,
-`rostering-api` en `rostering-application`: die gingen de eerste keer met de hand en zijn nog
-niet door het script klaargezet. (Hun lokale checkouts in `~/IdeaProjects` staan weer op `develop`.)
-
-Buiten dit plan: de tag `release candidate` weghalen bij de productie-uitrol (hoort bij de
-productiestap, nog niets gebouwd) en PKI-1125 (`.gitattributes`).
-
-## Verloop van een run
-
-Wat er parallel loopt en wat op elkaar wacht bij `staging_release_branches.py` (klaarzetten), en
-waar het stoppunt zit:
-
-```mermaid
-flowchart LR
-    plan["Plan frontends<br>(±1 min)"]
-
-    subgraph S1["Spoor 1: frontends — parallel, geen stoppunt"]
-        puc["portal-ui-common<br>release → gepubliceerd"]
-        ilu["iam-login-ui<br>release → gepubliceerd"]
-        pen["portal-enrollment-ui<br>release → gepubliceerd"]
-        emp["portal-employee-ui<br>prepare → release → gepubliceerd"]
-        wrk["portal-worker-ui<br>prepare → release → gepubliceerd"]
-        puc --> emp
-        puc --> wrk
-    end
-
-    subgraph S2["Spoor 2: image-repo's — na elkaar klaargezet"]
-        rest["ats, cata, insights, more, notifications,<br>roep, rostering-*, profile-presentation-ui"]
-        iam["iam"]
-        portal["portal"]
-    end
-
-    plan --> puc
-    plan --> ilu
-    plan --> pen
-    plan --> rest
-    ilu -. wacht op .-> iam
-    emp -. wacht op .-> portal
-    wrk -. wacht op .-> portal
-    pen -. wacht op .-> portal
-
-    rest --> stop{{"STOP<br>diff-controle van alle image-repo's"}}
-    iam --> stop
-    portal --> stop
-    stop --> push["staging_release_branches.py --push<br>(apart commando)"]
-```
-
-Doorgetrokken pijlen: afhankelijkheden binnen een spoor en naar het stoppunt. Stippellijnen: de
-enige plekken waar een image-repo op een frontend wacht. De image-repo's hangen onderling niet
-van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zie hieronder).
-
-- Eerst het plan van de frontends (clones bijwerken, versies lezen, `npm view`). Daarna lopen
-  twee sporen tegelijk: de frontends elk in een eigen thread, en in de hoofdlijn van het script
-  de image-repo's na elkaar, eerst die zonder frontends en dan `iam` en `portal`.
-- De sporen raken elkaar op maar twee plekken: `iam` wacht op `iam-login-ui`, en `portal` op
-  employee, worker en enrollment. De andere image-repo's merken niets van de frontends.
-- Binnen de frontends: employee en worker wachten op de publicatie van `portal-ui-common`. De
-  volgende versie volgt per frontend direct na zijn publicatie; alleen die van `portal-ui-common`
-  wacht ook op employee en worker (zie de beslissing over de volgorde). Die volgende versies
-  staan niet in het schema; ze kunnen nog doorlopen terwijl ik de diffs bekijk. Het script
-  wacht wel op ze voordat het de samenvatting schrijft.
-- De frontends hebben geen stoppunt. Daar doen automatische controles het werk: de stand van
-  `develop`, de diff, groene checks, en precies die versie in de npm-repo. Het enige stoppunt is
-  de diff-controle van alle image-repo's samen. Daarna volgt `--push` als apart commando.
-- Dat de image-repo's na elkaar worden klaargezet en niet parallel, is bewust: dat kost een paar
-  seconden per repo (fetch, Docker Hub, één commit), terwijl de frontends minuten nodig hebben
-  voor checks en builds. Spoor 2 staat dus het grootste deel van de tijd te wachten op `portal`;
-  parallel klaarzetten zou nauwelijks iets schelen.
-
-## Logboek
-
-### 2026-11-12, eerste ronde
+## 2026-11-12, eerste ronde
 
 - Vaste lijst bevestigd en vastgelegd in `data/staging-repos.json`. `portal-worker-ui` is ook
   een frontend van `portal`; `profile-presentation-ui` heeft een eigen image (Next.js).
@@ -211,7 +25,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   infra-branches worden gekoppeld via `<ISSUE>-rc$`. Automatische updates (Dependabot, Scala
   Steward, de lock-file-commits van `portal-ui-common`) telt het script alleen; de overige
   commits zonder issue zet het per repo in een lijst.
-- Eerste resultaat: [[2026-11-12]] in `staging-releases/`.
+- Eerste resultaat: [[staging-releases/2026-11-12|2026-11-12]] in `staging-releases/`.
 - Vergeleken met de hoofdissues op het bord:
   - Dependabot-parents zonder issuenummer in de commits (PM-359, PPP-75, ROEP-1063,
     RPAAS-487/489/491) ontbreken in het overzicht. **Besluit: geen probleem.** Bumps vervuilen
@@ -243,7 +57,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   overzicht. `gh()` probeert het nu drie keer, en een PR-lookup die echt mislukt, meldt het
   script op stderr.
 
-### 2026-11-12, stap 2: `ats`
+## 2026-11-12, stap 2: `ats`
 
 - Vorige release (`release/12.9.0`) nagekeken: twee commits, "Update versions for release" (de
   gitflow-maven-plugin) en "Update base Docker image for production builds" (met de hand).
@@ -257,7 +71,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
 - Gepusht; run 43250762775 was groen. RC-tag **`12.10.0-rc.0`** (op `c6fb246c`).
 - Lokale checkout was prima voor deze ronde. Bij automatiseren een schone checkout gebruiken.
 
-### 2026-11-12, stap 2: `insights`
+## 2026-11-12, stap 2: `insights`
 
 - Gradle (multi-module), geen gitflow-plugin; command-line `git flow` 0.4.1 met de config in de
   repo. Vorige release (`1.30.0`) had één commit "Update for the upcoming release": de versie in
@@ -270,14 +84,14 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   Gradle zonder plugin (`insights`), sbt (`notifications`), npm met image (`rostering-api`,
   `profile-presentation-ui`, `rostering-ui`).
 
-### 2026-11-13, stap 2: `insights` gepusht
+## 2026-11-13, stap 2: `insights` gepusht
 
 - `release/1.31.0` gepusht (`develop` was sinds gisteren niet veranderd). Run 43404376764 van
   "Pre-release build" was groen in ongeveer 5 minuten. RC-tag **`1.31.0-rc.0`** (op `ea99bee`).
 - Claude kreeg geen toestemming voor `git push`, dus deze keer pushte ik met de hand via
   `! git -C … push`. Voor het script is dat geen optie; zie de beslissing over de allow-regel.
 
-### 2026-11-13, stap 2: `rostering-application`
+## 2026-11-13, stap 2: `rostering-application`
 
 - Gradle 9.9.0 en Java 25.0.5 uit `.sdkmanrc`, plugin `com.hyas.gitflow` 1.0.2 (alias
   `hyas.gitflow`). `rostering-engine` heeft dezelfde plugin onder de alias `gitflow`. De
@@ -297,7 +111,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   groen in ongeveer 4 minuten. RC-tag **`1.13.0-rc.0`** (op `5238682`). De back-upbranch van
   voor de fix is weggegooid.
 
-### 2026-11-13, stap 2: `notifications`
+## 2026-11-13, stap 2: `notifications`
 
 - sbt 2.0.12, geen gitflow- of `sbt-release`-plugin. Command-line `git flow` met de config in
   de repo, net als bij `insights`. De vorige release (`1.5.0`) had één commit "Update for the
@@ -310,7 +124,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
 - Gepusht. Run 43407696727 van "Pre-release build" was groen in ongeveer 2 minuten. RC-tag
   **`1.6.0-rc.0`** (op `d80de6e`).
 
-### 2026-11-13, stap 2: `rostering-api`
+## 2026-11-13, stap 2: `rostering-api`
 
 - npm (Node 24), command-line `git flow`. De versie in `package.json` staat op `develop` al op
   de releaseversie (`1.10.0`; npm kent geen `-SNAPSHOT`). Na de release zet "Update for next
@@ -327,7 +141,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   run 43408965593 van "Pre-release build" was groen in ongeveer 2 minuten. RC-tag
   **`1.10.0-rc.0`** (op `40f1928`).
 
-### 2026-11-13, stap 2: script, klaarzetfase
+## 2026-11-13, stap 2: script, klaarzetfase
 
 - `data/staging-repos.json` uitgebreid: bovenaan `versies` (maven, gradle, sbt, npm: bestand,
   regex van de versieregel, globs voor de snapshot-controle) en `images` (temurin, node,
@@ -344,7 +158,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   `profile-presentation-ui` en `rostering-engine` met de hand nagekeken: alleen de versie- en
   imageregel. `rostering-ui`: `nginx:alpine` → `nginx:1.31.8-alpine@sha256:713fc2eb…`.
 
-### 2026-11-13, stap 2: script, `--push`
+## 2026-11-13, stap 2: script, `--push`
 
 - `--push` gebouwd: per repo uit de state controleert het of de lokale branch en `origin/develop`
   nog dezelfde SHA hebben als bij het klaarzetten en of er geen release branch op de remote staat.
@@ -362,7 +176,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   (release branch stond al op de remote). Hun RC's staan in de stand hierboven. Bij de volgende
   uitrol gaan ze gewoon door het script.
 
-### 2026-11-13, frontendketen: inventaris (nog niets veranderd)
+## 2026-11-13, frontendketen: inventaris (nog niets veranderd)
 
 - Werkwijze tot nu toe (uit de geschiedenis van `portal-employee-ui`): (1) een PR "Prepare release"
   naar `develop` die `portal-ui-common` van een develop-build naar de releaseversie zet (alleen bij
@@ -382,7 +196,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   versie. Bij de vorige keer stond de wijziging als losse commit op `develop` ("Upgrade employee
   UI", 2026-08-11). `iam`: `iam.login-ui.version` in het `pre-release`-profiel (nu 1.0.0).
 
-### 2026-11-13, frontendketen: gescript
+## 2026-11-13, frontendketen: gescript
 
 - `scripts/staging_frontends.py`: plan (alleen clones en `npm view`) en `--uitvoeren`. De volgorde
   komt uit de `in`-velden: `portal-ui-common` eerst, daarna `iam-login-ui` en `portal-enrollment-ui`,
@@ -406,7 +220,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   `portal-ui-common`, dan stoppen employee en worker en krijgt `portal-ui-common` geen volgende
   versie; de rest gaat door.
 
-### 2026-11-13, frontendketen: eerste echte run
+## 2026-11-13, frontendketen: eerste echte run
 
 - Gepubliceerd: `portal-ui-common` 2.0.0 (#45), `iam-login-ui` 1.1.0 (#34) en
   `portal-enrollment-ui` 2.0.0 (#37); de release-PR's naar `master` gingen goed. `iam` staat klaar
@@ -434,7 +248,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
 - Sectiemarkers als Obsidian-commentaar (`%% … %%`) geprobeerd en teruggedraaid: ook die zijn in
   Live Preview zichtbaar. De HTML-markers blijven; in de leesweergave zijn ze onzichtbaar.
 
-### 2026-11-13, stap 5: infra-PR gescript
+## 2026-11-13, stap 5: infra-PR gescript
 
 - Eerdere RC-PR's in infra: één per hoofdissue ("PKIAM-805 release candidate"), één regel `  tag:` in
   `helm/vars/dev/staging/<map>/values.yaml` (`web-app-<repo>` voor de Maven- en Gradle-webapps, anders
@@ -451,7 +265,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
 - Claude mocht de allow-regel voor het nieuwe script niet zelf in `.claude/settings.json` zetten; die
   zet ik zelf.
 
-### 2026-11-13, stap 5: eerste echte run
+## 2026-11-13, stap 5: eerste echte run
 
 - `--tag`: 32 hoofdissues getagd. **Bug:** het command `tag {release candidate}` maakte een tag met de
   accolades in de naam. De tag (`123-6`) hernoemd naar `release candidate`; de issues hielden hem. Het
@@ -461,7 +275,7 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   [#999](https://github.com/Flow-Cloud-Systems/infra/pull/999) naar `develop`: drie commits, dertien
   bestanden, mergeable.
 
-### 2026-11-13, skill
+## 2026-11-13, skill
 
 - Skill `staging-release-candidates` gemaakt, in de stijl van `dependabot-routine`: vijf stappen met
   stoppunten na het overzicht (inclusief `staging_frontends.py --plan`, het laatste moment vóór de
