@@ -16,7 +16,7 @@ kosten: 0.95
 beurten: 52
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w46-profile-presentation-ui.jsonl"
-issue_state: "In Progress"
+issue_state: "Done"
 laatste: true
 ---
 # Debbie-run profile-presentation-ui
