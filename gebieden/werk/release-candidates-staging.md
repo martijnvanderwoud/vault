@@ -124,11 +124,9 @@ het logboek. De uitrolnotities staan in `staging-releases/`.
 
 ## Volgende stap
 
-1. Testen bij de volgende uitrol, met de skill. Let vooral op `ats`, `insights`, `notifications`,
-   `rostering-api` en `rostering-application`: die gingen de eerste keer met de hand en zijn nog
-   niet door het script klaargezet.
-2. De lokale checkouts van die vijf repo's in `~/IdeaProjects` staan nog op hun release branch:
-   terug naar `develop`.
+Testen bij de volgende uitrol, met de skill. Let vooral op `ats`, `insights`, `notifications`,
+`rostering-api` en `rostering-application`: die gingen de eerste keer met de hand en zijn nog
+niet door het script klaargezet. (Hun lokale checkouts in `~/IdeaProjects` staan weer op `develop`.)
 
 Buiten dit plan: de tag `release candidate` weghalen bij de productie-uitrol (hoort bij de
 productiestap, nog niets gebouwd) en PKI-1125 (`.gitattributes`).
