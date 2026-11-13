@@ -112,6 +112,23 @@ Gestart op 2026-11-12.
   Elke push naar `develop` van `portal-ui-common` start namelijk (via de dispatch na de build)
   `update-lock-file` in employee en worker, en dat zet `portal-ui-common` weer op `@develop`. Te
   vroeg zou dat de pin ongedaan maken voordat de release-PR gemerged is.
+- **Infra-PR: rc-branches gerebased, niet gemerged** (besloten 2026-11-13). `staging_infra_pr.py` maakt
+  `feature/staging-rc-<datum>` vanaf `develop` (de GitFlow-validator laat naar `develop` alleen
+  `feature/*` toe), rebaset daar de rc-branches op van hoofdissues die in de release zitten, en zet
+  daarna in één commit de image tags. Lineaire geschiedenis, geen merge-commits. Conflicten los ik
+  met de hand op in `~/staging-runs/infra` (`git rebase --continue`, daarna het script opnieuw).
+  Geen apart stoppunt: slaagt alles, dan pusht het script en maakt het de PR naar `develop`. Mergen
+  doe ik zelf.
+- **RC-tags uit GitHub, niet uit de state:** per image-repo met een open release branch de hoogste
+  `X.Y.Z-rc.N`, en die moet op de tip van de branch staan (anders loopt de build nog). Zo tellen ook
+  de RC's mee die met de hand gemaakt zijn. Het pad van de tag-regel per repo staat onder `infra`
+  in `data/staging-repos.json`.
+- **De tag `release candidate` komt direct na het pushen van de release branches** (besloten
+  2026-11-13), in `staging_release_branches.py --push`, niet pas bij de infra-PR. Vanaf dat moment
+  gaat nieuw werk op `develop`, ook van Dependabot, niet meer mee. De hoofdissues komen uit wat
+  echt in de release zit: `master...release/X.Y.Z` per image-repo, en bij een frontend de
+  release-merge naar `master` ten opzichte van zijn eerste parent. Niet uit het overzicht van
+  stap 1: daarna kan `develop` nog veranderd zijn.
 - **Hoofdissues worden afgeleid uit de commits.** Uit de issuenummers in de commits sinds de
   vorige release volg je de parent, en zo nodig weer de parent daarvan, tot je bij het
   hoofdissue uitkomt dat op het bord staat.
@@ -141,8 +158,9 @@ met de frontendketen). Alles staat in de uitrolnotitie [[2026-11-12]]. Start de 
 `~/vault` met: "Ga verder met stap 5 (infra-PR) van [[release-candidates-staging]]". Volgende acties:
 
 1. ~~Frontendketen, `iam` en `portal`~~: klaar op 2026-11-13, alle dertien RC's zijn er.
-2. Stap 5: de infra-PR met alle image tags, uit `~/staging-runs/state.json` plus de vijf RC's die
-   met de hand gemaakt zijn (zie de stand).
+2. Stap 5: gescript op 2026-11-13 (`staging_infra_pr.py`), droog getest. Nog te doen: de allow-regel
+   voor het script in `.claude/settings.json` (doe ik zelf), dan `staging_release_branches.py --tag`
+   (tag op 32 hoofdissues) en `staging_infra_pr.py --uit …` voor de echte PR.
 3. Als de werkwijze af is: deze planpagina omzetten naar duidelijke documentatie (werkwijze,
    schema, commando's), en het logboek en de afwegingen apart houden of inkorten.
 
@@ -257,8 +275,9 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
 2. **Release branches en frontends** (script, eenmalig): `/usr/bin/python3 -I scripts/staging_release_branches.py
    --uit gebieden/werk/staging-releases/<datum>.md`, na stap 1. Dit released ook de frontends
    (zonder stoppunt); `staging_frontends.py --plan` toont vooraf wat dat wordt. Daarna de sectie "Release
-   branches" controleren (stoppunt) en daarna hetzelfde commando met `--push`. Hieronder de oude werkwijze met
-   de hand, ter referentie.
+   branches" controleren (stoppunt) en daarna hetzelfde commando met `--push`. Direct na het pushen zet `--push`
+   de tag `release candidate` op de hoofdissues (`--tag` doet alleen die stap, `--tag --droog` toont wat
+   het zou doen). Hieronder de oude werkwijze met de hand, ter referentie.
 
    Met de hand (per repo):
    1. `master` en `develop` bijwerken (`git pull --ff-only`).
@@ -271,6 +290,10 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
    4. Stoppunt: de diff `develop..release/X.Y.Z` controleren.
    5. Pushen. `pre-release.yml` leidt `X.Y.Z-rc.N` af, bouwt met Jib en zet de git-tag. Die
       git-tag is de image tag.
+3. **Infra-PR** (script, eenmalig): `/usr/bin/python3 -I scripts/staging_infra_pr.py --uit
+   gebieden/werk/staging-releases/<datum>.md`, na `--push` (of `--tag`). Bij een conflict in een rc-branch:
+   oplossen in `~/staging-runs/infra`, `git rebase --continue`, en hetzelfde commando opnieuw. `--droog`
+   pusht niet en maakt geen PR; `--opnieuw` begint opnieuw. Daarna de PR nakijken en mergen.
 
 ## Automatiseringskandidaten
 
@@ -519,3 +542,20 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
   samenvatting.
 - Sectiemarkers als Obsidian-commentaar (`%% … %%`) geprobeerd en teruggedraaid: ook die zijn in
   Live Preview zichtbaar. De HTML-markers blijven; in de leesweergave zijn ze onzichtbaar.
+
+### 2026-11-13, stap 5: infra-PR gescript
+
+- Eerdere RC-PR's in infra: één per hoofdissue ("PKIAM-805 release candidate"), één regel `  tag:` in
+  `helm/vars/dev/staging/<map>/values.yaml` (`web-app-<repo>` voor de Maven- en Gradle-webapps, anders
+  `<repo>`). Alle dertien bestanden hebben precies één `tag:`-regel.
+- `staging_overzicht.py` importeerbaar gemaakt (`analyseer(org, repo, keys, base, head)`). **Bug
+  gevonden:** de hotfix-filter vergeleek titels altijd met `master`; bij een frontend zit de release al
+  in `master`, waardoor elke commit als cherry-pick wegviel. Nu vergelijkt hij met de base.
+- `staging_release_branches.py --tag [--droog]` en de tagstap in `--push`. Droog: 32 hoofdissues, meer
+  dan in het overzicht van 2026-11-12 (de Dependabot-parents van daarna, zoals PKP-783). De tag bestond
+  nog niet in YouTrack; het command `tag {release candidate}` maakt hem aan.
+- `staging_infra_pr.py --droog`: alle dertien tags goed, `feature/PKI-1106-rc` en `feature/PKI-906-rc`
+  zonder conflict gerebased, drie lineaire commits bovenop `develop`.
+- Dependabot-skill: de zoekregel voor de parent sluit `tag: -{release candidate}` uit.
+- Claude mocht de allow-regel voor het nieuwe script niet zelf in `.claude/settings.json` zetten; die
+  zet ik zelf.

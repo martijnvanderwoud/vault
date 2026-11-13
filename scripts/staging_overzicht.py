@@ -71,13 +71,13 @@ def titel(commit):
     return commit['commit']['message'].split('\n')[0]
 
 
-def master_titels(org, repo, commits):
-    """Titels van master-commits sinds de oudste commit die nog niet in master staat."""
+def master_titels(org, repo, commits, base='master'):
+    """Titels van commits in base (meestal master) sinds de oudste commit die daar nog niet in staat."""
     if not commits:
         return set()
     since = min(c['commit']['committer']['date'] for c in commits)
-    out = subprocess.run(['gh', 'api', '--paginate', 'repos/%s/%s/commits?sha=master&per_page=100&since=%s'
-                          % (org, repo, since), '--jq', '.[] | select(.parents | length == 1) | '
+    out = subprocess.run(['gh', 'api', '--paginate', 'repos/%s/%s/commits?sha=%s&per_page=100&since=%s'
+                          % (org, repo, base, since), '--jq', '.[] | select(.parents | length == 1) | '
                           '.commit.message | split("\\n")[0]'],
                          check=True, capture_output=True, text=True).stdout
     return set(out.splitlines())
@@ -157,6 +157,43 @@ def infra_status(org, infra, branch):
             'bestanden': sorted(f['filename'] for f in data.get('files', []))}
 
 
+def analyseer(org, repo, keys, base='master', head='develop'):
+    """Commits in head die niet in base staan, gekoppeld aan hun hoofdissues.
+
+    Geeft (aantal commits, {hoofdissue-id: set(issue-ids)}, titels zonder issue, aantal bumps,
+    titels die als hotfix al in master staan).
+    """
+    commits = commits_alleen_in(org, repo, base, head)
+    # Hotfixes worden naar develop gecherrypickt: zelfde titel, andere SHA.
+    in_master = master_titels(org, repo, commits, base)
+    per_root, zonder, bumps, gepickt = {}, [], 0, []
+    for c in commits:
+        msg = titel(c)
+        if len(c['parents']) == 1 and msg in in_master:
+            gepickt.append(msg)
+            continue
+        ids = [i for i in ISSUE_RE.findall(c['commit']['message']) if i.split('-')[0] in keys]
+        if not ids:
+            if BUMP_RE.match(msg):
+                bumps += 1
+                continue
+            if len(c['parents']) > 1 or msg.startswith('Update for the next development version') \
+                    or msg.startswith('Update for next development version'):
+                continue
+            ids = issues_uit_pr(org, repo, msg, keys)
+            if not ids:
+                zonder.append(msg)
+                continue
+        for id_ in ids:
+            root = hoofdissue(id_)
+            per_root.setdefault(root['id'] if root else id_, set()).add(id_)
+    return len(commits), per_root, zonder, bumps, gepickt
+
+
+def is_upgrade(root_id):
+    return bool(UPGRADE_RE.search((issue(root_id) or {}).get('summary', '')))
+
+
 def main():
     uit = None
     if sys.argv[1:2] == ['--uit'] and len(sys.argv) == 3:
@@ -174,35 +211,14 @@ def main():
     for entry in config['repos']:
         repo = entry['repo']
         try:
-            commits = commits_alleen_in(org, repo, 'master', 'develop')
-            # Hotfixes worden naar develop gecherrypickt: zelfde titel, andere SHA.
-            in_master = master_titels(org, repo, commits)
+            n, per_root, zonder, bumps, al_in_master = analyseer(org, repo, keys)
         except subprocess.CalledProcessError as e:
             per_repo.append((entry, None, [], 0, e.stderr.strip()))
             continue
-        zonder, bumps = [], 0
-        for c in commits:
-            msg = titel(c)
-            if len(c['parents']) == 1 and msg in in_master:
-                gepickt.append((repo, msg))
-                continue
-            ids = [i for i in ISSUE_RE.findall(c['commit']['message']) if i.split('-')[0] in keys]
-            if not ids:
-                if BUMP_RE.match(msg):
-                    bumps += 1
-                    continue
-                if len(c['parents']) > 1 or msg.startswith('Update for the next development version') \
-                        or msg.startswith('Update for next development version'):
-                    continue
-                ids = issues_uit_pr(org, repo, msg, keys)
-                if not ids:
-                    zonder.append(msg)
-                    continue
-            for id_ in ids:
-                root = hoofdissue(id_)
-                root_id = root['id'] if root else id_
-                hoofd.setdefault(root_id, {}).setdefault(repo, set()).add(id_)
-        per_repo.append((entry, len(commits), zonder, bumps, None))
+        gepickt += [(repo, msg) for msg in al_in_master]
+        for root_id, ids in per_root.items():
+            hoofd.setdefault(root_id, {}).setdefault(repo, set()).update(ids)
+        per_repo.append((entry, n, zonder, bumps, None))
 
     rc = rc_branches(org, config['infra'])
     regels = ['# Staging-overzicht', '']
@@ -228,9 +244,6 @@ def main():
     else:
         regels.append('- geen rc-branches')
     regels.append('')
-
-    def is_upgrade(root_id):
-        return bool(UPGRADE_RE.search((issue(root_id) or {}).get('summary', '')))
 
     regels += ['## Hoofdissues', '']
     for root_id in sorted(r for r in hoofd if not is_upgrade(r)):
@@ -280,4 +293,5 @@ def main():
         print(tekst)
 
 
-main()
+if __name__ == '__main__':
+    main()

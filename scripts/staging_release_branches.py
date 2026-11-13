@@ -17,8 +17,13 @@ gepubliceerd zijn.
 Met --push worden de klaargezette branches uit de state gepusht, alleen als de branch en
 origin/develop nog precies zo zijn als bij het klaarzetten. Daarna volgt het script de
 pre-release-runs en zet het de RC-tags in de state.
-Gebruik: staging_release_branches.py [--push] [--repos A,B] [--uit BESTAND]. Zonder --uit gaat
-de samenvatting naar stdout; met --uit komt hij als sectie in die notitie.
+Direct na het pushen zet --push de YouTrack-tag "release candidate" op de hoofdissues van wat er
+in de release zit: de commits in master...release/X.Y.Z van elke image-repo met een open release
+branch, en in de release-merge van elke frontend die vandaag gepubliceerd is. Vanaf dan gaat
+nieuw werk op develop niet meer mee, dus begint de Dependabot-routine een nieuwe parent. --tag
+doet alleen die stap (idempotent; met --droog zonder te taggen). De hoofdissues komen in de state, voor staging_infra_pr.py.
+Gebruik: staging_release_branches.py [--push | --tag [--droog]] [--repos A,B] [--uit BESTAND]. Zonder --uit
+gaat de samenvatting naar stdout; met --uit komt hij als sectie in die notitie.
 """
 import base64
 import datetime
@@ -37,6 +42,7 @@ RUNS = os.path.expanduser('~/staging-runs')
 STATE = os.path.join(RUNS, 'state.json')
 FRONTENDS = os.path.join(RUNS, 'frontends.json')
 START, EIND = '<!-- release-branches:start -->', '<!-- release-branches:eind -->'
+TAG = 'release candidate'
 
 
 class Afwijking(Exception):
@@ -250,6 +256,101 @@ def volgen(org, gepusht, state, max_minuten=40):
         state[repo]['fout'] = 'run na %d minuten nog niet klaar' % max_minuten
 
 
+def laad_script(naam):
+    """Laadt een script uit deze map als module: met python3 -I staat de map niet op sys.path."""
+    spec = importlib.util.spec_from_file_location(
+        naam, os.path.join(os.path.dirname(os.path.abspath(__file__)), naam + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def open_release_branch(org, repo):
+    """De enige release/*-branch op de remote, of None. Meer dan één is een fout."""
+    out = subprocess.run(['git', 'ls-remote', '--heads', 'git@github.com:%s/%s.git' % (org, repo), 'release/*'],
+                         check=True, capture_output=True, text=True).stdout
+    branches = [r.split('refs/heads/')[1] for r in out.split('\n') if r]
+    if len(branches) > 1:
+        raise Afwijking('meer dan één release branch op de remote: %s' % ', '.join(branches))
+    return branches[0] if branches else None
+
+
+def release_inhoud(cfg):
+    """Per repo (base, head) van wat er in deze release zit, plus meldingen voor wat ontbreekt.
+
+    Image-repo's: master...release/X.Y.Z. Frontends die vandaag gepubliceerd zijn (frontends.json):
+    de merge-commit van de PR "Release X.Y.Z" naar master, ten opzichte van zijn eerste parent.
+    """
+    org, inhoud, meldingen = cfg['org'], {}, []
+    for entry in cfg['repos']:
+        if entry['rol'] != 'image':
+            continue
+        try:
+            branch = open_release_branch(org, entry['repo'])
+        except Afwijking as e:
+            meldingen.append('%s: %s' % (entry['repo'], e))
+            continue
+        if branch:
+            inhoud[entry['repo']] = ('master', branch)
+    frontends = json.load(open(FRONTENDS)) if os.path.exists(FRONTENDS) else {}
+    vandaag = datetime.date.today().isoformat()
+    for repo, m in frontends.get('repos', {}).items():
+        if frontends['datum'] != vandaag or 'gepubliceerd' not in m:
+            continue
+        prs = [p for p in gh_json('pr', 'list', '-R', '%s/%s' % (org, repo), '--base', 'master', '--state', 'merged',
+                                  '--search', '"Release %s" in:title' % m['versie'], '--json', 'title,mergeCommit')
+               if p['title'] == 'Release ' + m['versie']]
+        if len(prs) != 1:
+            meldingen.append('%s: %d PR\'s "Release %s" naar master, verwacht 1' % (repo, len(prs), m['versie']))
+            continue
+        sha = prs[0]['mergeCommit']['oid']
+        parent = gh_json('api', 'repos/%s/%s/commits/%s' % (org, repo, sha))['parents'][0]['sha']
+        inhoud[repo] = (parent, sha)
+    return inhoud, meldingen
+
+
+def taggen(cfg, state, droog=False):
+    """Zet de tag op de hoofdissues van alles wat in de release zit en legt ze vast in de state.
+
+    Met droog=True worden de hoofdissues wel vastgelegd, maar wordt er niets getagd.
+    """
+    overzicht = laad_script('staging_overzicht')
+    keys = overzicht.project_keys()
+    inhoud, meldingen = release_inhoud(cfg)
+    hoofd = {}
+    for repo, (base, head) in sorted(inhoud.items()):
+        print('%s: hoofdissues in %s...%s' % (repo, base[:12], head), file=sys.stderr)
+        _, per_root, _, _, _ = overzicht.analyseer(cfg['org'], repo, keys, base, head)
+        for root_id, ids in per_root.items():
+            hoofd.setdefault(root_id, {}).setdefault(repo, sorted(ids - {root_id}))
+    getagd, al, fouten = [], [], []
+    for root_id in sorted(hoofd):
+        issue = overzicht.issue(root_id)
+        if not issue:
+            fouten.append('%s: niet gevonden in YouTrack' % root_id)
+            continue
+        tags = {t['name'] for t in overzicht.youtrack('issues/' + root_id, 'tags(name)')['tags']}
+        if TAG in tags:
+            al.append(root_id)
+            continue
+        if droog:
+            getagd.append(root_id + ' (droog)')
+            continue
+        r = subprocess.run(['/usr/bin/python3', '-I', os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                                   'youtrack_command.py'),
+                            root_id, 'tag {%s}' % TAG], capture_output=True, text=True)
+        if r.returncode == 0:
+            getagd.append(root_id)
+        else:
+            fouten.append('%s: %s' % (root_id, (r.stderr.strip().splitlines() or ['onbekende fout'])[-1]))
+    state['hoofdissues'] = {r: {'summary': (overzicht.issue(r) or {}).get('summary', ''),
+                                'upgrade': overzicht.is_upgrade(r), 'repos': hoofd[r]} for r in sorted(hoofd)}
+    state['tag'] = {'release_inhoud': {r: list(bh) for r, bh in inhoud.items()}, 'getagd': getagd,
+                    'al_getagd': al, 'fouten': meldingen + fouten}
+    print('tag "%s": %d gezet, %d stond er al, %d fouten' % (TAG, len(getagd), len(al), len(meldingen + fouten)),
+          file=sys.stderr)
+
+
 def base_ref(regel, patroon):
     return re.search(patroon, regel.strip()).group(0) if re.search(patroon, regel.strip()) else regel.strip()
 
@@ -258,7 +359,7 @@ def kort(image):
     return re.sub(r'@sha256:([0-9a-f]{8})[0-9a-f]+', r'@sha256:\1…', image)
 
 
-def samenvatting(datum, resultaten, handmatig):
+def samenvatting(datum, resultaten, handmatig, tag=None):
     afwijkingen = [(r, m) for r, m in resultaten.items() if 'fout' in m]
     if any('gepusht' in m for m in resultaten.values()):
         intro = 'Klaargezet op %s in `~/staging-runs` en gepusht met `--push`.' % datum
@@ -287,6 +388,17 @@ def samenvatting(datum, resultaten, handmatig):
     if handmatig:
         regels += ['### Met de hand', '']
         regels += ['- **%s**: %s' % (r, reden) for r, reden in handmatig] + ['']
+    if tag:
+        droog = any(g.endswith('(droog)') for g in tag['getagd'])
+        regels += ['### Tag "%s"' % TAG, '',
+                   '%s %d hoofdissues, stond al op %d. Bron: %s.' % (
+                       'Droog, niets getagd: zou komen op' if droog else 'Gezet op',
+                       len(tag['getagd']), len(tag['al_getagd']),
+                       ', '.join('`%s`' % r for r in sorted(tag['release_inhoud'])) or 'niets'), '']
+        if tag['getagd']:
+            regels += ['- %s: ' % ('Zou gezet worden' if droog else 'Gezet') + ', '.join(tag['getagd'])]
+        regels += ['- **Fout:** ' + f for f in tag['fouten']]
+        regels.append('')
     return '\n'.join(regels + [EIND])
 
 
@@ -310,6 +422,14 @@ def main():
         raise SystemExit('Onbekende image-repo: %s' % ', '.join(sorted(alleen - {e['repo'] for e in images})))
 
     handmatig = [(e['repo'], e['handmatig']) for e in images if e.get('handmatig')]
+    if '--tag' in args:
+        if not os.path.exists(STATE):
+            raise SystemExit('Geen %s: zet eerst de release branches klaar' % STATE)
+        state = json.load(open(STATE))
+        taggen(cfg, state, droog='--droog' in args)
+        json.dump(state, open(STATE, 'w'), indent=2)
+        uitvoer(uit, samenvatting(state['datum'], state['repos'], handmatig, state['tag']))
+        return
     if '--push' in args:
         if not os.path.exists(STATE):
             raise SystemExit('Geen %s: zet eerst de release branches klaar' % STATE)
@@ -328,10 +448,13 @@ def main():
             except subprocess.CalledProcessError as e:
                 m['fout'] = 'git faalde: `%s`: %s' % (' '.join(e.cmd), (e.stderr or '').strip())
             json.dump(state, open(STATE, 'w'), indent=2)
+        if gepusht:
+            taggen(cfg, state)
+            json.dump(state, open(STATE, 'w'), indent=2)
         volgen(cfg['org'], [r for r, m in state['repos'].items()
                             if 'gepusht' in m and 'rc' not in m and 'fout' not in m], state['repos'])
         json.dump(state, open(STATE, 'w'), indent=2)
-        uitvoer(uit, samenvatting(state['datum'], state['repos'], handmatig))
+        uitvoer(uit, samenvatting(state['datum'], state['repos'], handmatig, state.get('tag')))
         return
 
     datum = datetime.date.today().isoformat()
@@ -364,17 +487,11 @@ def main():
 
 
 def frontendketen(cfg, images):
-    """Start de frontendketen uit staging_frontends.py voor de frontends van deze image-repo's.
-
-    Laden via het pad: met python3 -I staat de map van het script niet op sys.path.
-    """
+    """Start de frontendketen uit staging_frontends.py voor de frontends van deze image-repo's."""
     nodig = {f for e in images for f in e.get('frontends', {}).values()}
     if not nodig:
         return None
-    spec = importlib.util.spec_from_file_location(
-        'staging_frontends', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'staging_frontends.py'))
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    module = laad_script('staging_frontends')
     module.controleer_token()
     keten = module.Keten(cfg, nodig)
     keten.plannen()

@@ -37,6 +37,9 @@
       "Bash(/usr/bin/python3 -I scripts/staging_release_branches.py*)",
       "Bash(/usr/bin/python3 -I ~/vault/scripts/staging_release_branches.py*)",
       "Bash(/usr/bin/python3 -I /Users/martijn/vault/scripts/staging_release_branches.py*)",
+      "Bash(/usr/bin/python3 -I scripts/staging_infra_pr.py*)",
+      "Bash(/usr/bin/python3 -I ~/vault/scripts/staging_infra_pr.py*)",
+      "Bash(/usr/bin/python3 -I /Users/martijn/vault/scripts/staging_infra_pr.py*)",
       "WebFetch",
       "WebSearch"
     ],

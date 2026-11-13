@@ -162,10 +162,12 @@ uit `Titel subtask`, zonder parent.
 Zoek de parent alleen in het YouTrack-project van deze repo, met `search_issues`:
 
 ```text
-project: <key> #Unresolved Type: Maintenance has: {Board <board>} summary: "Dependabot upgrades"
+project: <key> #Unresolved Type: Maintenance has: {Board <board>} tag: -{release candidate} summary: "Dependabot upgrades"
 ```
 
-Tel alleen issues waarvan de titel past op `Titel parent` uit het projectbestand.
+Tel alleen issues waarvan de titel past op `Titel parent` uit het projectbestand. Parents met
+de tag `release candidate` vallen buiten de zoekregel: hun werk zit al in een release branch
+(die tag zet `staging_release_branches.py`), dus begin je dan een nieuwe parent.
 
 - **Eén match:** laat het bereik in de titel eindigen op de huidige week, met
   `update_issue`: `w40-45` wordt `w40-46`, `w46` wordt `w46-47`. Staat de huidige week er
