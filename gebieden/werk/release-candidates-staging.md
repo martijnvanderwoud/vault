@@ -1,27 +1,17 @@
 ---
-description: Werkwijze en logboek voor het voorbereiden van release candidates voor een uitrol naar staging bij Pompkracht, met kandidaten voor automatisering
+description: Beslissingen en logboek van het voorbereiden van release candidates voor een staging-uitrol bij Pompkracht; de werkwijze staat in de skill staging-release-candidates
 tags: [pompkracht, release, staging, routine]
 cssclasses: [wide-page]
 ---
 
 # Release candidates voor staging
 
-Doel: het voorbereiden van release candidates voor een staging-uitrol stap voor stap
-vastleggen, de herhalingen ontdekken en die gaandeweg automatiseren, net zoals bij
-[[dependabot-routine]]. Uiteindelijk wordt dit een skill.
+Het voorbereiden van release candidates voor een staging-uitrol, stap voor stap vastgelegd en
+geautomatiseerd, net zoals bij [[dependabot-routine]]. Gestart op 2026-11-12.
 
-Gestart op 2026-11-12.
-
-## Zo deed ik het tot nu toe
-
-1. Het Pompkracht-bord van boven naar beneden aflopen. De swimlanes zijn hoofdissues
-   (feature, bug of maintenance), met subtaken die bij verschillende repo's horen.
-2. Per swimlane bepalen welke repo's erbij horen en daarvoor RC-builds maken.
-3. In het infra-project zoeken naar een branch en worktree met het issuenummer en de
-   suffix `rc`. Daarin staan configuratiewijzigingen die samen met die swimlane uit moeten.
-4. De image tags van de RC-builds (= Docker image tags) in de juiste bestanden in die
-   worktree zetten.
-5. Eén PR naar `develop` van infra.
+De werkwijze, de commando's en de stoppunten staan in de skill `staging-release-candidates`
+(`.claude/skills/staging-release-candidates/SKILL.md`). Hier staan de beslissingen erachter en
+het logboek. De uitrolnotities staan in `staging-releases/`.
 
 ## Beslissingen
 
@@ -47,8 +37,7 @@ Gestart op 2026-11-12.
   - `portal-enrollment-ui` → `portal` (zonder `portal-ui-common`)
 - **Tag `release candidate` op de hoofdissues** zodra de RC's gemaakt zijn. De
   Dependabot-skill slaat parents met die tag over, zodat Debbie daarna een nieuwe swimlane
-  begint. Alles blijft op het bord tot de productie-uitrol; dan gaat de tag eraf. (Nog te
-  bouwen: tag zetten in de RC-stap, en de zoekregel in de Dependabot-skill aanpassen.)
+  begint. Alles blijft op het bord tot de productie-uitrol; dan gaat de tag eraf.
 - **Configuratie in infra staat bovenaan in het overzicht**, want daar controleer ik het. Voor
   de rc-branches in infra maak ik nooit vooraf een PR; daar hoeft niet naar gezocht te worden.
 - **Release branches via één generiek script in de vault**, met de verschillen per repo als
@@ -133,92 +122,16 @@ Gestart op 2026-11-12.
   vorige release volg je de parent, en zo nodig weer de parent daarvan, tot je bij het
   hoofdissue uitkomt dat op het bord staat.
 
-## Gewenste werkwijze (eerste schets)
-
-Automatisch:
-
-1. Per repo uit de vaste lijst een release branch maken en pushen. Dat gaat per project
-   soms anders.
-2. CI bouwt de RC en zet er een tag op. Die tags verzamelen.
-3. Uit de commits per repo de hoofdissues afleiden en een overzicht maken: hoofdissue,
-   repo's, issues.
-4. Per hoofdissue zoeken of er in infra een `rc`-branch of worktree voor is.
-5. Een PR naar `develop` van infra maken met alle image tags.
-
-Handmatig (stoppunten):
-
-- Het overzicht van de hoofdissues controleren: klopt het dat dit uitgerold wordt?
-- De `rc`-branches van infra mergen en conflicten oplossen.
-
 ## Volgende stap
 
-Alle vijf automatische stappen zijn gebouwd en op 2026-11-13 gebruikt voor de eerste uitrol: overzicht,
-release branches met de frontendketen, de tag `release candidate` (32 hoofdissues) en infra-PR
-[#999](https://github.com/Flow-Cloud-Systems/infra/pull/999). Alles staat in de uitrolnotitie [[2026-11-12]].
-Start de volgende sessie in `~/vault` met: "Maak de skill voor [[release-candidates-staging]]". Volgende
-acties:
+1. Testen bij de volgende uitrol, met de skill. Let vooral op `ats`, `insights`, `notifications`,
+   `rostering-api` en `rostering-application`: die gingen de eerste keer met de hand en zijn nog
+   niet door het script klaargezet.
+2. De lokale checkouts van die vijf repo's in `~/IdeaProjects` staan nog op hun release branch:
+   terug naar `develop`.
 
-1. De skill `staging-release-candidates` maken in `.claude/skills/`, in de stijl van `dependabot-routine`,
-   met de vijf stappen en hun stoppunten:
-   1. overzicht (`staging_overzicht.py --uit …`), stoppunt: de hoofdissues controleren;
-   2. release branches en frontends (`staging_release_branches.py --uit …`), stoppunt: de afwijkingen en
-      diffs in de uitrolnotitie;
-   3. `--push`: pushen, tag zetten, wachten op de RC's;
-   4. infra-PR (`staging_infra_pr.py --uit …`), bij een conflict stoppen tot ik het heb opgelost, dan
-      opnieuw;
-   5. afsluiten met de link naar de PR; mergen doe ik zelf.
-
-   Eerst het concept voorleggen, pas daarna committen.
-2. De skill neemt het grootste deel van de documentatie over (werkwijze, commando's, stoppunten). Deze
-   planpagina daarna inkorten tot de beslissingen en het logboek, en "Open vragen" afsluiten: die zijn
-   allemaal beantwoord.
-3. Testen bij de volgende uitrol, met de skill. Let vooral op `ats`, `insights`, `notifications`,
-   `rostering-api` en `rostering-application`: die gingen deze keer met de hand en zijn nog niet door het
-   script klaargezet.
-
-Buiten dit plan: de tag weghalen bij de productie-uitrol (hoort bij de productiestap, nog niets gebouwd),
-de lokale checkouts van die vijf repo's in `~/IdeaProjects` terug naar `develop`, en PKI-1125
-(`.gitattributes`).
-
-Oorspronkelijke aanpak, ter referentie:
-
-- Echte releases (geen RC) naar de private npm-repo van `iam-login-ui`, `portal-ui-common`,
-  `portal-employee-ui`, `portal-worker-ui` en `portal-enrollment-ui`. `portal-ui-common` gaat eerst,
-  want die zit in `portal-employee-ui` en `portal-worker-ui`.
-- De nieuwe versies in de POM van `iam` (property `iam.login-ui.version` in het
-  `pre-release`-profiel) en van `portal` (nog uitzoeken), en dan de release branches van `iam` en
-  `portal`.
-- Daarna bekijken of dit in het script kan (nu `"handmatig"` in `data/staging-repos.json`).
-- Daarna stap 5: de infra-PR met alle image tags, uit `~/staging-runs/state.json` plus de vijf
-  RC's die met de hand gemaakt zijn (zie de stand).
-
-Stand op 2026-11-13:
-
-- `ats` (Maven + plugin): klaar, RC `12.10.0-rc.0`.
-- `insights` (Gradle zonder plugin): klaar op 2026-11-13, RC `1.31.0-rc.0`.
-- `rostering-application` (Gradle + plugin): klaar op 2026-11-13, RC `1.13.0-rc.0`.
-  `rostering-engine` heeft dezelfde plugin.
-- `notifications` (sbt): klaar op 2026-11-13, RC `1.6.0-rc.0`.
-- `rostering-api` (npm met image): klaar op 2026-11-13, RC `1.10.0-rc.0`.
-- Via het script (2026-11-13): `cata` `4.16.0-rc.0`, `more` `3.16.0-rc.0`, `roep` `7.29.0-rc.0`,
-  `rostering-engine` `1.13.0-rc.0`, `profile-presentation-ui` `1.21.0-rc.0`, `rostering-ui`
-  `1.6.0-rc.0`.
-- Via het script met de frontendketen (2026-11-13): `iam` `6.23.0-rc.0` (met `iam-login-ui` 1.1.0),
-  `portal` `2.71.0-rc.0` (met employee 2.0.0, worker 1.1.0 en enrollment 2.0.0).
-- De lokale checkouts van `ats`, `insights`, `rostering-application`, `notifications` en
-  `rostering-api` staan op hun release branch, niet op `develop`.
-
-## Open vragen
-
-- Welke repo's staan precies op de vaste lijst? (Voorstel staat in het antwoord van
-  2026-11-12; nog bevestigen.)
-- Hoe maak je per project een release branch, en waar zitten de verschillen? (Maven met
-  gitflow-maven-plugin, Gradle met een gitflow-plugin of met command-line git-flow; per repo
-  vastleggen.)
-- Frontend-releases: hoe komt de versie in de POM van `portal` (bij `iam`: property
-  `iam.login-ui.version` in het `pre-release`-profiel)?
-- Infra: hoe heet de repo, waar staan de worktrees, en welke bestanden bevatten de image tags?
-- Hoe bepaal je "sinds de vorige release": vanaf `master`, of vanaf de laatste tag?
+Buiten dit plan: de tag `release candidate` weghalen bij de productie-uitrol (hoort bij de
+productiestap, nog niets gebouwd) en PKI-1125 (`.gitattributes`).
 
 ## Verloop van een run
 
@@ -281,42 +194,6 @@ van elkaar af; dat het script ze na elkaar klaarzet, is alleen de uitvoering (zi
   seconden per repo (fetch, Docker Hub, één commit), terwijl de frontends minuten nodig hebben
   voor checks en builds. Spoor 2 staat dus het grootste deel van de tijd te wachten op `portal`;
   parallel klaarzetten zou nauwelijks iets schelen.
-
-## Procedure
-
-Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
-
-1. **Overzicht maken** (script): `/usr/bin/python3 -I scripts/staging_overzicht.py --uit
-   gebieden/werk/staging-releases/<datum>.md`. Daarna controleer ik het zelf (stoppunt).
-2. **Release branches en frontends** (script, eenmalig): `/usr/bin/python3 -I scripts/staging_release_branches.py
-   --uit gebieden/werk/staging-releases/<datum>.md`, na stap 1. Dit released ook de frontends
-   (zonder stoppunt); `staging_frontends.py --plan` toont vooraf wat dat wordt. Daarna de sectie "Release
-   branches" controleren (stoppunt) en daarna hetzelfde commando met `--push`. Direct na het pushen zet `--push`
-   de tag `release candidate` op de hoofdissues (`--tag` doet alleen die stap, `--tag --droog` toont wat
-   het zou doen). Hieronder de oude werkwijze met de hand, ter referentie.
-
-   Met de hand (per repo):
-   1. `master` en `develop` bijwerken (`git pull --ff-only`).
-   2. `sdk env` (anders draait de verkeerde Maven- of Java-versie), dan de release branch
-      maken met de gitflow-tool van het project. Die haalt `-SNAPSHOT` van de versie af en
-      commit ("Update versions for release").
-   3. Het base Docker image in het `pre-release`-profiel naar de nieuwste versie pinnen en
-      committen ("Update base Docker image for production builds"). Dit is het enige wat in
-      deze workflow wordt bijgewerkt; de parent doet Dependabot.
-   4. Stoppunt: de diff `develop..release/X.Y.Z` controleren.
-   5. Pushen. `pre-release.yml` leidt `X.Y.Z-rc.N` af, bouwt met Jib en zet de git-tag. Die
-      git-tag is de image tag.
-3. **Infra-PR** (script, eenmalig): `/usr/bin/python3 -I scripts/staging_infra_pr.py --uit
-   gebieden/werk/staging-releases/<datum>.md`, na `--push` (of `--tag`). Bij een conflict in een rc-branch:
-   oplossen in `~/staging-runs/infra`, `git rebase --continue`, en hetzelfde commando opnieuw. `--droog`
-   pusht niet en maakt geen PR; `--opnieuw` begint opnieuw. Daarna de PR nakijken en mergen.
-
-## Automatiseringskandidaten
-
-| Stap | Wat herhaalt zich | Idee | Status |
-| --- | --- | --- | --- |
-| 2 | Nieuwste base image + digest opzoeken | Docker Hub tags-API, per soort een tagpatroon | klaar (`staging_release_branches.py`) |
-| 2 | Release branch, pin, push, wachten op tag | één script voor alle repo's, in schone clones | klaar (`staging_release_branches.py`) |
 
 ## Logboek
 
@@ -585,3 +462,20 @@ Per stap: wat ik doe, met welk gereedschap, en per repo of eenmalig.
 - `staging_infra_pr.py --opnieuw`: beide rc-branches zonder conflict gerebased, gepusht, PR
   [#999](https://github.com/Flow-Cloud-Systems/infra/pull/999) naar `develop`: drie commits, dertien
   bestanden, mergeable.
+
+### 2026-11-13, skill
+
+- Skill `staging-release-candidates` gemaakt, in de stijl van `dependabot-routine`: vijf stappen met
+  stoppunten na het overzicht (inclusief `staging_frontends.py --plan`, het laatste moment vóór de
+  frontendreleases) en na het klaarzetten, en een stop bij een conflict in de infra-PR.
+- Lopende uitrol herkennen: de nieuwste notitie in `staging-releases/` zonder regel "Gepusht op
+  …/pull/…" in de sectie Infra-PR loopt nog, ook als hij van een eerdere dag is. `state.json` krijgt
+  de datum van stap 2, niet die van stap 1, dus die datum is geen maat voor de uitrol.
+- `staging_infra_pr.py` de eerste keer in een uitrol met `--opnieuw`: `infra.json` bevat anders de PR
+  van de vorige uitrol.
+- Allow-regels voor de leesscripts van stap 1: `staging_overzicht.py` en `staging_frontends.py
+  --plan` (alleen met `--plan`).
+- Planpagina ingekort tot beslissingen en logboek. De open vragen waren allemaal beantwoord: de vaste
+  lijst staat in `data/staging-repos.json`, de verschillen per repo ook, de frontendversies gaan via
+  `frontends`, infra is `Flow-Cloud-Systems/infra`, en "sinds de vorige release" is
+  `master...develop`.
