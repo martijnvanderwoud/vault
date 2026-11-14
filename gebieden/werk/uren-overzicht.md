@@ -6,7 +6,7 @@ tags: [werk, uren]
 # Urenoverzicht 2026
 
 > Gegenereerd door `scripts/uren.py --schrijf` (skill `/uren`) uit LogMyTime. Niet met de hand bewerken.
-> Peildatum **13-11-2026**. Achtergrond en logica: [[urenregistratie]].
+> Peildatum **14-11-2026**. Achtergrond en logica: [[urenregistratie]].
 
 ## Stand
 
@@ -17,8 +17,8 @@ tags: [werk, uren]
 | Vrij opgenomen | 160,90 | | **Totaal declarabel** | **1109,60** |
 | Vrij-budget | 196,00 | | Niet declarabel | 8,75 |
 | Vrij over | 35,10 | |  |  |
-| Nog gereserveerd | 33,00 | |  |  |
-| **Vrij na reservering** | **2,10** | |  |  |
+| Nog gereserveerd | 34,00 | |  |  |
+| **Vrij na reservering** | **1,10** | |  |  |
 
 ## Vrije uren: gepland en gereserveerd
 
@@ -41,10 +41,10 @@ tags: [werk, uren]
 | Weekendje weg sept | 5,00 | 0,00 |
 | Loopwijzer Vogezen | 10,75 | 0,00 |
 | Bijkomen en uitpakken na Vogezen | 4,50 | 0,00 |
-| Dag voor kerst | 5,00 | 5,00 |
+| Dag voor kerst | 6,00 | 6,00 |
 | Kerstvakantie | 28,00 | 28,00 |
 | Overig | 0,00 | 0,00 |
-| **Totaal** | **196,00** | **33,00** |
+| **Totaal** | **197,00** | **34,00** |
 
 Bron: `data/vrije-dagen-2026.csv`. Is een geplande dag voorbij, zet dan `nog_gereserveerd_uren` op 0.
 

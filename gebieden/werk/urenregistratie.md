@@ -57,7 +57,7 @@ Pompkracht 1079,65 u en Construct 0,55 u.
 - Klant volgt uit project; projecten zonder klant ("Niet declarabel", 8,75 u per 10-11) tellen niet als declarabel.
 - Entries met een `AbsenceID` worden overgeslagen. Alle 2026-entries hebben `TypeID` 2 en geen afwezigheid.
 - Lokale datum (Europe/Amsterdam) bepaalt bij welke dag een entry hoort.
-- Gereserveerde vrije uren staan in `data/vrije-dagen-2026.csv` (kolommen `omschrijving`, `gepland_uren`, `nog_gereserveerd_uren`, in uren; oorspronkelijk uit Excel kolom J, K, L ×24; nu de bron). Het script telt `nog_gereserveerd_uren` op en toont ook vrij over min gereserveerd. Gepland totaal 196 u (= budget), nog gereserveerd 33,0 u (Dag voor kerst 5,0 u, Kerstvakantie 28,0 u). Bij een geplande dag die voorbij is: `nog_gereserveerd_uren` op 0 zetten.
+- Gereserveerde vrije uren staan in `data/vrije-dagen-2026.csv` (kolommen `omschrijving`, `gepland_uren`, `nog_gereserveerd_uren`, in uren; oorspronkelijk uit Excel kolom J, K, L ×24; nu de bron). Het script telt `nog_gereserveerd_uren` op en toont ook vrij over min gereserveerd. Gepland totaal 197,0 u (budget 196 u), nog gereserveerd 34,0 u (Dag voor kerst 6,0 u, Kerstvakantie 28,0 u). Bij een geplande dag die voorbij is: `nog_gereserveerd_uren` op 0 zetten.
 
 ## Skill
 

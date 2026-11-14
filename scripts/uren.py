@@ -17,8 +17,11 @@ from datetime import date, timedelta
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from logmytime import get_all, lokale_datum, odata_datum  # noqa: E402
 
-# Werkuren per weekdag (ma t/m vr), 28 u per week.
-UREN_PER_WEEKDAG = [6.5, 5.5, 6.0, 6.0, 4.0]
+# Werkuren per weekdag (ma t/m vr), 28 u per week, per ingangsdatum (oplopend).
+WEEKSCHEMAS = [
+    (date(2026, 1, 1), [6.5, 6.5, 4.5, 6.25, 4.25]),
+    (date(2026, 11, 16), [6.5, 5.5, 6.0, 6.0, 4.0]),  # marathonschema
+]
 VRIJ_BUDGET = 196
 VRIJE_DAGEN = os.path.expanduser('~/vault/data/vrije-dagen-2026.csv')
 OVERZICHT = os.path.expanduser('~/vault/gebieden/werk/uren-overzicht.md')
@@ -26,12 +29,13 @@ MAANDEN = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt',
 
 
 def target_uren(vanaf, tot):
-    """Werkdagen vanaf t/m tot (beide inclusief, zonder feestdagen) × uren per weekdag."""
+    """Werkdagen vanaf t/m tot (beide inclusief, zonder feestdagen) × uren per weekdag volgens het schema van die dag."""
     totaal = 0.0
     dag = vanaf
     while dag <= tot:
         if dag.weekday() < 5:
-            totaal += UREN_PER_WEEKDAG[dag.weekday()]
+            schema = [uren for ingang, uren in WEEKSCHEMAS if ingang <= dag][-1]
+            totaal += schema[dag.weekday()]
         dag += timedelta(days=1)
     return totaal
 
