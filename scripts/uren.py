@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from logmytime import get_all, lokale_datum, odata_datum  # noqa: E402
 
 # Werkuren per weekdag (ma t/m vr), 28 u per week.
-UREN_PER_WEEKDAG = [6.5, 6.5, 4.5, 6.25, 4.25]
+UREN_PER_WEEKDAG = [6.5, 5.5, 6.0, 6.0, 4.0]
 VRIJ_BUDGET = 196
 VRIJE_DAGEN = os.path.expanduser('~/vault/data/vrije-dagen-2026.csv')
 OVERZICHT = os.path.expanduser('~/vault/gebieden/werk/uren-overzicht.md')

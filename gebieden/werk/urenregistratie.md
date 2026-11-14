@@ -16,7 +16,7 @@ in `data/`. Plannen staan in [[vault-roadmap]].
 De Excel `declarabele-uren-2026.xlsx` is op 12-11-2026 uit de vault verwijderd (staat nog in de
 git-history). `uren.py` volgt deze logica:
 
-- Target = werkdagen sinds 1-1 × uren per weekdag: ma 6,5 / di 6,5 / wo 4,5 / do 6,25 / vr 4,25 (28 u/week).
+- Target = werkdagen sinds 1-1 × uren per weekdag: ma 6,5 / di 5,5 / wo 6 / do 6 / vr 4 (28 u/week, marathonschema vanaf 16-11-2026; daarvoor ma 6,5 / di 6,5 / wo 4,5 / do 6,25 / vr 4,25).
 - Declarabel = cumulatief per klant (Pompkracht, Construct), handmatig overgenomen.
 - Vrij opgenomen = target − declarabel. Vrij-budget = 196 u/jaar (28 × 7).
 - Gereserveerde vrije uren: lijst in kolom J (omschrijving), K (nog gereserveerd), L (gepland).
