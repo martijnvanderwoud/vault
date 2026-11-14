@@ -1,5 +1,6 @@
 {
   "enabledCssSnippets": [
     "wide-page"
-  ]
+  ],
+  "showRibbon": true
 }
