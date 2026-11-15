@@ -1,0 +1,22 @@
+{
+  "toelichting": "De regels uit de Uitgangspunten van gebieden/vault/weekplanning-plan.md, als data voor stap 3.",
+  "werkdoel_week_uren": 28,
+  "werkuren_schuiven_binnen_week": true,
+  "opstaan": "06:00",
+  "lucht_min_per_werkdag": 30,
+  "wijkt_eerst": ["lucht", "stabiliteit"],
+  "nooit_wijken": ["training"],
+  "later_opstaan_hangt_af_van": "voor of achter op target (vrij na reservering uit uren.py)",
+  "weekend_werk": false,
+  "zware_training": {"ontbijt_voor_lopen_uren": [2, 3]},
+  "easy_training": {"voor_het_lopen": "snack (banaan)", "na_het_lopen": "stabiliteit, ontbijt, werken"},
+  "kracht": {
+    "per_week": 2,
+    "op_dagsoorten": ["zwaar", "weekend_training"],
+    "na_lunch": true,
+    "niet_direct_na_training": true
+  },
+  "heuvels_om_de_weken": 2,
+  "dagen_een_plek_naar_voren": {"di": "ma", "wo": "di", "do": "wo", "vr": "do", "za": "vr", "zo": "za", "ma": "zo"},
+  "excel_week": {"ma": "easy", "di": "zwaar", "wo": "easy", "do": "easy", "vr": "lang_heuvels", "za": "rust", "zo": "weekend_training"}
+}

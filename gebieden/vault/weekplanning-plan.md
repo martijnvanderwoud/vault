@@ -28,7 +28,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 ## Voortgang
 
 - [x] 1. Tempo's en trainingsduur (15-11, aannames nog te bevestigen)
-- [ ] 2. Soorten dagen en regels als data
+- [x] 2. Soorten dagen en regels als data (15-11)
 - [ ] 3. Weekplanning doorrekenen
 - [ ] 4. Skill `/weekplanning` voor zondag
 - [ ] 5. Herplannen tijdens de week
@@ -99,7 +99,9 @@ Klaar als: de huidige week uit de Excel uit de data is terug te rekenen, met dez
 ### 3. Weekplanning doorrekenen
 
 Script: trainingsweek + afspraken + urenstand → planning per dag met werkuren, weektotaal tegen
-28 u, lucht die overblijft en conflicten.
+28 u, lucht die overblijft en conflicten. Bouwt voort op `scripts/weekplanning.py` (stap 2): de
+duur van het blok `Hardlopen` komt uit `trainingsduur.py`, de soort dag per weekdag uit de
+trainingsweek in plaats van `excel_week`, en afspraken en wijkregels (`wijkt_eerst`) komen erbij.
 
 Klaar als: de week van 23-11 (ortho-nacontrole ma 9:45–10:15) een kloppende planning geeft.
 
@@ -173,3 +175,20 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
   minuten verschil raakt de planning niet. Na de run: werkelijke duur uit Garmin vergelijken.
 - **Trainingsweek loopt ma t/m zo:** de maandagtraining van het boek komt aan het eind, op zondag.
   Week 1 begint ma 16-11; de eerste Kenyan-style progression is zo 22-11.
+- **Stap 2 (15-11):** `data/weekplanning/` met `dagsoorten.json` (blokken per soort dag),
+  `weekdagen.json` (werkdoel, klusjes en avond per weekdag) en `regels.json` (de Uitgangspunten,
+  plus `excel_week`: de toewijzing uit de Excel). `scripts/weekplanning.py --controleer` bouwt de
+  week op en vergelijkt met de CSV: alle begintijden, activiteiten en werkuren gelijk, 28,0 u.
+- **Wat aan de weekdag vastzit, niet aan de soort dag:** het werkdoel, de klusjes overdag (bakker op
+  ma, was op wo/do/vr) en de hele avond (Week(end) bespreken op wo, Ellie bellen op vr). De
+  werkblokken rekenen zich uit: `vul` tot een vaste tijd (lunch om 12:00), een vast aantal uren
+  (voor de training op zware en lange dagen), of `rest` van het werkdoel. Zo schuiven de uren mee
+  als de soort dag wisselt.
+- **Aannames, nog te bevestigen:** de soort dag `lang` (lange loop zonder heuvels) staat niet in de
+  Excel; nu als `lang_heuvels` zonder reistijd, vanaf huis, met warming-up en gewone lunch. `rust`
+  en `weekend_training` (zo: training, kracht, weekly review) hebben geen tijdsindeling. De
+  duur van `Hardlopen` in de dagsoorten is die uit de Excel (easy 60, zwaar 75, lang 150 min,
+  inclusief speling); stap 3 vervangt die door de berekende duur.
+- **Open voor stap 3:** wat er met de klusjes en de avond gebeurt als een soort dag op een andere
+  weekdag valt (bv. een zware dag op wo met de was), en of het werkblok vóór een zware training
+  vast 1 u blijft of volgt uit "2 tot 3 uur na het ontbijt".

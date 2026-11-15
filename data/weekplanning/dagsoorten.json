@@ -1,0 +1,90 @@
+{
+  "toelichting": "Blokken per soort dag, in volgorde vanaf het opstaan. duur_min is vast; werk is 'vul' (tot het volgende blok met een vaste tijd), een vast aantal uren, of 'rest' (wat er van het werkdoel van de weekdag over is). Hardlopen heeft soort 'training': duur_min is de tijd uit de Excel, stap 3 zet daar de berekende trainingsduur.",
+  "easy": {
+    "omschrijving": "Easy run, vroeg op een snack, daarna stabiliteitsroutines, ontbijt en werken",
+    "blokken": [
+      {"activiteit": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven", "duur_min": 30},
+      {"activiteit": "Snack, fysio oefeningen, warming up, schoenen aan en naar buiten", "duur_min": 45},
+      {"activiteit": "Hardlopen", "soort": "training", "duur_min": 60},
+      {"activiteit": "Uitloop", "duur_min": 15},
+      {"activiteit": "Pedestal & hip stability routines", "soort": "stabiliteit", "duur_min": 45},
+      {"activiteit": "Douchen, aankleden, hardloopspullen opruimen", "duur_min": 30},
+      {"activiteit": "Ontbijt", "duur_min": 15},
+      {"activiteit": "Tanden poetsen", "duur_min": 15},
+      {"activiteit": "Werken", "werk": "vul"},
+      {"activiteit": "Lunch", "om": "12:00", "duur_min": 30},
+      {"activiteit": "Werken", "werk": "rest"},
+      {"activiteit": "Lucht", "soort": "lucht", "duur_min": 30}
+    ]
+  },
+  "zwaar": {
+    "omschrijving": "Zware training: eerst ontbijten, 2 tot 3 uur later lopen; kracht na de lunch",
+    "blokken": [
+      {"activiteit": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven", "duur_min": 30},
+      {"activiteit": "Ontbijt en vaatwasser uitruimen", "duur_min": 30},
+      {"activiteit": "Fysio oefeningen", "duur_min": 15},
+      {"activiteit": "Tanden poetsen", "duur_min": 15},
+      {"activiteit": "Werken", "werk": 1.0},
+      {"activiteit": "Warming up, schoenen aan en naar buiten", "duur_min": 30},
+      {"activiteit": "Hardlopen", "soort": "training", "duur_min": 75},
+      {"activiteit": "Uitloop, snack", "duur_min": 15},
+      {"activiteit": "Douchen, aankleden, hardloopspullen opruimen", "duur_min": 30},
+      {"activiteit": "Werken", "werk": "vul"},
+      {"activiteit": "Lunch", "om": "12:00", "duur_min": 30},
+      {"activiteit": "Werken", "werk": 1.5},
+      {"activiteit": "Naar de sportschool", "soort": "kracht", "duur_min": 15},
+      {"activiteit": "Kracht", "soort": "kracht", "duur_min": 30},
+      {"activiteit": "Omkleden", "soort": "kracht", "duur_min": 15},
+      {"activiteit": "Naar huis, snack", "soort": "kracht", "duur_min": 30},
+      {"activiteit": "Werken", "werk": "rest"},
+      {"activiteit": "Lucht", "soort": "lucht", "duur_min": 30}
+    ]
+  },
+  "lang_heuvels": {
+    "omschrijving": "Lange loop door rolling hills bij het Doornse Gat, met reistijd; eerst ontbijten",
+    "blokken": [
+      {"activiteit": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven", "duur_min": 30},
+      {"activiteit": "Ontbijt en vaatwasser uitruimen - brood klaarmaken voor terugweg", "duur_min": 30},
+      {"activiteit": "Fysio oefeningen", "duur_min": 15},
+      {"activiteit": "Tanden poetsen", "duur_min": 15},
+      {"activiteit": "Werken", "werk": 1.75},
+      {"activiteit": "Vertrek naar parkeerplaats Doornse Gat", "duur_min": 45},
+      {"activiteit": "Hardlopen", "soort": "training", "duur_min": 150},
+      {"activiteit": "Vertrek naar huis", "duur_min": 45},
+      {"activiteit": "Douchen, aankleden, hardloopspullen opruimen", "duur_min": 30},
+      {"activiteit": "Tweede lunch", "duur_min": 30},
+      {"activiteit": "Werken", "werk": "rest"},
+      {"activiteit": "Lucht", "soort": "lucht", "duur_min": 30}
+    ]
+  },
+  "lang": {
+    "omschrijving": "Lange loop vanaf huis, zonder heuvels (aanname: als lang_heuvels zonder reistijd, staat niet in de Excel)",
+    "blokken": [
+      {"activiteit": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven", "duur_min": 30},
+      {"activiteit": "Ontbijt en vaatwasser uitruimen", "duur_min": 30},
+      {"activiteit": "Fysio oefeningen", "duur_min": 15},
+      {"activiteit": "Tanden poetsen", "duur_min": 15},
+      {"activiteit": "Werken", "werk": 1.75},
+      {"activiteit": "Warming up, schoenen aan en naar buiten", "duur_min": 30},
+      {"activiteit": "Hardlopen", "soort": "training", "duur_min": 150},
+      {"activiteit": "Douchen, aankleden, hardloopspullen opruimen", "duur_min": 30},
+      {"activiteit": "Lunch", "duur_min": 30},
+      {"activiteit": "Werken", "werk": "rest"},
+      {"activiteit": "Lucht", "soort": "lucht", "duur_min": 30}
+    ]
+  },
+  "rust": {
+    "omschrijving": "Geen training, geen werk, geen tijdsindeling (zaterdag: wandelen met Franca)",
+    "tijdsindeling": false,
+    "blokken": []
+  },
+  "weekend_training": {
+    "omschrijving": "Training, kracht (niet direct na de training, eerst lunchen) en de weekly review; geen werk, geen tijdsindeling",
+    "tijdsindeling": false,
+    "blokken": [
+      {"activiteit": "Hardlopen", "soort": "training"},
+      {"activiteit": "Kracht", "soort": "kracht"},
+      {"activiteit": "Weekly review"}
+    ]
+  }
+}
