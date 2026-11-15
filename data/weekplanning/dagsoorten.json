@@ -1,6 +1,7 @@
 {
   "toelichting": "Blokken per soort dag, in volgorde vanaf het opstaan. duur_min is vast; werk is 'vul' (tot het volgende blok met een vaste tijd), een vast aantal uren, of 'rest' (wat er van het werkdoel van de weekdag over is). Een vaste tijd is 'om' (kloktijd) of 'minstens_na' (minuten na het einde van een eerder blok). Hardlopen heeft soort 'training': duur_min is de tijd uit de Excel; met een trainingsweek rekent weekplanning.py de duur uit de tempo's.",
   "easy": {
+    "naam": "Easy run",
     "omschrijving": "Easy run, vroeg op een snack, daarna stabiliteitsroutines, ontbijt en werken",
     "blokken": [
       {"activiteit": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven", "duur_min": 30},
@@ -18,6 +19,7 @@
     ]
   },
   "zwaar": {
+    "naam": "Zware training",
     "omschrijving": "Zware training: eerst ontbijten, 2 tot 3 uur later lopen; kracht na de lunch",
     "blokken": [
       {"activiteit": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven", "duur_min": 30},
@@ -42,6 +44,7 @@
     ]
   },
   "lang_heuvels": {
+    "naam": "Lange loop met heuvels",
     "omschrijving": "Lange loop door rolling hills bij het Doornse Gat, met reistijd; eerst ontbijten",
     "blokken": [
       {"activiteit": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven", "duur_min": 30},
@@ -59,6 +62,7 @@
     ]
   },
   "lang": {
+    "naam": "Lange loop",
     "omschrijving": "Lange loop vanaf huis, zonder heuvels (aanname: als lang_heuvels zonder reistijd, staat niet in de Excel)",
     "blokken": [
       {"activiteit": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven", "duur_min": 30},
@@ -75,11 +79,13 @@
     ]
   },
   "rust": {
+    "naam": "Rustdag",
     "omschrijving": "Geen training, geen werk, geen tijdsindeling (zaterdag: wandelen met Franca)",
     "tijdsindeling": false,
     "blokken": []
   },
   "weekend_training": {
+    "naam": "Training, geen tijdsindeling",
     "omschrijving": "Training, kracht (niet direct na de training, eerst lunchen) en de weekly review; geen werk, geen tijdsindeling",
     "tijdsindeling": false,
     "blokken": [

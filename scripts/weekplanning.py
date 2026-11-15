@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rekent een weekplanning door uit soorten dagen, weekdagen, trainingen en afspraken.
 
-Gebruik: python3 scripts/weekplanning.py data/weekplanning/weken/<maandag>.json
+Gebruik: python3 scripts/weekplanning.py data/weekplanning/weken/<maandag>.json [--schrijf]
          python3 scripts/weekplanning.py [--controleer]
 
 Een dag = de blokken van de soort dag (data/weekplanning/dagsoorten.json) met de klusjes en de
@@ -15,6 +15,8 @@ trainingsduur.py, naar boven afgerond op een kwartier. Een afspraak (met reistij
 ervoor en erna) knipt het werkblok waar hij in valt; de werkdag loopt daardoor uit. Wat uitloopt
 gaat eerst van de lucht af, dan van wat verder in wijkt_eerst staat (regels.json), en wat dan nog
 over is van de lucht van de andere werkdagen.
+
+Met --schrijf komt de planning ook als notitie in gebieden/weekplanning/<maandag>.md.
 
 Zonder weekbestand bouwt het script de week uit de Excel op (regels.json, excel_week, met de duur
 van Hardlopen uit de Excel). Met --controleer vergelijkt het die met data/weekschema-excel-2026-11.csv.
@@ -34,6 +36,9 @@ DATA = VAULT / "data" / "weekplanning"
 TRAININGEN = VAULT / "data" / "hardlopen" / "trainingen"
 TEMPOS = VAULT / "data" / "hardlopen" / "tempos.json"
 EXCEL_CSV = VAULT / "data" / "weekschema-excel-2026-11.csv"
+NOTITIES = VAULT / "gebieden" / "weekplanning"
+MAANDEN = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september",
+           "oktober", "november", "december"]
 WEEKDAGEN = ["ma", "di", "wo", "do", "vr", "za", "zo"]
 VOLUIT = dict(zip(WEEKDAGEN, ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag",
                               "zaterdag", "zondag"]))
@@ -465,6 +470,88 @@ def week_tonen(week, toewijzing, dagsoorten, regels, weekconflicten, datums=None
     return totaal_werk
 
 
+def urenstand_tekst(stand):
+    if stand is None:
+        return "niet opgegeven"
+    if stand >= 0:
+        return (f"{stand:.2f} u vrij na reservering, voor op target: lucht is voor inbox en kleine taken, "
+                "later opstaan kan")
+    return f"{stand:.2f} u vrij na reservering, achter op target: lucht gebruiken om werk in te halen"
+
+
+def notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen, invoer_pad,
+                      urenstand):
+    """Schrijft de planning als Markdown-notitie naar gebieden/weekplanning/<maandag>.md."""
+    def datum_tekst(d):
+        return f"{d.day} {MAANDEN[d.month - 1]}"
+
+    maandag, zondag = datums["ma"], datums["zo"]
+    periode = (f"{maandag.day} t/m {datum_tekst(zondag)}" if maandag.month == zondag.month
+               else f"{datum_tekst(maandag)} t/m {datum_tekst(zondag)}")
+    totaal_werk = sum(w for d in WEEKDAGEN for _, _, w in week[d]["rij"] if w)
+    totaal_lucht = sum(lucht_min(week[d]["rij"]) for d in WEEKDAGEN)
+    try:
+        bron = Path(invoer_pad).resolve().relative_to(VAULT)
+    except ValueError:
+        bron = Path(invoer_pad)
+    regels_md = [
+        "---",
+        f"description: Weekplanning van {periode} {zondag.year}, "
+        "per dag met tijden, training, werkuren en lucht",
+        "tags: [weekplanning]",
+        "---",
+        "",
+        f"# Weekplanning {periode} {zondag.year}",
+        "",
+        f"> Gegenereerd door `scripts/weekplanning.py --schrijf` uit `{bron}`. Niet met de hand",
+        "> bewerken: wijzigingen gaan via het weekbestand. Achtergrond: [[weekplanning-plan]].",
+        "",
+        f"**Werk** {duur_tekst(totaal_werk)} u (doel {regels['werkdoel_week_uren']} u) · "
+        f"**lucht** {duur_tekst(totaal_lucht)} · **urenstand** {urenstand_tekst(urenstand).replace('.', ',')}",
+        "",
+        "| Dag | Soort | Training | Op | Werk | Lucht |",
+        "|---|---|---|---|---:|---:|",
+    ]
+    for dag in WEEKDAGEN:
+        rij = week[dag]["rij"]
+        werk = sum(w for _, _, w in rij if w)
+        training = ""
+        if dag in trainingen:
+            tr, km, _, gepland = trainingen[dag]
+            training = f"{km:.0f} km, {duur_tekst(gepland)}"
+        op = min_naar_hhmm(rij[0][0]) if rij else ""
+        regels_md.append(f"| {VOLUIT[dag]} {datums[dag].day} | {dagsoorten[toewijzing[dag]]['naam']} | {training} "
+                         f"| {op} | {duur_tekst(werk) if werk else ''} | {duur_tekst(lucht_min(rij)) if rij else ''} |")
+    for c in weekconflicten:
+        regels_md += ["", f"**Conflict:** {c}"]
+
+    for dag in WEEKDAGEN:
+        plan, rij = week[dag], week[dag]["rij"]
+        regels_md += ["", f"## {VOLUIT[dag].capitalize()} {datum_tekst(datums[dag])}: "
+                          f"{dagsoorten[toewijzing[dag]]['naam'].lower()}", ""]
+        if dag in trainingen:
+            tr, km, duur_s, gepland = trainingen[dag]
+            regels_md += [f"Training: {tr['omschrijving']} ({km:.1f} km, {s_naar_tekst(duur_s)}, gepland "
+                          f"{duur_tekst(gepland)}).", ""]
+        if rij:
+            regels_md += ["| Tijd | Activiteit | Werk |", "|---|---|---:|"]
+            for k, (begin, act, w) in enumerate(rij):
+                if act == "Lucht" and einde_rij(rij, k) == begin:
+                    continue
+                naam = f"**{act}**" if w else act
+                regels_md.append(f"| {min_naar_hhmm(begin)} | {naam} | {duur_tekst(w) if w else ''} |")
+        else:
+            regels_md.append(dagsoorten[toewijzing[dag]]["omschrijving"] + ".")
+        if plan["notities"] or plan["conflicten"]:
+            regels_md.append("")
+            regels_md += [f"- {n[0].upper()}{n[1:]}" for n in plan["notities"]]
+            regels_md += [f"- **Conflict:** {c}" for c in plan["conflicten"]]
+    NOTITIES.mkdir(exist_ok=True)
+    pad = NOTITIES / f"{maandag.isoformat()}.md"
+    pad.write_text("\n".join(regels_md) + "\n")
+    return pad
+
+
 def excel_lezen():
     rijen = {}
     with EXCEL_CSV.open(newline="") as f:
@@ -498,7 +585,7 @@ def excel_week(controleer):
     print("Gelijk aan de Excel: alle begintijden, activiteiten en werkuren.")
 
 
-def week_uit_bestand(pad):
+def week_uit_bestand(pad, schrijf=False):
     invoer = json.loads(Path(pad).read_text())
     maandag = date.fromisoformat(invoer["maandag"])
     datums = {dag: maandag + timedelta(days=i) for i, dag in enumerate(WEEKDAGEN)}
@@ -527,23 +614,20 @@ def week_uit_bestand(pad):
 
     print(f"Week van {maandag:%d-%m-%Y}, trainingen {trainingsweek['plan']} week {trainingsweek['week']}")
     stand = invoer.get("vrij_na_reservering_uren")
-    if stand is None:
-        print("Urenstand: niet opgegeven")
-    elif stand >= 0:
-        print(f"Urenstand: {stand:.2f} u vrij na reservering, voor op target: lucht is voor inbox en "
-              "kleine taken, later opstaan kan")
-    else:
-        print(f"Urenstand: {stand:.2f} u vrij na reservering, achter op target: lucht gebruiken om werk "
-              "in te halen")
+    print(f"Urenstand: {urenstand_tekst(stand)}")
 
     week, dagsoorten, regels, weekconflicten = week_plannen(toewijzing, hardlopen, afspraken, vervalt, aanpassen, opstaan)
     week_tonen(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen)
+    if schrijf:
+        notitie = notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen,
+                                    pad, stand)
+        print(f"Geschreven naar {notitie.relative_to(VAULT)}")
 
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if args:
-        week_uit_bestand(args[0])
+        week_uit_bestand(args[0], "--schrijf" in sys.argv)
     else:
         excel_week("--controleer" in sys.argv)
 

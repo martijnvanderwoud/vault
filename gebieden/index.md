@@ -8,6 +8,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 ## Submappen
 
 - [[gebieden/vault/index|vault]]
+- [[gebieden/weekplanning/index|weekplanning]]
 - [[gebieden/werk/index|werk]]
 
 ## Notities

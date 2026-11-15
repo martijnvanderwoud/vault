@@ -244,3 +244,7 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
   zelf gekozen tijd). Later opstaan laat de dag uitlopen; dat gaat zoals bij een afspraak eerst van
   de vrije tijd voor het eten, dan van de lucht, dan vervallen de stabiliteitsroutines. Di 17-11 om
   22:44 in bed, dus wo 18-11 op om 7:00: stabiliteitsroutines vervallen, lucht blijft 30 min.
+- **Leesbare weergave:** `weekplanning.py <weekbestand> --schrijf` schrijft de planning als notitie
+  naar `gebieden/weekplanning/<maandag>.md`: een overzicht van de week (soort dag, training, opstaan,
+  werk, lucht) en per dag een tabel met tijden, plus de meldingen. Gegenereerd, niet met de hand
+  bewerken. De skill (stap 4) draait altijd met `--schrijf`.
