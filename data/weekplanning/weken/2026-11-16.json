@@ -8,7 +8,6 @@
   ],
   "afspraken": [
     {"dag": "di", "activiteit": "Ledig Erf met Martijn Scholman", "van": "19:30", "tot": "21:30", "reistijd_min": 50, "omschakelen_min": 10},
-    {"dag": "do", "activiteit": "M❤️F", "van": "19:30", "tot": "22:00"},
-    {"dag": "zo", "activiteit": "Feestje Floortje 40 jaar", "van": "09:00", "tot": "13:00"}
+    {"dag": "do", "activiteit": "M❤️F", "van": "19:30", "tot": "22:00"}
   ]
 }

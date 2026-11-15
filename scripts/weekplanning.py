@@ -107,7 +107,7 @@ def tijden(blokken, opstaan, rest_min, conflicten):
     for i, b in enumerate(blokken):
         anker = ankertijd(b, eind)
         if anker is not None:
-            if "om" in b and t > anker:
+            if "om" in b and t > anker + b.get("speling_min", 0):
                 conflicten.append(f"{b['activiteit']} om {b['om']}, maar het blok ervoor loopt tot "
                                   f"{min_naar_hhmm(t)}")
             t = max(t, anker)
@@ -208,17 +208,21 @@ def wijken(blokken, werkdoel, opstaan, einde, wijkt_eerst, notities):
 def avond_invoegen(blokken, rij, afspraak, notities):
     """Zet een afspraak na de lucht tussen de avondblokken, op zijn eigen tijd.
 
-    Avondblokken die voor de afspraak (met reistijd en omschakelen) niet meer af zijn, komen erna.
+    Avondblokken die voor de afspraak (met reistijd en omschakelen) niet meer af zijn, komen erna,
+    behalve blokken met een vaste tijd (zoals eten): die blijven ervoor en geven zo nodig een conflict.
     """
     van, tot = hhmm_naar_min(afspraak["van"]), hhmm_naar_min(afspraak["tot"])
     begin_a, _, marge = afspraak_tijden(afspraak)
     li = next(i for i, b in enumerate(blokken) if b.get("soort") == "lucht")
-    j = next((k for k in range(li + 1, len(blokken))
-              if "duur_min" not in blokken[k] or rij[k][0] + blokken[k]["duur_min"] > begin_a), len(blokken))
+    j = next((k for k in range(li + 1, len(blokken)) if "om" not in blokken[k] and (
+        "duur_min" not in blokken[k] or rij[k][0] + blokken[k]["duur_min"] > begin_a)), len(blokken))
     midden = [{"activiteit": afspraak["activiteit"], "om": afspraak["van"], "duur_min": tot - van}]
     if marge:
         midden = ([{"activiteit": "Reistijd en omschakelen", "om": min_naar_hhmm(begin_a), "duur_min": marge}]
                   + midden + [{"activiteit": "Reistijd en omschakelen", "duur_min": marge}])
+    vast = [b for b in blokken[j:] if "om" in b]
+    blokken = blokken[:j] + vast + [b for b in blokken[j:] if "om" not in b]
+    j += len(vast)
     later = [b["activiteit"] for b in blokken[j:] if "duur_min" in b]
     if later:
         notities.append(f"na {afspraak['activiteit']}: {', '.join(later)}")
