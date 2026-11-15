@@ -30,7 +30,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 1. Tempo's en trainingsduur (15-11, aannames nog te bevestigen)
 - [x] 2. Soorten dagen en regels als data (15-11, aannames bevestigd)
 - [x] 3. Weekplanning doorrekenen (15-11, met de trainingen van week 1; week 2 nog invoeren)
-- [ ] 4. Skill `/weekplanning` voor zondag
+- [ ] 4. Skill `/weekplanning` voor zondag (15-11 gebouwd; afvinken na de eerste echte run op zo 22-11)
 - [ ] 5. Herplannen tijdens de week
 - [ ] 6. Gelopen trainingen importeren
 - [ ] 7. Workouts voor TrainingPeaks genereren
@@ -279,6 +279,18 @@ Klaar als: `uren.py` voor de week van 16-11 het target per dag uit de planning h
   target uit dat bestand voor datums die erin staan, anders `WEEKSCHEMAS`. Week van 16-11: ma 6,5 /
   di 5,5 / wo 6 / do 6 / vr 4, gelijk aan het vaste schema, want alleen wo had `minder` (45 min).
   `uren.py --vanaf 2026-11-16`: tot ma 6,50 u, tot wo 18,00 u, tot zo 28,00 u.
+- **Stap 4 (15-11):** skill in `.claude/skills/weekplanning/SKILL.md`. Haalt in één keer de urenstand
+  (`uren.py` zonder `--schrijf`), de zakelijke agenda (CrimsonCricket en Feestdagen in Nederland)
+  en de privé-agenda (Martijn en Auto) op; de agenda's van Franca niet, afspraken samen met haar
+  staan in Martijns eigen agenda (aanname, bevestigen op 22-11). Ontbreekt de trainingsweek, dan
+  vraagt de skill om de foto of screenshot, maakt het trainingsbestand met `dagsoort` en laat de duur
+  uit `trainingsduur.py` controleren. Afspraken legt de skill eerst voor (thuis of op locatie,
+  reistijd uit een screenshot van Google Maps), dan schrijft hij het weekbestand en draait
+  `weekplanning.py --schrijf`. Proefgedraaid op `weken/2026-11-23.json`; week 1 vervangen door
+  `wind-90-week-02.json` gebeurt op 22-11 in de skill zelf (stap 2 daarvan: geen trainingsweek met
+  `start` 2026-11-23).
+- **Nog niet in het script:** een feestdag of vrije dag op een werkdag. De skill meldt die en vraagt
+  wat er met de werkuren moet; de eerstvolgende is 25-12 (vr).
 - **Voor stap 5:** herplannen midden in de week met `--schrijf` overschrijft ook het target van de
   dagen die al voorbij zijn. Dat moet dan blijven staan (of uit de gelopen dagen komen), anders
   verschuift de stand van eerdere dagen mee.
