@@ -235,11 +235,12 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
 - **Reistijd** zoekt Claude niet zelf op (9292 en Google Maps laden het reisadvies via JavaScript):
   Martijn maakt een screenshot van Google Maps, met de aankomsttijd ingesteld. Heen telt vanaf het
   vertrek van huis tot het begin van de afspraak, wachten meegerekend.
-- **Bedtijd:** Martijn staat om 6:00 op en ligt meestal om 22:50 in bed (`naar_bed` in `regels.json`).
-  Elke dag eindigt met `Naar bed` om 22:50. Na een avondafspraak geen downtime maar direct naar bed,
-  met een conflict als dat na 22:50 is.
+- **Bedtijd:** Martijn staat om 6:00 op en ligt meestal om 21:50 in bed (`naar_bed` in `regels.json`).
+  Elke dag eindigt met `Naar bed` om 21:50. Na een avondafspraak geen downtime maar klaarmaken voor
+  bed en dan naar bed, ook als dat later is.
 - **Na een late avond:** na een avondafspraak eerst een halfuur klaarmaken voor bed
-  (`klaarmaken_voor_bed_min`), en de volgende dag ongeveer een uur later opstaan (`opstaan` in het
-  weekbestand; de skill stelt dat voor). Later opstaan laat de dag uitlopen; dat gaat zoals bij een
-  afspraak eerst van de vrije tijd voor het eten, dan van de lucht, dan vervallen de
-  stabiliteitsroutines. Wo 18-11 (op om 7:00): stabiliteitsroutines vervallen, lucht blijft 30 min.
+  (`klaarmaken_voor_bed_min`). Elk begonnen kwartier later in bed dan 21:50 is de volgende dag een
+  kwartier later opstaan; het script rekent dat uit (`opstaan` in het weekbestand alleen voor een
+  zelf gekozen tijd). Later opstaan laat de dag uitlopen; dat gaat zoals bij een afspraak eerst van
+  de vrije tijd voor het eten, dan van de lucht, dan vervallen de stabiliteitsroutines. Di 17-11 om
+  22:44 in bed, dus wo 18-11 op om 7:00: stabiliteitsroutines vervallen, lucht blijft 30 min.

@@ -111,9 +111,6 @@ def tijden(blokken, opstaan, rest_min, conflicten):
                 conflicten.append(f"{b['activiteit']} om {b['om']}, maar het blok ervoor loopt tot "
                                   f"{min_naar_hhmm(t)}")
             t = max(t, anker)
-        if "uiterlijk" in b and t > hhmm_naar_min(b["uiterlijk"]):
-            conflicten.append(f"{b['activiteit']} uiterlijk {b['uiterlijk']}, maar het blok ervoor loopt tot "
-                              f"{min_naar_hhmm(t)}")
         if "werk" in b:
             if b["werk"] == "vul":
                 duur = max(0, vul_tot(blokken, i, t, eind) - t)
@@ -231,7 +228,7 @@ def avond_invoegen(blokken, rij, afspraak, notities):
     Avondblokken die voor de afspraak (met reistijd en omschakelen) niet meer af zijn, gaan naar een
     vrij gat voor een blok met een vaste tijd, en anders na de afspraak. Blokken met een vaste tijd
     voor de afspraak (zoals eten) blijven ervoor en geven zo nodig een conflict. Na de afspraak geen
-    downtime: klaarmaken voor bed en dan naar bed, uiterlijk op de bedtijd.
+    downtime: klaarmaken voor bed en dan naar bed, ook als dat later is dan de bedtijd.
     """
     begin_a, _ = afspraak_tijden(afspraak)
     li = next(i for i, b in enumerate(blokken) if b.get("soort") == "lucht")
@@ -246,7 +243,7 @@ def avond_invoegen(blokken, rij, afspraak, notities):
             continue
         if b.get("soort") == "bed":
             erna.append({"activiteit": "Klaarmaken voor bed", "duur_min": b["klaarmaken_min"]})
-            b = {k: v for k, v in b.items() if k != "om"} | {"uiterlijk": b["om"]}
+            b = {k: v for k, v in b.items() if k != "om"}
         erna.append(b)
 
     # Verplaatste blokken in een gat voor een vast blok zetten, zolang ze passen.
@@ -340,7 +337,7 @@ def dag_plannen(dagsoort, weekdag, regels, hardlopen_min=None, afspraken=(), ver
         ertussen += b.get("duur_min", 0)
     later =opstaan_dag is not None and hhmm_naar_min(opstaan_dag) > opstaan
     if later:
-        notities.append(f"later opstaan: {opstaan_dag}")
+        notities.append(f"op om {opstaan_dag}")
         opstaan = hhmm_naar_min(opstaan_dag)
         rij, conflicten = dag_opbouwen(blokken, werkdoel, opstaan)
     if afspraken or later:
@@ -395,8 +392,13 @@ def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpa
     hardlopen, afspraken = hardlopen or {}, afspraken or {}
     vervalt, aanpassen, opstaan = vervalt or {}, aanpassen or {}, opstaan or {}
     week, weekconflicten = {}, []
+    naar_bed, opstaan_std = hhmm_naar_min(regels["naar_bed"]), hhmm_naar_min(regels["opstaan"])
+    later_min = 0
     for dag in WEEKDAGEN:
         soort = dagsoorten[toewijzing[dag]]
+        # Elk (begonnen) kwartier later naar bed dan normaal is een kwartier later opstaan.
+        if later_min and dag not in opstaan:
+            opstaan[dag] = min_naar_hhmm(opstaan_std + math.ceil(later_min / 15) * 15)
         if soort.get("tijdsindeling", True):
             week[dag] = dag_plannen(soort, weekdagen[dag], regels, hardlopen.get(dag), afspraken.get(dag, []),
                                     vervalt.get(dag, []), aanpassen.get(dag, []), opstaan.get(dag))
@@ -404,6 +406,10 @@ def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpa
             notities = [f"afspraak {a['activiteit']} {a['van']}-{a['tot']}, training en kracht eromheen"
                         for a in afspraken.get(dag, [])]
             week[dag] = {"rij": [], "conflicten": [], "notities": notities, "tekort": 0}
+        bed = next((begin for begin, act, _ in week[dag]["rij"] if act == "Naar bed"), None)
+        later_min = max(0, bed - naar_bed) if bed is not None else 0
+        if later_min:
+            week[dag]["notities"].append(f"{later_min} min later naar bed dan normaal, morgen later op")
 
     # Werk dat niet op de eigen dag past, gaat van de lucht van de andere werkdagen (eerst de latere).
     for i, dag in enumerate(WEEKDAGEN):
