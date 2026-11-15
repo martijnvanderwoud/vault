@@ -1,0 +1,14 @@
+{
+  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak. Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: ov-reistijd vanaf Nepveulaan 15 Zeist geschat op 50 min.",
+  "maandag": "2026-11-16",
+  "trainingen": "wind-90-week-01.json",
+  "vrij_na_reservering_uren": 1.10,
+  "vervalt": [
+    {"dag": "di", "soort": "kracht", "reden": "last van de rechterknie"}
+  ],
+  "afspraken": [
+    {"dag": "di", "activiteit": "Ledig Erf met Martijn Scholman", "van": "19:30", "tot": "21:30", "reistijd_min": 50, "omschakelen_min": 10},
+    {"dag": "do", "activiteit": "M❤️F", "van": "19:30", "tot": "22:00"},
+    {"dag": "zo", "activiteit": "Feestje Floortje 40 jaar", "van": "09:00", "tot": "13:00"}
+  ]
+}

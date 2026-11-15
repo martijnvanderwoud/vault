@@ -220,3 +220,13 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
   week 28,0 u, lucht 2:05. Getest met de trainingen van week 1.
 - **Urenstand** wordt alleen gemeld (voor of achter, en wat de lucht dan is); nog niet gebruikt om
   later op te staan.
+- **Eerste echte week, 16-11 (15-11):** gepland met `weken/2026-11-16.json` (Wind week 1, agenda's
+  privé en zakelijk, urenstand +1,10 u). Nieuw in het script: avondafspraken komen op hun eigen tijd
+  tussen de avondblokken, en wat ervoor niet meer af is komt erna; Week(end) bespreken (18:30) en Ellie
+  bellen (17:30) liggen met `om` vast in `weekdagen.json`, met `Vrij` in het gat ervoor; klusjes met
+  een vaste tijd knippen het werkblok vóór het opbouwen in plaats van achteraf (anders schoof een
+  vaste avondtijd mee); `vervalt` in het weekbestand haalt blokken van een soort weg (kracht op
+  di 17-11). Afspraken op een dag zonder tijdsindeling (zo) worden alleen gemeld.
+- **Open:** de avond begint direct na de lucht, dus op een korte dag (di 17-11: eten om 16:15) eet
+  je vroeg. Misschien moet eten een vaste tijd krijgen. Reistijd met het ov is nu een schatting
+  (Zeist–Tolsteegbrug 50 min); de skill moet die opzoeken of vragen.

@@ -1,5 +1,5 @@
 {
-  "toelichting": "Wat aan de weekdag vastzit, los van de soort dag: het werkdoel, vaste klusjes overdag en de avond. Een klusje staat 'na' een activiteit, 'om' een tijd (splitst zo nodig een werkblok) of 'samen_met' een activiteit (zelfde blok, naam erbij).",
+  "toelichting": "Wat aan de weekdag vastzit, los van de soort dag: het werkdoel, vaste klusjes overdag en de avond. Een klusje staat 'na' een activiteit, 'om' een tijd (splitst zo nodig een werkblok) of 'samen_met' een activiteit (zelfde blok, naam erbij). Avondblokken met 'om' liggen vast in de agenda; een gat ervoor is vrij.",
   "ma": {
     "werkdoel_uren": 6.5,
     "klusjes": [
@@ -31,7 +31,7 @@
     "avond": [
       {"activiteit": "Inbox en kleine taken", "duur_min": 30},
       {"activiteit": "Eten", "duur_min": 30},
-      {"activiteit": "Week(end) bespreken", "duur_min": 60},
+      {"activiteit": "Week(end) bespreken", "om": "18:30", "duur_min": 60},
       {"activiteit": "Afwas", "duur_min": 15},
       {"activiteit": "Afsluiten, kleren klaarleggen, tanden poetsen", "duur_min": 30},
       {"activiteit": "Downtime"}
@@ -55,7 +55,7 @@
       {"activiteit": "Kledingmand opruimen en 30 graden was aanzetten", "om": "15:30", "duur_min": 30}
     ],
     "avond": [
-      {"activiteit": "Ellie bellen", "duur_min": 30},
+      {"activiteit": "Ellie bellen", "om": "17:30", "duur_min": 30},
       {"activiteit": "Eten, afwas, tanden poetsen", "duur_min": 60},
       {"activiteit": "30 graden was ophangen", "duur_min": 30},
       {"activiteit": "Inbox en kleine taken", "duur_min": 15},
