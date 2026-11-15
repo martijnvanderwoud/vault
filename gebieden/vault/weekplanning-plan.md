@@ -235,3 +235,6 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
 - **Reistijd** zoekt Claude niet zelf op (9292 en Google Maps laden het reisadvies via JavaScript):
   Martijn maakt een screenshot van Google Maps, met de aankomsttijd ingesteld. Heen telt vanaf het
   vertrek van huis tot het begin van de afspraak, wachten meegerekend.
+- **Bedtijd:** Martijn staat om 6:00 op en ligt meestal om 22:50 in bed (`naar_bed` in `regels.json`).
+  Elke dag eindigt met `Naar bed` om 22:50. Na een avondafspraak geen downtime maar direct naar bed,
+  met een conflict als dat na 22:50 is.

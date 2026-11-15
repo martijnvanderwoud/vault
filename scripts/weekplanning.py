@@ -111,6 +111,9 @@ def tijden(blokken, opstaan, rest_min, conflicten):
                 conflicten.append(f"{b['activiteit']} om {b['om']}, maar het blok ervoor loopt tot "
                                   f"{min_naar_hhmm(t)}")
             t = max(t, anker)
+        if "uiterlijk" in b and t > hhmm_naar_min(b["uiterlijk"]):
+            conflicten.append(f"{b['activiteit']} uiterlijk {b['uiterlijk']}, maar het blok ervoor loopt tot "
+                              f"{min_naar_hhmm(t)}")
         if "werk" in b:
             if b["werk"] == "vul":
                 duur = max(0, vul_tot(blokken, i, t, eind) - t)
@@ -227,7 +230,8 @@ def avond_invoegen(blokken, rij, afspraak, notities):
 
     Avondblokken die voor de afspraak (met reistijd en omschakelen) niet meer af zijn, gaan naar een
     vrij gat voor een blok met een vaste tijd, en anders na de afspraak. Blokken met een vaste tijd
-    voor de afspraak (zoals eten) blijven ervoor en geven zo nodig een conflict.
+    voor de afspraak (zoals eten) blijven ervoor en geven zo nodig een conflict. Na de afspraak geen
+    downtime: direct naar bed, uiterlijk op de bedtijd.
     """
     begin_a, _ = afspraak_tijden(afspraak)
     li = next(i for i, b in enumerate(blokken) if b.get("soort") == "lucht")
@@ -236,7 +240,13 @@ def avond_invoegen(blokken, rij, afspraak, notities):
     ervoor = [b for b in avond if "om" in b and hhmm_naar_min(b["om"]) < begin_a
               or "om" not in b and "duur_min" in b and tijd[id(b)] + b["duur_min"] <= begin_a]
     verplaatst = [b for b in avond if b not in ervoor and "om" not in b and "duur_min" in b]
-    erna = [b for b in avond if b not in ervoor and b not in verplaatst]
+    erna = []
+    for b in avond:
+        if b in ervoor or b in verplaatst or "duur_min" not in b and "om" not in b:
+            continue
+        if b.get("soort") == "bed":
+            b = {k: v for k, v in b.items() if k != "om"} | {"uiterlijk": b["om"]}
+        erna.append(b)
 
     # Verplaatste blokken in een gat voor een vast blok zetten, zolang ze passen.
     nieuw, t, vroeger = [], rij[li][0] + blokken[li]["duur_min"], []
@@ -269,16 +279,17 @@ def vrij_invoegen(rij, blokken):
         elif werk != 0:
             uit.append((begin, act, werk))
         einde = begin + (werk if werk is not None else blokken[k].get("duur_min", 0))
-        if k + 1 < len(rij) and rij[k + 1][0] > einde:
+        if k + 1 < len(rij) and rij[k + 1][0] > einde and "duur_min" in blokken[k]:
             uit.append((einde, "Vrij", None))
     return uit
 
 
-def dag_plannen(dagsoort, weekdag, opstaan, wijkt_eerst, hardlopen_min=None, afspraken=(), vervalt=(),
-                aanpassen=()):
+def dag_plannen(dagsoort, weekdag, opstaan, naar_bed, wijkt_eerst, hardlopen_min=None, afspraken=(),
+                vervalt=(), aanpassen=()):
     """Geeft een dict met de rij, conflicten, notities en het tekort aan werk (min) voor andere dagen."""
     notities, conflicten_vast = [], []
     blokken = blokken_met_klusjes(dagsoort, weekdag, notities)
+    blokken.append({"activiteit": "Naar bed", "soort": "bed", "om": naar_bed, "duur_min": 0})
     for a in aanpassen:
         b = next((b for b in blokken if b["activiteit"] == a["activiteit"]), None)
         if b is None:
@@ -370,7 +381,7 @@ def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpa
     for dag in WEEKDAGEN:
         soort = dagsoorten[toewijzing[dag]]
         if soort.get("tijdsindeling", True):
-            week[dag] = dag_plannen(soort, weekdagen[dag], opstaan, regels["wijkt_eerst"],
+            week[dag] = dag_plannen(soort, weekdagen[dag], opstaan, regels["naar_bed"], regels["wijkt_eerst"],
                                     hardlopen.get(dag), afspraken.get(dag, []), vervalt.get(dag, []),
                                     aanpassen.get(dag, []))
         else:
@@ -450,7 +461,7 @@ def excel_week(controleer):
     excel = excel_lezen()
     verschillen = []
     for dag in WEEKDAGEN:
-        ons = week[dag]["rij"]
+        ons = [r for r in week[dag]["rij"] if r[1] != "Naar bed"]
         hun = excel.get(VOLUIT[dag], [])
         for i in range(max(len(ons), len(hun))):
             a = ons[i] if i < len(ons) else None
