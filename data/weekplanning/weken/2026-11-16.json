@@ -1,13 +1,38 @@
 {
-  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak. Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: ov-reistijd vanaf Nepveulaan 15 Zeist geschat op 50 min.",
+  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak; reistijd_terug_min als de terugreis anders is. aanpassen wijzigt een blok van die dag (wordt: nieuwe naam). Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: Google Maps, om 18:38 de deur uit (bus 73 om 18:40 van Zeist, Nepveulaan, dan bus 2), aankomst 19:14; reis 36 min, heen inclusief wachten tot 19:30.",
   "maandag": "2026-11-16",
   "trainingen": "wind-90-week-01.json",
-  "vrij_na_reservering_uren": 1.10,
+  "vrij_na_reservering_uren": 1.1,
   "vervalt": [
-    {"dag": "di", "soort": "kracht", "reden": "last van de rechterknie"}
+    {
+      "dag": "di",
+      "soort": "kracht",
+      "reden": "last van de rechterknie"
+    }
   ],
   "afspraken": [
-    {"dag": "di", "activiteit": "Ledig Erf met Martijn Scholman", "van": "19:30", "tot": "21:30", "reistijd_min": 50, "omschakelen_min": 10},
-    {"dag": "do", "activiteit": "M❤️F", "van": "19:30", "tot": "22:00"}
+    {
+      "dag": "di",
+      "activiteit": "Ledig Erf met Martijn Scholman",
+      "van": "19:30",
+      "tot": "21:30",
+      "reistijd_min": 52,
+      "reistijd_terug_min": 36,
+      "omschakelen_min": 8
+    },
+    {
+      "dag": "do",
+      "activiteit": "M❤️F",
+      "van": "19:30",
+      "tot": "22:00"
+    }
+  ],
+  "aanpassen": [
+    {
+      "dag": "di",
+      "activiteit": "Eten, afwas, tanden poetsen",
+      "wordt": "Eten (Franca doet de afwas)",
+      "duur_min": 30
+    }
   ]
 }

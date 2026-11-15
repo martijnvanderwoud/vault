@@ -143,10 +143,31 @@ def einde_rij(rij, k):
     return rij[k + 1][0] if k + 1 < len(rij) else rij[k][0]
 
 
+def afspraak_marges(afspraak):
+    """Minuten voor en na een afspraak: reistijd (terug: reistijd_terug_min als die er is) en omschakelen."""
+    heen = afspraak.get("reistijd_min", 0)
+    terug = afspraak.get("reistijd_terug_min", heen)
+    omschakelen = afspraak.get("omschakelen_min", 0)
+    return heen + omschakelen, terug + omschakelen
+
+
 def afspraak_tijden(afspraak):
-    """Begin en einde van een afspraak met reistijd en omschakelen, en die marge."""
-    marge = afspraak.get("reistijd_min", 0) + afspraak.get("omschakelen_min", 0)
-    return hhmm_naar_min(afspraak["van"]) - marge, hhmm_naar_min(afspraak["tot"]) + marge, marge
+    """Begin en einde van een afspraak met reistijd en omschakelen."""
+    voor, na = afspraak_marges(afspraak)
+    return hhmm_naar_min(afspraak["van"]) - voor, hhmm_naar_min(afspraak["tot"]) + na
+
+
+def afspraak_blokken(afspraak):
+    """De blokken van een afspraak, met reistijd en omschakelen ervoor en erna."""
+    van, tot = hhmm_naar_min(afspraak["van"]), hhmm_naar_min(afspraak["tot"])
+    voor, na = afspraak_marges(afspraak)
+    blokken = [{"activiteit": afspraak["activiteit"], "om": afspraak["van"], "duur_min": tot - van}]
+    if voor:
+        blokken.insert(0, {"activiteit": "Reistijd en omschakelen", "om": min_naar_hhmm(van - voor),
+                           "duur_min": voor})
+    if na:
+        blokken.append({"activiteit": "Reistijd en omschakelen", "duur_min": na})
+    return blokken
 
 
 def afspraak_invoegen(blokken, rij, afspraak, heel=True):
@@ -155,8 +176,7 @@ def afspraak_invoegen(blokken, rij, afspraak, heel=True):
     Geeft None als de afspraak niet helemaal in één werkblok valt (met heel=False: als het begin niet
     in een werkblok valt; zo werken klusjes met een vaste tijd).
     """
-    van, tot = hhmm_naar_min(afspraak["van"]), hhmm_naar_min(afspraak["tot"])
-    begin_a, einde_a, marge = afspraak_tijden(afspraak)
+    begin_a, einde_a = afspraak_tijden(afspraak)
     for i, (begin, _, werk) in enumerate(rij):
         if werk and begin <= begin_a < begin + werk and (not heel or einde_a <= begin + werk):
             break
@@ -165,10 +185,7 @@ def afspraak_invoegen(blokken, rij, afspraak, heel=True):
 
     b = blokken[i]
     voor = [{"activiteit": b["activiteit"], "werk": "vul"}] if begin_a > begin else []
-    midden = [{"activiteit": afspraak["activiteit"], "om": afspraak["van"], "duur_min": tot - van}]
-    if marge:
-        midden = ([{"activiteit": "Reistijd en omschakelen", "om": min_naar_hhmm(begin_a), "duur_min": marge}]
-                  + midden + [{"activiteit": "Reistijd en omschakelen", "duur_min": marge}])
+    midden = afspraak_blokken(afspraak)
     na_werk = b["werk"]
     if isinstance(na_werk, (int, float)):
         na_werk -= (begin_a - begin) / 60
@@ -208,25 +225,36 @@ def wijken(blokken, werkdoel, opstaan, einde, wijkt_eerst, notities):
 def avond_invoegen(blokken, rij, afspraak, notities):
     """Zet een afspraak na de lucht tussen de avondblokken, op zijn eigen tijd.
 
-    Avondblokken die voor de afspraak (met reistijd en omschakelen) niet meer af zijn, komen erna,
-    behalve blokken met een vaste tijd (zoals eten): die blijven ervoor en geven zo nodig een conflict.
+    Avondblokken die voor de afspraak (met reistijd en omschakelen) niet meer af zijn, gaan naar een
+    vrij gat voor een blok met een vaste tijd, en anders na de afspraak. Blokken met een vaste tijd
+    voor de afspraak (zoals eten) blijven ervoor en geven zo nodig een conflict.
     """
-    van, tot = hhmm_naar_min(afspraak["van"]), hhmm_naar_min(afspraak["tot"])
-    begin_a, _, marge = afspraak_tijden(afspraak)
+    begin_a, _ = afspraak_tijden(afspraak)
     li = next(i for i, b in enumerate(blokken) if b.get("soort") == "lucht")
-    j = next((k for k in range(li + 1, len(blokken)) if "om" not in blokken[k] and (
-        "duur_min" not in blokken[k] or rij[k][0] + blokken[k]["duur_min"] > begin_a)), len(blokken))
-    midden = [{"activiteit": afspraak["activiteit"], "om": afspraak["van"], "duur_min": tot - van}]
-    if marge:
-        midden = ([{"activiteit": "Reistijd en omschakelen", "om": min_naar_hhmm(begin_a), "duur_min": marge}]
-                  + midden + [{"activiteit": "Reistijd en omschakelen", "duur_min": marge}])
-    vast = [b for b in blokken[j:] if "om" in b]
-    blokken = blokken[:j] + vast + [b for b in blokken[j:] if "om" not in b]
-    j += len(vast)
-    later = [b["activiteit"] for b in blokken[j:] if "duur_min" in b]
-    if later:
-        notities.append(f"na {afspraak['activiteit']}: {', '.join(later)}")
-    return blokken[:j] + midden + blokken[j:]
+    avond = blokken[li + 1:]
+    tijd = dict(zip(map(id, blokken), (r[0] for r in rij)))
+    ervoor = [b for b in avond if "om" in b and hhmm_naar_min(b["om"]) < begin_a
+              or "om" not in b and "duur_min" in b and tijd[id(b)] + b["duur_min"] <= begin_a]
+    verplaatst = [b for b in avond if b not in ervoor and "om" not in b and "duur_min" in b]
+    erna = [b for b in avond if b not in ervoor and b not in verplaatst]
+
+    # Verplaatste blokken in een gat voor een vast blok zetten, zolang ze passen.
+    nieuw, t, vroeger = [], rij[li][0] + blokken[li]["duur_min"], []
+    for b in ervoor:
+        if "om" in b:
+            while verplaatst and t + verplaatst[0]["duur_min"] <= hhmm_naar_min(b["om"]):
+                v = verplaatst.pop(0)
+                nieuw.append(v)
+                vroeger.append(v["activiteit"])
+                t += v["duur_min"]
+            t = max(t, hhmm_naar_min(b["om"]))
+        nieuw.append(b)
+        t += b["duur_min"]
+    if vroeger:
+        notities.append(f"voor {afspraak['activiteit']}: {', '.join(vroeger)}")
+    if verplaatst:
+        notities.append(f"na {afspraak['activiteit']}: {', '.join(b['activiteit'] for b in verplaatst)}")
+    return blokken[:li + 1] + nieuw + afspraak_blokken(afspraak) + verplaatst + erna
 
 
 def vrij_invoegen(rij, blokken):
@@ -246,10 +274,18 @@ def vrij_invoegen(rij, blokken):
     return uit
 
 
-def dag_plannen(dagsoort, weekdag, opstaan, wijkt_eerst, hardlopen_min=None, afspraken=(), vervalt=()):
+def dag_plannen(dagsoort, weekdag, opstaan, wijkt_eerst, hardlopen_min=None, afspraken=(), vervalt=(),
+                aanpassen=()):
     """Geeft een dict met de rij, conflicten, notities en het tekort aan werk (min) voor andere dagen."""
     notities, conflicten_vast = [], []
     blokken = blokken_met_klusjes(dagsoort, weekdag, notities)
+    for a in aanpassen:
+        b = next((b for b in blokken if b["activiteit"] == a["activiteit"]), None)
+        if b is None:
+            conflicten_vast.append(f"aanpassen: geen '{a['activiteit']}' op deze dag")
+            continue
+        b.update({k: v for k, v in a.items() if k not in ("dag", "activiteit", "wordt")})
+        b["activiteit"] = a.get("wordt", b["activiteit"])
     for soort in vervalt:
         weg = [b["activiteit"] for b in blokken if b.get("soort") == soort]
         blokken = [b for b in blokken if b.get("soort") != soort]
@@ -292,7 +328,7 @@ def dag_plannen(dagsoort, weekdag, opstaan, wijkt_eerst, hardlopen_min=None, afs
                     vervallen += weg
                     proefrij, _ = dag_opbouwen(proef, werkdoel, opstaan)
             if nieuw is None:
-                begin_a, einde_a, _ = afspraak_tijden(a)
+                begin_a, einde_a = afspraak_tijden(a)
                 geraakt = [act for k, (begin, act, _) in enumerate(rij)
                            if begin < einde_a and begin_a < einde_rij(rij, k)]
                 conflicten_vast.append(
@@ -325,16 +361,18 @@ def lucht_inzetten(plan, max_min):
     return 0
 
 
-def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None):
+def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpassen=None):
     dagsoorten, weekdagen, regels = lees("dagsoorten.json"), lees("weekdagen.json"), lees("regels.json")
-    hardlopen, afspraken, vervalt = hardlopen or {}, afspraken or {}, vervalt or {}
+    hardlopen, afspraken = hardlopen or {}, afspraken or {}
+    vervalt, aanpassen = vervalt or {}, aanpassen or {}
     opstaan = hhmm_naar_min(regels["opstaan"])
     week, weekconflicten = {}, []
     for dag in WEEKDAGEN:
         soort = dagsoorten[toewijzing[dag]]
         if soort.get("tijdsindeling", True):
             week[dag] = dag_plannen(soort, weekdagen[dag], opstaan, regels["wijkt_eerst"],
-                                    hardlopen.get(dag), afspraken.get(dag, []), vervalt.get(dag, []))
+                                    hardlopen.get(dag), afspraken.get(dag, []), vervalt.get(dag, []),
+                                    aanpassen.get(dag, []))
         else:
             notities = [f"afspraak {a['activiteit']} {a['van']}-{a['tot']}, training en kracht eromheen"
                         for a in afspraken.get(dag, [])]
@@ -449,6 +487,9 @@ def week_uit_bestand(pad):
     vervalt = {}
     for v in invoer.get("vervalt", []):
         vervalt.setdefault(v["dag"], []).append(v["soort"])
+    aanpassen = {}
+    for a in invoer.get("aanpassen", []):
+        aanpassen.setdefault(a["dag"], []).append(a)
 
     print(f"Week van {maandag:%d-%m-%Y}, trainingen {trainingsweek['plan']} week {trainingsweek['week']}")
     stand = invoer.get("vrij_na_reservering_uren")
@@ -461,7 +502,7 @@ def week_uit_bestand(pad):
         print(f"Urenstand: {stand:.2f} u vrij na reservering, achter op target: lucht gebruiken om werk "
               "in te halen")
 
-    week, dagsoorten, regels, weekconflicten = week_plannen(toewijzing, hardlopen, afspraken, vervalt)
+    week, dagsoorten, regels, weekconflicten = week_plannen(toewijzing, hardlopen, afspraken, vervalt, aanpassen)
     week_tonen(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen)
 
 

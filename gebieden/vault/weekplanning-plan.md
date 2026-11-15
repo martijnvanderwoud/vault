@@ -227,6 +227,11 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
   een vaste tijd knippen het werkblok vóór het opbouwen in plaats van achteraf (anders schoof een
   vaste avondtijd mee); `vervalt` in het weekbestand haalt blokken van een soort weg (kracht op
   di 17-11). Afspraken op een dag zonder tijdsindeling (zo) worden alleen gemeld.
-- **Open:** de avond begint direct na de lucht, dus op een korte dag (di 17-11: eten om 16:15) eet
-  je vroeg. Misschien moet eten een vaste tijd krijgen. Reistijd met het ov is nu een schatting
-  (Zeist–Tolsteegbrug 50 min); de skill moet die opzoeken of vragen.
+- **Eten** ligt vast om 18:00 (`om` met `speling_min` 30: tot 18:30 geen conflict); een korte dag
+  geeft vrije tijd voor het eten. Avondblokken die niet meer voor een avondafspraak af zijn, gaan eerst
+  naar een vrij gat voor een vast blok, anders erna. Een afspraak kan een andere terugreis hebben
+  (`reistijd_terug_min`), en `aanpassen` in het weekbestand wijzigt een blok voor één dag (di 17-11:
+  eten zonder afwas, die doet Franca).
+- **Reistijd** zoekt Claude niet zelf op (9292 en Google Maps laden het reisadvies via JavaScript):
+  Martijn maakt een screenshot van Google Maps, met de aankomsttijd ingesteld. Heen telt vanaf het
+  vertrek van huis tot het begin van de afspraak, wachten meegerekend.
