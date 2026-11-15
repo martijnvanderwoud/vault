@@ -29,10 +29,10 @@ staan: [[facturen-archief]].
   Daarop staat het bedrag excl. btw van de TransIP-regels van productie en staging, één regel
   per omgeving met de TransIP-periode erbij. Voorbeeld: factuur 20260078 (24-10-2026).
 - Hendrik Witteveen: hendrik.witteveen@pompkracht.nl, mail vanaf martijn@crimsoncricket.nl.
-- Domeinregistraties (.nl, € 16,50 per jaar) belast ik door aan de domeinhouder, omgerekend
-  naar een bedrag per maand op de maandelijkse hostingfactuur. Afke Hennus Coacht betaalt
-  bijvoorbeeld € 1,38 per maand voor `afkehennus.nl`. De doorbelasting van domeinen komt later
-  nog aan bod.
+- Domeinregistraties belast ik door aan de domeinhouder: de jaarprijs gedeeld door 12, als
+  regel op de maandelijkse hostingfactuur. Nu alleen `afkehennus.nl`.
+- Afke Hennus en Construct (vaste maandbedragen, prijsgeschiedenis, werkwijze bij een
+  prijsverhoging): [[hostingklanten]].
 
 ## Factuurregels herkennen
 
@@ -67,3 +67,8 @@ prijslijst staan (legacy) worden ook 25% duurder.
 Gevolg voor FLOW, berekend op de facturen van okt/nov 2026 (excl. btw, per maand):
 productie € 425,89 → € 532,26 en staging € 329,58 → € 411,88. Samen is dat € 188,67 per
 maand meer. Op 15-11-2026 heb ik Hendrik hierover gemaild.
+
+Gevolg voor shared-hosting (factuur 01-11-2026): € 77,42 → € 96,81 per maand, +25,05%.
+k3s-2 (Standard 1GB) vervangt k3s-1 (ook Standard 1GB); bij doorrekenen telt maar één van de
+twee mee. De doorrekening aan Construct en Afke staat in [[hostingklanten]]. Op 15-11-2026
+heb ik ze gemaild.
