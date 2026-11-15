@@ -233,7 +233,8 @@ def avond_invoegen(blokken, rij, afspraak, notities):
     Avondblokken die voor de afspraak (met reistijd en omschakelen) niet meer af zijn, gaan naar een
     vrij gat voor een blok met een vaste tijd, en anders na de afspraak. Blokken met een vaste tijd
     voor de afspraak (zoals eten) blijven ervoor en geven zo nodig een conflict. Na de afspraak geen
-    downtime: klaarmaken voor bed en dan naar bed, ook als dat later is dan de bedtijd.
+    downtime: klaarmaken voor bed en dan naar bed, ook als dat later is dan de bedtijd. Een afspraak
+    thuis ('thuis': true) loopt hooguit tot de bedtijd, en dan gewoon naar bed.
     """
     begin_a, _ = afspraak_tijden(afspraak)
     li = next(i for i, b in enumerate(blokken) if b.get("soort") == "lucht")
@@ -246,7 +247,7 @@ def avond_invoegen(blokken, rij, afspraak, notities):
     for b in avond:
         if b in ervoor or b in verplaatst or "duur_min" not in b and "om" not in b:
             continue
-        if b.get("soort") == "bed":
+        if b.get("soort") == "bed" and not afspraak.get("thuis"):
             erna.append({"activiteit": "Klaarmaken voor bed", "duur_min": b["klaarmaken_min"]})
             b = {k: v for k, v in b.items() if k != "om"}
         erna.append(b)
@@ -267,6 +268,12 @@ def avond_invoegen(blokken, rij, afspraak, notities):
         notities.append(f"voor {afspraak['activiteit']}: {', '.join(vroeger)}")
     if verplaatst:
         notities.append(f"na {afspraak['activiteit']}: {', '.join(b['activiteit'] for b in verplaatst)}")
+    if afspraak.get("thuis"):
+        bed = next((b["om"] for b in erna if b.get("soort") == "bed"), None)
+        if bed and hhmm_naar_min(afspraak["tot"]) > hhmm_naar_min(bed):
+            notities.append(f"{afspraak['activiteit']} staat tot {afspraak['tot']} in de agenda, "
+                            f"naar bed op de normale tijd ({bed})")
+            afspraak = afspraak | {"tot": bed}
     return blokken[:li + 1] + nieuw + afspraak_blokken(afspraak) + verplaatst + erna
 
 

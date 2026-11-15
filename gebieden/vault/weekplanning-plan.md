@@ -248,3 +248,5 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
   naar `gebieden/weekplanning/<maandag>.md`: een overzicht van de week (soort dag, training, opstaan,
   werk, lucht) en per dag een tabel met tijden, plus de meldingen. Gegenereerd, niet met de hand
   bewerken. De skill (stap 4) draait altijd met `--schrijf`.
+- **Afspraak thuis** (`"thuis": true`, zoals M❤️F met Franca): geen reistijd, geen klaarmaken voor bed
+  erna, en op de normale tijd naar bed, ook als de agenda tot later loopt.
