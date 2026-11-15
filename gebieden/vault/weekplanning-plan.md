@@ -35,6 +35,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [ ] 6. Gelopen trainingen importeren
 - [ ] 7. Workouts voor TrainingPeaks genereren
 - [x] 8. Target per dag uit de weekplanning in `uren.py` (15-11)
+- [ ] 9. Gereserveerde vrije dagen met datum (klaar voor zo 20-12)
 
 ## Uitgangspunten
 
@@ -181,6 +182,29 @@ tot 28 u: werk dat van de voorsprong afging (`minder`), telt op die dag wel mee 
 
 Klaar als: `uren.py` voor de week van 16-11 het target per dag uit de planning haalt.
 
+### 9. Gereserveerde vrije dagen met datum
+
+De reserveringen in `data/vrije-dagen-2026.csv` hebben geen datum, dus de weekplanning weet niet
+dat een werkdag vrij is, en voorbije reserveringen moet Martijn met de hand op 0 zetten. Vrij
+opgenomen = target − declarabel (zie [[urenregistratie]]): op een vrije dag blijft het target staan
+en werkt Martijn die uren niet.
+
+- **`data/vrije-dagen-2026.csv`:** kolommen `datum` en `tot` (voor een reservering van meer dagen).
+  Een deel van een dag: `gepland_uren` op die datum. Voorbije reserveringen mogen leeg blijven.
+  Datums, bevestigd op 15-11: Dag voor kerst (6 u) = do 24-12; Kerstvakantie (28 u) = vr 25-12
+  (4 u) en ma 28 t/m do 31-12 (6,5 + 5,5 + 6 + 6).
+- **`weekplanning.py`:** valt een gereserveerde datum in de week, dan krijgt die dag minder of geen
+  werkuren en vervalt de lucht van die dag; het werkdoel van de week zakt met de gereserveerde uren.
+  In `werkuren.csv` houdt de dag zijn gewone target, want die uren komen uit het vrij-budget.
+- **`uren.py`:** "nog gereserveerd" volgt uit de datum: wat na de peildatum valt, telt mee.
+  Reserveringen zonder datum houden `nog_gereserveerd_uren` zoals nu. Het onderhoud in de skill
+  `/uren` (voorbije reservering op 0 zetten) vervalt dan voor gedateerde regels.
+- **Skill `/weekplanning`:** legt de reserveringen van de week naast de agenda en meldt een feestdag
+  of vrije dag zonder reservering; dan vraagt hij wat ermee moet.
+
+Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en een werkdoel van
+18 u, en `uren.py --tot 2026-12-24` de Dag voor kerst niet meer als gereserveerd telt.
+
 ## Bevindingen
 
 - **Stap 1 (15-11):** `scripts/trainingsduur.py` rekent per training km en duur. De planning
@@ -282,14 +306,14 @@ Klaar als: `uren.py` voor de week van 16-11 het target per dag uit de planning h
 - **Stap 4 (15-11):** skill in `.claude/skills/weekplanning/SKILL.md`. Haalt in één keer de urenstand
   (`uren.py` zonder `--schrijf`), de zakelijke agenda (CrimsonCricket en Feestdagen in Nederland)
   en de privé-agenda (Martijn en Auto) op; de agenda's van Franca niet, afspraken samen met haar
-  staan in Martijns eigen agenda (aanname, bevestigen op 22-11). Ontbreekt de trainingsweek, dan
+  staan in Martijns eigen agenda (bevestigd op 15-11). Ontbreekt de trainingsweek, dan
   vraagt de skill om de foto of screenshot, maakt het trainingsbestand met `dagsoort` en laat de duur
   uit `trainingsduur.py` controleren. Afspraken legt de skill eerst voor (thuis of op locatie,
   reistijd uit een screenshot van Google Maps), dan schrijft hij het weekbestand en draait
   `weekplanning.py --schrijf`. Proefgedraaid op `weken/2026-11-23.json`; week 1 vervangen door
   `wind-90-week-02.json` gebeurt op 22-11 in de skill zelf (stap 2 daarvan: geen trainingsweek met
   `start` 2026-11-23).
-- **Nog niet in het script:** een feestdag of vrije dag op een werkdag. De skill meldt die en vraagt
+- **Nog niet in het script (wordt stap 9):** een feestdag of vrije dag op een werkdag. De skill meldt die en vraagt
   wat er met de werkuren moet; de eerstvolgende is 25-12 (vr).
 - **Voor stap 5:** herplannen midden in de week met `--schrijf` overschrijft ook het target van de
   dagen die al voorbij zijn. Dat moet dan blijven staan (of uit de gelopen dagen komen), anders
