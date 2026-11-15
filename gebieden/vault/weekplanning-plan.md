@@ -31,7 +31,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 2. Soorten dagen en regels als data (15-11, aannames bevestigd)
 - [x] 3. Weekplanning doorrekenen (15-11, met de trainingen van week 1; week 2 nog invoeren)
 - [ ] 4. Skill `/weekplanning` voor zondag (15-11 gebouwd; afvinken na de eerste echte run op zo 22-11)
-- [ ] 5. Herplannen tijdens de week
+- [x] 5. Herplannen tijdens de week (15-11, getest op proefweken)
 - [ ] 6. Gelopen trainingen importeren
 - [ ] 7. Workouts voor TrainingPeaks genereren
 - [x] 8. Target per dag uit de weekplanning in `uren.py` (15-11)
@@ -315,6 +315,65 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
   `start` 2026-11-23).
 - **Nog niet in het script (wordt stap 9):** een feestdag of vrije dag op een werkdag. De skill meldt die en vraagt
   wat er met de werkuren moet; de eerstvolgende is 25-12 (vr).
-- **Voor stap 5:** herplannen midden in de week met `--schrijf` overschrijft ook het target van de
-  dagen die al voorbij zijn. Dat moet dan blijven staan (of uit de gelopen dagen komen), anders
-  verschuift de stand van eerdere dagen mee.
+- **Voor stap 5 (opgelost in stap 5):** herplannen midden in de week met `--schrijf` overschrijft ook het
+  target van de dagen die al voorbij zijn. Dat moet dan blijven staan (of uit de gelopen dagen komen),
+  anders verschuift de stand van eerdere dagen mee.
+- **Stap 5 (15-11), keuzes van Martijn:** wat ik op voorbije dagen echt werkte, telt mee via de urenstand
+  (niet via de gelogde uren per dag); herplannen zit in de skill `/weekplanning` (sectie "Herplannen
+  tijdens de week"), geen aparte skill; afspraken over de lucht en over de training gaan mee, later
+  opstaan bij een voorsprong niet (blijft een zelf gekozen `opstaan`).
+- **Herplannen:** `herplannen: {vanaf, vrij_na_reservering_uren, reden}` in het weekbestand, één blok
+  (een nieuwe herplanning vervangt het). Urenstand uit `uren.py --tot <dag voor vanaf>`, anders telt
+  het target van vandaag al mee. De dagen voor `vanaf` zijn voorbij: hun gepland werk en target komen
+  uit `werkuren.csv` en blijven bij `--schrijf` staan; in de notitie staan ze kort als "voorbij". Eerst
+  had ik voorbije dagen opnieuw uitgerekend met de oude urenstand, maar dan veranderde het target van
+  maandag alsnog als een afspraak later in de week werd afgezegd (werk van vrijdag stond in de lucht van
+  maandag). Vanaf `vanaf` rekent het script opnieuw, en de week telt op tot 28 u: werk dat van een
+  voorbije dag naar later schoof, gaat weer in de lucht van de rest van de week; werk dat al op een
+  voorbije dag stond, gaat eraf bij de laatste werkdagen (minder werkdoel). Vandaag wordt helemaal opnieuw
+  doorgerekend, vanaf het opstaan; een aparte "nu"-tijd is niet nodig zolang de ochtend volgens plan liep.
+- **Vooraf herplannen** (bv. "morgen later op"): de wijziging voor die dag in het weekbestand (`opstaan`),
+  en herplannen altijd vanaf vandaag, met de urenstand tot en met gisteren. Vanaf morgen zou de stand
+  tot en met vandaag nodig zijn, en daarin telt het target van vandaag al mee terwijl de uren nog niet
+  gelogd zijn.
+- **Run duurde langer:** `trainingsduur: [{dag, duur_min, reden}]`. Het einde van de dag (waartegen de
+  wijkregels rekenen) komt uit de berekende duur; de werkelijke duur loopt uit zoals later opstaan. Eerst
+  rekende het einde mee met de langere run, dan kostte die niets en schoof de avond op (conflict met
+  Week(end) bespreken om 18:30).
+- **Afspraak over de lucht heen:** een afspraak die in een werkblok begint, mag over de blokken erna heen
+  lopen, zolang daar geen blok met een vaste tijd of de training tussen zit; die blokken schuiven op. Een
+  afspraak die in de lucht of later begint (bv. 16:30 na het werk), komt tussen de avondblokken en gaat
+  zo nodig van de lucht af; begint hij terwijl er nog gewerkt wordt, dan is het een conflict.
+- **Te veel werk na een afspraak:** een afspraak laat in het laatste werkblok maakt het stuk ervoor vast
+  ('vul' tot de afspraak). Vielen daarna de stabiliteitsroutines weg, dan werd de ochtend langer en
+  kwam er meer werk uit dan het werkdoel. Nu gaat het teveel van de laatste 'vul'-blokken af; het gat is
+  lucht. Kanttekening: de stabiliteitsroutines (45 min) vervallen ook als de lucht maar 5 min tekort komt,
+  zoals de wijkregels zeggen; wat dan overblijft wordt lucht.
+- **Afspraak over de training:** past een afspraak ook na het weglaten van de stabiliteitsroutines niet,
+  en raakt hij de training, dan schuift de training naar na de afspraak, met het blok ervoor (naar
+  buiten, warming-up) en de blokken erna tot het volgende werkblok (uitloop, douchen). Op een zware dag
+  komt de lunch om 12:00 dan vaak in conflict (proef: afspraak 9:30, lunch pas om 12:25); dat beslist
+  Martijn per geval. Nooit eerder dan gepland: op een zware dag mag lopen niet eerder dan 2 uur na het
+  ontbijt.
+- **Voor of achter automatisch verwerken (15-11, besloten met Martijn):** "vrij na reservering" is de
+  maat, ook over weken heen, omdat Martijn aan het begin van het jaar het hele vrij-budget (196 u)
+  reserveert: dan is het 0 bij de start, blijft het 0 bij een vrije dag die gereserveerd was, en meet het
+  precies hoeveel hij voor of achter ligt op target min de voorbije vrije uren. Niet gereserveerd budget
+  telt als voorsprong; vrij zonder reservering (ziek, spontaan vrij) als achterstand, tenzij het achteraf
+  in `vrije-dagen-2026.csv` komt. **Achter:** inhalen in de lucht vanaf de eerste werkdag
+  (`achterstand_ingehaald`, telt niet mee in het target van die dag, want het hoort bij eerdere dagen);
+  wat niet past, wordt gemeld en schuift door naar volgende week. **Voor:** eerst minder werk op dagen die
+  uitlopen (zoals al), wat dan over is maakt de laatste werkdagen korter, tot het vaste werk van die soort
+  dag; lucht en stabiliteitsroutines blijven staan. De lucht is de buffer, niet de voorsprong. Week van
+  16-11 (+1,10 u): wo 45 min minder (uitloop), vr 21 min korter. Ook gevonden: een klusje met een vaste
+  tijd (vr 15:30 was aanzetten) gaf een conflict op een korte dag; nu staat het na het werk op zijn tijd.
+- **Blokken van 5 min (15-11, op verzoek van Martijn):** `kleinste_blok_min` in `regels.json`. Afgerond
+  bij de invoer, de rest volgt vanzelf: reistijd plus omschakelen naar boven (Ledig Erf terug 44 → 45 min,
+  in bed 22:45), begin van een afspraak naar beneden en einde naar boven, werkelijke trainingsduur naar
+  boven, voorsprong naar beneden en achterstand naar boven. Eerste proef: ma 16-11 om 6:20 op (20 min
+  later), 15 min van de vrije tijd voor het eten en 5 min minder werk van de voorsprong; vr 15 min korter.
+- **Herplannen na meer of minder werken:** dat zit in de urenstand. 's Avonds, als de uren van vandaag
+  in LogMyTime staan, mag herplannen vanaf morgen met de stand tot en met vandaag; anders vanaf vandaag.
+- **Voor stap 9:** een gereserveerde vrije dag verlaagt het werkdoel van de week; bij herplannen moet de
+  berekening van wat de rest van de week nog moet doen (`over` in `week_plannen`) dat werkdoel gebruiken,
+  niet vast 28 u.

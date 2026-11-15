@@ -2,6 +2,7 @@
   "toelichting": "De regels uit de Uitgangspunten van gebieden/vault/weekplanning-plan.md, als data voor stap 3.",
   "werkdoel_week_uren": 28,
   "werkuren_schuiven_binnen_week": true,
+  "kleinste_blok_min": 5,
   "opstaan": "06:00",
   "naar_bed": "21:50",
   "klaarmaken_voor_bed_min": 30,

@@ -1,13 +1,14 @@
 ---
 name: weekplanning
-description: Maakt op zondag mijn weekplanning voor de komende week - haalt de agenda's (privé en zakelijk) en de urenstand op, zet de trainingen van de week uit een foto of screenshot in de vault, schrijft het weekbestand en rekent de planning door met scripts/weekplanning.py. Gebruik deze skill zodra ik vraag om de week te plannen, de weekplanning te maken of bij te werken, of om /weekplanning, ook als ik het woord skill niet gebruik. Niet voor herplannen midden in de week na een wijziging op de dag zelf (dat is stap 5 van het plan) en niet voor de urenstand alleen (dat is /uren).
+description: Maakt op zondag mijn weekplanning voor de komende week - haalt de agenda's (privé en zakelijk) en de urenstand op, zet de trainingen van de week uit een foto of screenshot in de vault, schrijft het weekbestand en rekent de planning door met scripts/weekplanning.py. Herplant ook midden in de week de rest van de dag en de week na een wijziging, zoals later opgestaan, een run die langer duurde of een afspraak erbij of afgezegd. Gebruik deze skill zodra ik vraag om de week te plannen, de weekplanning te maken, bij te werken of opnieuw door te rekenen, of om /weekplanning, ook als ik het woord skill niet gebruik. Niet voor de urenstand alleen (dat is /uren).
 allowed-tools: Bash(/usr/bin/python3 -I ~/vault/scripts/weekplanning.py*), Bash(/usr/bin/python3 -I ~/vault/scripts/trainingsduur.py*), Bash(/usr/bin/python3 -I ~/vault/scripts/uren.py*)
 ---
 
 # Weekplanning
 
 Maakt de planning van de komende week (ma t/m zo) en schrijft die naar
-`gebieden/weekplanning/<maandag>.md`. Achtergrond, regels en bevindingen:
+`gebieden/weekplanning/<maandag>.md`. Midden in de week: zie
+[Herplannen tijdens de week](#herplannen-tijdens-de-week). Achtergrond, regels en bevindingen:
 `gebieden/vault/weekplanning-plan.md`. De rekenregels zitten in `scripts/weekplanning.py`; jij
 verzamelt alleen de invoer.
 
@@ -107,9 +108,49 @@ en zoek de oorzaak in de invoer.
 Kort, in het Nederlands, met getallen uit de output:
 
 - het overzicht per dag (soort dag, training, opstaan, werk, lucht) en het weektotaal tegen 28 u
-- de urenstand en wat die betekent (voor of achter op target)
+- de urenstand en wat die betekent: voor op target maakt de laatste werkdagen korter, achter op target
+  zet inhalen in de lucht (en wat niet past schuift door naar volgende week)
 - alle meldingen en conflicten van het script, en wat ik daarvoor moet beslissen
 - welke agenda-items je hebt weggelaten
 
 Vraag wat er moet schuiven. Pas bij een wijziging het weekbestand aan en reken opnieuw door, tot ik
 tevreden ben. Noem tot slot dat de planning in `gebieden/weekplanning/<maandag>.md` staat.
+
+## Herplannen tijdens de week
+
+Als ik midden in de week iets meld dat de planning raakt: later opgestaan, een run die langer (of
+korter) duurde, een afspraak erbij of afgezegd, iets dat vervalt. Ook vooraf, voor een latere dag in
+de week (bv. "morgen sta ik later op"). `<maandag>` is de maandag van deze week, `<vanaf>` is altijd
+vandaag, ook als de wijziging pas later in de week valt, `<gisteren>` de dag ervoor. Herplan niet vanaf
+morgen: dan telt het target van vandaag al mee in de urenstand terwijl ik nog niet alles gelogd heb.
+Uitzondering: is vandaag klaar en staan al mijn uren van vandaag in LogMyTime (bv. 's avonds, omdat ik
+vandaag meer of minder werkte dan gepland), dan is `<vanaf>` morgen en `<gisteren>` vandaag. Vraag het
+na als ik dat niet zeg.
+
+De dagen voor `<vanaf>` zijn voorbij: het script neemt hun werk en target over uit
+`data/weekplanning/werkuren.csv` en rekent vanaf `<vanaf>` opnieuw, zo dat de week op 28 u target blijft
+uitkomen. Vandaag rekent het helemaal opnieuw door, vanaf het opstaan.
+
+1. **Lees** `data/weekplanning/weken/<maandag>.json`. Bestaat het niet, maak dan eerst de weekplanning
+   zoals hierboven.
+2. **Urenstand** van het begin van `<vanaf>`: `/usr/bin/python3 -I ~/vault/scripts/uren.py --tot <gisteren>`
+   (zonder `--schrijf`). Niet tot vandaag, anders telt het target van vandaag al mee terwijl ik nog niets
+   gelogd heb. Neem "Vrij na reservering" over, precies zoals het script het toont.
+3. **Wijziging in het weekbestand:**
+   - Later opgestaan: `opstaan` met `{dag, om}`.
+   - Run duurde anders: `trainingsduur` met `{dag, duur_min, reden}`, de looptijd zelf (zoals op de
+     Garmin), zonder warming-up en uitloop. Vraag de duur als ik alleen "langer" zeg.
+   - Afspraak erbij: zoals in stap 3 hierboven (thuis of op locatie, reistijd uit een screenshot van
+     Google Maps). Haal bij twijfel de agenda van die dag op.
+   - Afspraak afgezegd: haal hem uit `afspraken`, alleen voor `<vanaf>` of later.
+   - Laat de invoer van voorbije dagen staan zoals hij was.
+   - `herplannen`: `{"vanaf": "<vanaf>", "vrij_na_reservering_uren": <stand>, "reden": "<wat er veranderde>"}`.
+     Staat er al een `herplannen`, vervang die.
+   - Vul `toelichting` aan met wat er veranderde en waarom.
+4. **Doorrekenen** met `--schrijf`, zoals in stap 5 hierboven. Meldt het script dat een voorbije dag
+   niet in `werkuren.csv` staat, noem dat: het target van die dag komt dan uit de planning.
+
+Antwoord kort: wat er vandaag en de rest van de week verandert (opstaan, werk, lucht, wat vervalt of
+schuift), de urenstand, en alle meldingen en conflicten. Liep de dag tot nu toe anders dan gepland op
+een manier die niet in de invoer zit (bv. later begonnen met werken), zeg dan dat de tijden van vandaag
+voor nu niet kloppen en kijk naar de rest van de dag.

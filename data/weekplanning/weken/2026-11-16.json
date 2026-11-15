@@ -1,5 +1,5 @@
 {
-  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak; reistijd_terug_min als de terugreis anders is. aanpassen wijzigt een blok van die dag (wordt: nieuwe naam). Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: Google Maps, om 18:38 de deur uit (bus 73 om 18:40 van Zeist, Nepveulaan, dan bus 2), aankomst 19:14; reis 36 min, heen inclusief wachten tot 19:30. opstaan (optioneel, [{dag, om}]): zelf gekozen opstaantijd; zonder rekent het script later opstaan uit de bedtijd van de dag ervoor. thuis: true: afspraak thuis, zonder reistijd, en dan op de normale tijd naar bed.",
+  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak; reistijd_terug_min als de terugreis anders is. aanpassen wijzigt een blok van die dag (wordt: nieuwe naam). Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: Google Maps, om 18:38 de deur uit (bus 73 om 18:40 van Zeist, Nepveulaan, dan bus 2), aankomst 19:14; reis 36 min, heen inclusief wachten tot 19:30. opstaan (optioneel, [{dag, om}]): zelf gekozen opstaantijd; zonder rekent het script later opstaan uit de bedtijd van de dag ervoor. thuis: true: afspraak thuis, zonder reistijd, en dan op de normale tijd naar bed. Ma 16-11 zelf gekozen 20 min later op (06:20), doorgegeven op zo 15-11.",
   "maandag": "2026-11-16",
   "trainingen": "wind-90-week-01.json",
   "vrij_na_reservering_uren": 1.1,
@@ -34,6 +34,12 @@
       "activiteit": "Eten, afwas, tanden poetsen",
       "wordt": "Eten (Franca doet de afwas)",
       "duur_min": 30
+    }
+  ],
+  "opstaan": [
+    {
+      "dag": "ma",
+      "om": "06:20"
     }
   ]
 }
