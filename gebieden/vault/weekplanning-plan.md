@@ -34,7 +34,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [ ] 5. Herplannen tijdens de week
 - [ ] 6. Gelopen trainingen importeren
 - [ ] 7. Workouts voor TrainingPeaks genereren
-- [ ] 8. Target per dag uit de weekplanning in `uren.py`
+- [x] 8. Target per dag uit de weekplanning in `uren.py` (15-11)
 
 ## Uitgangspunten
 
@@ -272,3 +272,13 @@ Klaar als: `uren.py` voor de week van 16-11 het target per dag uit de planning h
   uitloopt eerst van het werk af, tot de voorsprong op is; lucht en stabiliteitsroutines blijven dan
   staan. Daarna gelden de gewone wijkregels. Wo 18-11: 45 min minder werk, week 27:15 bij 1:06
   voorsprong.
+- **Stap 8 (15-11):** `weekplanning.py <weekbestand> --schrijf` zet per datum `gepland_min` en
+  `target_min` in `data/weekplanning/werkuren.csv` (regels van andere weken blijven staan). Target =
+  gepland + `minder` (van de voorsprong) + werk dat nergens in de lucht paste, dus de week telt altijd
+  op tot 28 u; een dag zonder tijdsindeling houdt het werkdoel van de weekdag. `uren.py` neemt het
+  target uit dat bestand voor datums die erin staan, anders `WEEKSCHEMAS`. Week van 16-11: ma 6,5 /
+  di 5,5 / wo 6 / do 6 / vr 4, gelijk aan het vaste schema, want alleen wo had `minder` (45 min).
+  `uren.py --vanaf 2026-11-16`: tot ma 6,50 u, tot wo 18,00 u, tot zo 28,00 u.
+- **Voor stap 5:** herplannen midden in de week met `--schrijf` overschrijft ook het target van de
+  dagen die al voorbij zijn. Dat moet dan blijven staan (of uit de gelopen dagen komen), anders
+  verschuift de stand van eerdere dagen mee.

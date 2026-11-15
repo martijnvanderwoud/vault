@@ -51,7 +51,9 @@ Voorbeeld per 12-11-2026: vrij na reservering 0,60 u, dus 0,60 u voor op target.
 `scripts/uren.py [--tot JJJJ-MM-DD] [--vanaf JJJJ-MM-DD] [--details] [--schrijf]` toont per klant de declarabele uren,
 het target en de vrij opgenomen uren (standaard 1-1 t/m vandaag). Gebruik
 `/usr/bin/python3 -I ~/vault/scripts/uren.py`. Met `--schrijf` (alleen standaardperiode) schrijft het ook [[uren-overzicht]] weg: stand, per klant, per maand en de vrije uren. Het script is alleen-lezen richting LogMyTime, rondt niet af en leest de sleutel zelf
-uit `.env`. Gevalideerd tegen de Excel: per 10-11-2026 identiek (zie validatiepunt hierboven); per 6-11-2026
+uit `.env`. Voor weken met een weekplanning komt het target per dag uit `data/weekplanning/werkuren.csv`
+(geschreven door `weekplanning.py --schrijf`, telt per week op tot 28 u, zie [[weekplanning-plan]]);
+anders uit `WEEKSCHEMAS`. Gevalideerd tegen de Excel: per 10-11-2026 identiek (zie validatiepunt hierboven); per 6-11-2026
 Pompkracht 1079,65 u en Construct 0,55 u.
 
 - Klant volgt uit project; projecten zonder klant ("Niet declarabel", 8,75 u per 10-11) tellen niet als declarabel.

@@ -22,18 +22,32 @@ WEEKSCHEMAS = [
     (date(2026, 1, 1), [6.5, 6.5, 4.5, 6.25, 4.25]),
     (date(2026, 11, 16), [6.5, 5.5, 6.0, 6.0, 4.0]),  # marathonschema
 ]
+# Target per dag uit de weekplanning (scripts/weekplanning.py --schrijf), in minuten; gaat voor WEEKSCHEMAS.
+WERKUREN = os.path.expanduser('~/vault/data/weekplanning/werkuren.csv')
 VRIJ_BUDGET = 196
 VRIJE_DAGEN = os.path.expanduser('~/vault/data/vrije-dagen-2026.csv')
 OVERZICHT = os.path.expanduser('~/vault/gebieden/werk/uren-overzicht.md')
 MAANDEN = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
 
 
+def geplande_targets():
+    """Target in uren per datum uit data/weekplanning/werkuren.csv (leeg als het bestand er niet is)."""
+    if not os.path.exists(WERKUREN):
+        return {}
+    with open(WERKUREN, newline='') as f:
+        return {date.fromisoformat(r['datum']): int(r['target_min']) / 60 for r in csv.DictReader(f)}
+
+
 def target_uren(vanaf, tot):
-    """Werkdagen vanaf t/m tot (beide inclusief, zonder feestdagen) × uren per weekdag volgens het schema van die dag."""
+    """Target vanaf t/m tot (beide inclusief, zonder feestdagen): uit de weekplanning voor geplande datums,
+    anders werkdagen × uren per weekdag volgens het schema van die dag."""
+    gepland = geplande_targets()
     totaal = 0.0
     dag = vanaf
     while dag <= tot:
-        if dag.weekday() < 5:
+        if dag in gepland:
+            totaal += gepland[dag]
+        elif dag.weekday() < 5:
             schema = [uren for ingang, uren in WEEKSCHEMAS if ingang <= dag][-1]
             totaal += schema[dag.weekday()]
         dag += timedelta(days=1)

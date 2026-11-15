@@ -17,7 +17,9 @@ gaat bij een voorsprong op target eerst van het werk af (de week mag tot de voor
 werkdoel uitkomen), dan van de lucht, dan van wat verder in wijkt_eerst staat (regels.json), en wat dan nog
 over is van de lucht van de andere werkdagen.
 
-Met --schrijf komt de planning ook als notitie in gebieden/weekplanning/<maandag>.md.
+Met --schrijf komt de planning ook als notitie in gebieden/weekplanning/<maandag>.md, en de werkuren
+per datum in data/weekplanning/werkuren.csv (gepland, en het target per dag voor uren.py: gepland plus
+wat van de voorsprong afging, zodat het weektarget het werkdoel blijft).
 
 Zonder weekbestand bouwt het script de week uit de Excel op (regels.json, excel_week, met de duur
 van Hardlopen uit de Excel). Met --controleer vergelijkt het die met data/weekschema-excel-2026-11.csv.
@@ -38,6 +40,7 @@ TRAININGEN = VAULT / "data" / "hardlopen" / "trainingen"
 TEMPOS = VAULT / "data" / "hardlopen" / "tempos.json"
 EXCEL_CSV = VAULT / "data" / "weekschema-excel-2026-11.csv"
 NOTITIES = VAULT / "gebieden" / "weekplanning"
+WERKUREN_CSV = DATA / "werkuren.csv"
 MAANDEN = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september",
            "oktober", "november", "december"]
 WEEKDAGEN = ["ma", "di", "wo", "do", "vr", "za", "zo"]
@@ -440,7 +443,7 @@ def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpa
 
     # Werk dat niet op de eigen dag past, gaat van de lucht van de andere werkdagen (eerst de latere).
     for i, dag in enumerate(WEEKDAGEN):
-        tekort = week[dag]["tekort"]
+        tekort = week[dag]["onverdeeld"] = week[dag]["tekort"]
         if not tekort:
             continue
         for ander in WEEKDAGEN[i + 1:] + WEEKDAGEN[:i]:
@@ -453,6 +456,7 @@ def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpa
                 break
         if tekort:
             weekconflicten.append(f"{tekort} min werk van {VOLUIT[dag]} past nergens in de lucht")
+        week[dag]["onverdeeld"] = tekort
     return week, dagsoorten, regels, weekconflicten
 
 
@@ -580,6 +584,34 @@ def notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datu
     return pad
 
 
+def werkuren_schrijven(week, datums):
+    """Zet per datum de geplande werkminuten en het target in data/weekplanning/werkuren.csv.
+
+    Target = gepland + wat van de voorsprong afging + werk dat nergens paste, zodat de week op het
+    werkdoel uitkomt. Een dag zonder tijdsindeling houdt het werkdoel van de weekdag als target.
+    Regels van andere weken blijven staan.
+    """
+    weekdagen = lees("weekdagen.json")
+    rijen = {}
+    if WERKUREN_CSV.exists():
+        with WERKUREN_CSV.open(newline="") as f:
+            rijen = {r["datum"]: r for r in csv.DictReader(f)}
+    for dag in WEEKDAGEN:
+        plan = week[dag]
+        gepland = sum(w for _, _, w in plan["rij"] if w)
+        if plan["rij"]:
+            target = gepland + plan["minder"] + plan["onverdeeld"]
+        else:
+            target = round(weekdagen[dag]["werkdoel_uren"] * 60)
+        datum = datums[dag].isoformat()
+        rijen[datum] = {"datum": datum, "gepland_min": gepland, "target_min": target}
+    with WERKUREN_CSV.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["datum", "gepland_min", "target_min"], lineterminator="\n")
+        w.writeheader()
+        w.writerows(rijen[d] for d in sorted(rijen))
+    return sum(rijen[datums[d].isoformat()]["target_min"] for d in WEEKDAGEN)
+
+
 def excel_lezen():
     rijen = {}
     with EXCEL_CSV.open(newline="") as f:
@@ -654,6 +686,8 @@ def week_uit_bestand(pad, schrijf=False):
         notitie = notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen,
                                     pad, stand)
         print(f"Geschreven naar {notitie.relative_to(VAULT)}")
+        target = werkuren_schrijven(week, datums)
+        print(f"Werkuren per dag naar {WERKUREN_CSV.relative_to(VAULT)} (target week {duur_tekst(target)} u)")
 
 
 def main():
