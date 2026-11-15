@@ -1,5 +1,5 @@
 {
-  "toelichting": "Blokken per soort dag, in volgorde vanaf het opstaan. duur_min is vast; werk is 'vul' (tot het volgende blok met een vaste tijd), een vast aantal uren, of 'rest' (wat er van het werkdoel van de weekdag over is). Hardlopen heeft soort 'training': duur_min is de tijd uit de Excel, stap 3 zet daar de berekende trainingsduur.",
+  "toelichting": "Blokken per soort dag, in volgorde vanaf het opstaan. duur_min is vast; werk is 'vul' (tot het volgende blok met een vaste tijd), een vast aantal uren, of 'rest' (wat er van het werkdoel van de weekdag over is). Een vaste tijd is 'om' (kloktijd) of 'minstens_na' (minuten na het einde van een eerder blok). Hardlopen heeft soort 'training': duur_min is de tijd uit de Excel; met een trainingsweek rekent weekplanning.py de duur uit de tempo's.",
   "easy": {
     "omschrijving": "Easy run, vroeg op een snack, daarna stabiliteitsroutines, ontbijt en werken",
     "blokken": [
@@ -24,9 +24,10 @@
       {"activiteit": "Ontbijt en vaatwasser uitruimen", "duur_min": 30},
       {"activiteit": "Fysio oefeningen", "duur_min": 15},
       {"activiteit": "Tanden poetsen", "duur_min": 15},
-      {"activiteit": "Werken", "werk": 1.0},
+      {"activiteit": "Werken", "werk": "vul"},
       {"activiteit": "Warming up, schoenen aan en naar buiten", "duur_min": 30},
-      {"activiteit": "Hardlopen", "soort": "training", "duur_min": 75},
+      {"activiteit": "Hardlopen", "soort": "training", "duur_min": 75,
+       "minstens_na": {"activiteit": "Ontbijt en vaatwasser uitruimen", "min": 120}},
       {"activiteit": "Uitloop, snack", "duur_min": 15},
       {"activiteit": "Douchen, aankleden, hardloopspullen opruimen", "duur_min": 30},
       {"activiteit": "Werken", "werk": "vul"},

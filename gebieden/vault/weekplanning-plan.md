@@ -29,7 +29,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 - [x] 1. Tempo's en trainingsduur (15-11, aannames nog te bevestigen)
 - [x] 2. Soorten dagen en regels als data (15-11, aannames bevestigd)
-- [ ] 3. Weekplanning doorrekenen
+- [x] 3. Weekplanning doorrekenen (15-11, met de trainingen van week 1; week 2 nog invoeren)
 - [ ] 4. Skill `/weekplanning` voor zondag
 - [ ] 5. Herplannen tijdens de week
 - [ ] 6. Gelopen trainingen importeren
@@ -110,11 +110,18 @@ Klaar als: de week van 23-11 (ortho-nacontrole ma 9:45–10:15) een kloppende pl
 Haalt agenda's (privé en zakelijk) en urenstand zelf op, vraagt om de foto of screenshot van de
 trainingen en schrijft de planning in de vault.
 
+Schrijft per week `data/weekplanning/weken/<maandag>.json` (trainingsweek, afspraken met reistijd
+en omschakelen, `vrij_na_reservering_uren` uit `uren.py`) en draait `scripts/weekplanning.py` erop.
+Bij een nieuwe trainingsweek: per training een `dagsoort` invullen. In `weken/2026-11-23.json`
+week 1 vervangen door `wind-90-week-02.json`.
+
 Klaar als: ik op zondag 22-11 met de skill de week plan zonder zelf iets uit te rekenen.
 
 ### 5. Herplannen tijdens de week
 
 "Later opgestaan", "run duurde langer", "afspraak erbij": rest van de dag en week opnieuw.
+Nog niet in stap 3: afspraken die niet in een werkblok vallen (in de avond, tijdens de training of
+over de lucht heen) geven alleen een conflict, en later opstaan bij voor op target zit er nog niet in.
 
 Klaar als: een wijziging midden in de week een bijgewerkte planning geeft.
 
@@ -189,6 +196,27 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
   en `weekend_training` (zo: training, kracht, weekly review) hebben geen tijdsindeling. De
   duur van `Hardlopen` in de dagsoorten is die uit de Excel (easy 60, zwaar 75, lang 150 min,
   inclusief speling); stap 3 vervangt die door de berekende duur.
-- **Open voor stap 3:** wat er met de klusjes en de avond gebeurt als een soort dag op een andere
+- **Open voor stap 3 (opgelost in stap 3):** wat er met de klusjes en de avond gebeurt als een soort dag op een andere
   weekdag valt (bv. een zware dag op wo met de was), en of het werkblok vóór een zware training
   vast 1 u blijft of volgt uit "2 tot 3 uur na het ontbijt".
+- **Stap 3 (15-11):** `scripts/weekplanning.py data/weekplanning/weken/<maandag>.json` rekent de
+  week door; zonder argument bouwt het de Excel-week op (`--controleer` is nog gelijk). De soort dag
+  komt uit een nieuw veld `dagsoort` per training in de trainingsweek; dagen zonder training zijn
+  `rust`. Duur van `Hardlopen` = berekende duur (midden) naar boven op een kwartier: easy 45 min
+  (Excel 60), zwaar 60 (Excel 75), lang 1:45 (Excel 2:30). De werkdagen worden daardoor korter, de
+  werkuren blijven gelijk.
+- **Zware dag:** het werkblok vóór de training is `vul`; `Hardlopen` heeft `minstens_na` 120 min na
+  het ontbijt. Geeft nu 1 u, zoals de Excel, en schuift mee als er iets tussenkomt.
+- **Klusjes en avond** blijven aan de weekdag vast, ook bij een andere soort dag. Ontbreekt het blok
+  waar een klusje aan vastzit (bv. `Lunch` op een lange dag met heuvels heet `Tweede lunch`), dan
+  komt het klusje voor de lucht, met een melding.
+- **Afspraken** krijgen reistijd en omschakelen ervoor en erna (ortho: 10 + 10 min) en knippen het
+  werkblok waar ze in vallen; de werkdag loopt dan uit. Past een afspraak niet in een werkblok, dan
+  vallen eerst de blokken uit `wijkt_eerst` na de lucht weg (de stabiliteitsroutines) en probeert het
+  script het opnieuw. Wat de dag uitloopt gaat van de eigen lucht af, dan vervallen de
+  stabiliteitsroutines, dan gaat het naar de lucht van de andere werkdagen (eerst de latere).
+- **Week van 23-11:** ortho om 9:25–10:35 met reistijd valt over douchen en ontbijt; de
+  stabiliteitsroutines vervallen, de ochtend is 45 min eerder klaar, maandag houdt 5 min lucht,
+  week 28,0 u, lucht 2:05. Getest met de trainingen van week 1.
+- **Urenstand** wordt alleen gemeld (voor of achter, en wat de lucht dan is); nog niet gebruikt om
+  later op te staan.

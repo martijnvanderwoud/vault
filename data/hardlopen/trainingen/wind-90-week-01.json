@@ -8,6 +8,7 @@
     {
       "dag": "ma",
       "boekdag": "di",
+      "dagsoort": "easy",
       "omschrijving": "8-12 km easy with 5 x 20 sec strides",
       "onderdelen": [
         {
@@ -27,6 +28,7 @@
     {
       "dag": "di",
       "boekdag": "wo",
+      "dagsoort": "zwaar",
       "omschrijving": "2.5 km progressive warm-up + 4 strides, 8 x 2 min at 100% 5k with 1.5 min jog, 2 km easy cool-down",
       "onderdelen": [
         {
@@ -67,6 +69,7 @@
     {
       "dag": "wo",
       "boekdag": "do",
+      "dagsoort": "easy",
       "omschrijving": "8-11 km very easy to easy",
       "onderdelen": [
         {
@@ -81,6 +84,7 @@
     {
       "dag": "do",
       "boekdag": "vr",
+      "dagsoort": "easy",
       "omschrijving": "10-12 km easy progressing to moderate",
       "onderdelen": [
         {
@@ -96,6 +100,7 @@
     {
       "dag": "vr",
       "boekdag": "za",
+      "dagsoort": "lang_heuvels",
       "omschrijving": "18-20 km easy through rolling hills",
       "heuvels": true,
       "onderdelen": [
@@ -108,6 +113,7 @@
     {
       "dag": "zo",
       "boekdag": "ma",
+      "dagsoort": "weekend_training",
       "omschrijving": "10 km Kenyan-style progression run + 2 km easy cool-down",
       "onderdelen": [
         {
