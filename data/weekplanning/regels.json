@@ -4,6 +4,7 @@
   "werkuren_schuiven_binnen_week": true,
   "opstaan": "06:00",
   "naar_bed": "22:50",
+  "klaarmaken_voor_bed_min": 30,
   "lucht_min_per_werkdag": 30,
   "wijkt_eerst": ["lucht", "stabiliteit"],
   "nooit_wijken": ["training"],

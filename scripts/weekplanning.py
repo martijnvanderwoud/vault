@@ -231,7 +231,7 @@ def avond_invoegen(blokken, rij, afspraak, notities):
     Avondblokken die voor de afspraak (met reistijd en omschakelen) niet meer af zijn, gaan naar een
     vrij gat voor een blok met een vaste tijd, en anders na de afspraak. Blokken met een vaste tijd
     voor de afspraak (zoals eten) blijven ervoor en geven zo nodig een conflict. Na de afspraak geen
-    downtime: direct naar bed, uiterlijk op de bedtijd.
+    downtime: klaarmaken voor bed en dan naar bed, uiterlijk op de bedtijd.
     """
     begin_a, _ = afspraak_tijden(afspraak)
     li = next(i for i, b in enumerate(blokken) if b.get("soort") == "lucht")
@@ -245,6 +245,7 @@ def avond_invoegen(blokken, rij, afspraak, notities):
         if b in ervoor or b in verplaatst or "duur_min" not in b and "om" not in b:
             continue
         if b.get("soort") == "bed":
+            erna.append({"activiteit": "Klaarmaken voor bed", "duur_min": b["klaarmaken_min"]})
             b = {k: v for k, v in b.items() if k != "om"} | {"uiterlijk": b["om"]}
         erna.append(b)
 
@@ -284,12 +285,17 @@ def vrij_invoegen(rij, blokken):
     return uit
 
 
-def dag_plannen(dagsoort, weekdag, opstaan, naar_bed, wijkt_eerst, hardlopen_min=None, afspraken=(),
-                vervalt=(), aanpassen=()):
-    """Geeft een dict met de rij, conflicten, notities en het tekort aan werk (min) voor andere dagen."""
+def dag_plannen(dagsoort, weekdag, regels, hardlopen_min=None, afspraken=(), vervalt=(), aanpassen=(),
+                opstaan_dag=None):
+    """Geeft een dict met de rij, conflicten, notities en het tekort aan werk (min) voor andere dagen.
+
+    Met opstaan_dag (later opstaan) loopt de dag uit; dat gaat net als bij een afspraak van de lucht af.
+    """
     notities, conflicten_vast = [], []
+    opstaan, wijkt_eerst = hhmm_naar_min(regels["opstaan"]), regels["wijkt_eerst"]
     blokken = blokken_met_klusjes(dagsoort, weekdag, notities)
-    blokken.append({"activiteit": "Naar bed", "soort": "bed", "om": naar_bed, "duur_min": 0})
+    blokken.append({"activiteit": "Naar bed", "soort": "bed", "om": regels["naar_bed"], "duur_min": 0,
+                    "klaarmaken_min": regels["klaarmaken_voor_bed_min"]})
     for a in aanpassen:
         b = next((b for b in blokken if b["activiteit"] == a["activiteit"]), None)
         if b is None:
@@ -323,9 +329,21 @@ def dag_plannen(dagsoort, weekdag, opstaan, naar_bed, wijkt_eerst, hardlopen_min
         rij, conflicten = dag_opbouwen(blokken, werkdoel, opstaan)
 
     tekort = 0
-    if afspraken:
-        lucht = next(b for b in blokken if b.get("soort") == "lucht")
-        einde = rij[blokken.index(lucht)][0] + lucht["duur_min"]
+    lucht = next(b for b in blokken if b.get("soort") == "lucht")
+    einde = rij[blokken.index(lucht)][0] + lucht["duur_min"]
+    # Vrije tijd voor het eerste vaste avondblok (zoals eten) mag de werkdag ook opmaken.
+    ertussen = 0
+    for b in blokken[blokken.index(lucht) + 1:]:
+        if "om" in b:
+            einde = max(einde, hhmm_naar_min(b["om"]) - ertussen)
+            break
+        ertussen += b.get("duur_min", 0)
+    later =opstaan_dag is not None and hhmm_naar_min(opstaan_dag) > opstaan
+    if later:
+        notities.append(f"later opstaan: {opstaan_dag}")
+        opstaan = hhmm_naar_min(opstaan_dag)
+        rij, conflicten = dag_opbouwen(blokken, werkdoel, opstaan)
+    if afspraken or later:
         overdag = [a for a in afspraken if afspraak_tijden(a)[0] < einde]
         for a in overdag:
             # Past de afspraak niet in een werkblok, dan vervallen eerst de blokken uit wijkt_eerst.
@@ -350,7 +368,7 @@ def dag_plannen(dagsoort, weekdag, opstaan, naar_bed, wijkt_eerst, hardlopen_min
                 notities.append(f"{', '.join(vervallen)} vervalt voor {a['activiteit']}")
             blokken = nieuw
             rij, conflicten = dag_opbouwen(blokken, werkdoel, opstaan)
-        if overdag:
+        if overdag or later:
             blokken, rij, conflicten, tekort = wijken(blokken, werkdoel, opstaan, einde, wijkt_eerst, notities)
         for a in afspraken:
             if a not in overdag:
@@ -372,18 +390,16 @@ def lucht_inzetten(plan, max_min):
     return 0
 
 
-def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpassen=None):
+def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpassen=None, opstaan=None):
     dagsoorten, weekdagen, regels = lees("dagsoorten.json"), lees("weekdagen.json"), lees("regels.json")
     hardlopen, afspraken = hardlopen or {}, afspraken or {}
-    vervalt, aanpassen = vervalt or {}, aanpassen or {}
-    opstaan = hhmm_naar_min(regels["opstaan"])
+    vervalt, aanpassen, opstaan = vervalt or {}, aanpassen or {}, opstaan or {}
     week, weekconflicten = {}, []
     for dag in WEEKDAGEN:
         soort = dagsoorten[toewijzing[dag]]
         if soort.get("tijdsindeling", True):
-            week[dag] = dag_plannen(soort, weekdagen[dag], opstaan, regels["naar_bed"], regels["wijkt_eerst"],
-                                    hardlopen.get(dag), afspraken.get(dag, []), vervalt.get(dag, []),
-                                    aanpassen.get(dag, []))
+            week[dag] = dag_plannen(soort, weekdagen[dag], regels, hardlopen.get(dag), afspraken.get(dag, []),
+                                    vervalt.get(dag, []), aanpassen.get(dag, []), opstaan.get(dag))
         else:
             notities = [f"afspraak {a['activiteit']} {a['van']}-{a['tot']}, training en kracht eromheen"
                         for a in afspraken.get(dag, [])]
@@ -501,6 +517,7 @@ def week_uit_bestand(pad):
     aanpassen = {}
     for a in invoer.get("aanpassen", []):
         aanpassen.setdefault(a["dag"], []).append(a)
+    opstaan = {o["dag"]: o["om"] for o in invoer.get("opstaan", [])}
 
     print(f"Week van {maandag:%d-%m-%Y}, trainingen {trainingsweek['plan']} week {trainingsweek['week']}")
     stand = invoer.get("vrij_na_reservering_uren")
@@ -513,7 +530,7 @@ def week_uit_bestand(pad):
         print(f"Urenstand: {stand:.2f} u vrij na reservering, achter op target: lucht gebruiken om werk "
               "in te halen")
 
-    week, dagsoorten, regels, weekconflicten = week_plannen(toewijzing, hardlopen, afspraken, vervalt, aanpassen)
+    week, dagsoorten, regels, weekconflicten = week_plannen(toewijzing, hardlopen, afspraken, vervalt, aanpassen, opstaan)
     week_tonen(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen)
 
 

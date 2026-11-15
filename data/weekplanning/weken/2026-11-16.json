@@ -1,5 +1,5 @@
 {
-  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak; reistijd_terug_min als de terugreis anders is. aanpassen wijzigt een blok van die dag (wordt: nieuwe naam). Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: Google Maps, om 18:38 de deur uit (bus 73 om 18:40 van Zeist, Nepveulaan, dan bus 2), aankomst 19:14; reis 36 min, heen inclusief wachten tot 19:30.",
+  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak; reistijd_terug_min als de terugreis anders is. aanpassen wijzigt een blok van die dag (wordt: nieuwe naam). Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: Google Maps, om 18:38 de deur uit (bus 73 om 18:40 van Zeist, Nepveulaan, dan bus 2), aankomst 19:14; reis 36 min, heen inclusief wachten tot 19:30. opstaan: later opstaan op een dag (na een late avond een uur later).",
   "maandag": "2026-11-16",
   "trainingen": "wind-90-week-01.json",
   "vrij_na_reservering_uren": 1.1,
@@ -33,6 +33,13 @@
       "activiteit": "Eten, afwas, tanden poetsen",
       "wordt": "Eten (Franca doet de afwas)",
       "duur_min": 30
+    }
+  ],
+  "opstaan": [
+    {
+      "dag": "wo",
+      "om": "07:00",
+      "reden": "laat in bed na Ledig Erf"
     }
   ]
 }

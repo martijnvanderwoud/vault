@@ -238,3 +238,8 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
 - **Bedtijd:** Martijn staat om 6:00 op en ligt meestal om 22:50 in bed (`naar_bed` in `regels.json`).
   Elke dag eindigt met `Naar bed` om 22:50. Na een avondafspraak geen downtime maar direct naar bed,
   met een conflict als dat na 22:50 is.
+- **Na een late avond:** na een avondafspraak eerst een halfuur klaarmaken voor bed
+  (`klaarmaken_voor_bed_min`), en de volgende dag ongeveer een uur later opstaan (`opstaan` in het
+  weekbestand; de skill stelt dat voor). Later opstaan laat de dag uitlopen; dat gaat zoals bij een
+  afspraak eerst van de vrije tijd voor het eten, dan van de lucht, dan vervallen de
+  stabiliteitsroutines. Wo 18-11 (op om 7:00): stabiliteitsroutines vervallen, lucht blijft 30 min.
