@@ -28,7 +28,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 ## Voortgang
 
 - [x] 1. Tempo's en trainingsduur (15-11, aannames nog te bevestigen)
-- [x] 2. Soorten dagen en regels als data (15-11)
+- [x] 2. Soorten dagen en regels als data (15-11, aannames bevestigd)
 - [ ] 3. Weekplanning doorrekenen
 - [ ] 4. Skill `/weekplanning` voor zondag
 - [ ] 5. Herplannen tijdens de week
@@ -184,7 +184,7 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
   werkblokken rekenen zich uit: `vul` tot een vaste tijd (lunch om 12:00), een vast aantal uren
   (voor de training op zware en lange dagen), of `rest` van het werkdoel. Zo schuiven de uren mee
   als de soort dag wisselt.
-- **Aannames, nog te bevestigen:** de soort dag `lang` (lange loop zonder heuvels) staat niet in de
+- **Aannames, bevestigd op 15-11:** de soort dag `lang` (lange loop zonder heuvels) staat niet in de
   Excel; nu als `lang_heuvels` zonder reistijd, vanaf huis, met warming-up en gewone lunch. `rust`
   en `weekend_training` (zo: training, kracht, weekly review) hebben geen tijdsindeling. De
   duur van `Hardlopen` in de dagsoorten is die uit de Excel (easy 60, zwaar 75, lang 150 min,
