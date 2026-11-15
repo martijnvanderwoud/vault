@@ -10,8 +10,8 @@ afspraken en klusjes tussendoor. Op zondag, tijdens de weekly review, maakt `/we
 planning voor de komende week. Mijn handwerk is alleen nakijken en zeggen wat er moet schuiven.
 Tijdens de week reken ik een wijziging ("later opgestaan", "run duurde 20 min langer") snel door.
 
-Vervangt het vaste weekschema in de Excel (`inbox/weekschema-Two-Rivers-general-phase.xlsx`), dat
-per weekdag vastligt en niet meeschuift als de trainingsdagen wisselen. Komt uit het interview,
+Vervangt het vaste weekschema in de Excel (`weekschema-Two-Rivers-general-phase.xlsx`, buiten de
+vault; inhoud in `data/weekschema-excel-2026-11.csv`), dat per weekdag vastligt en niet meeschuift als de trainingsdagen wisselen. Komt uit het interview,
 zie [[interview-voortgang]].
 
 Vastgelegd op 2026-11-15.
@@ -91,7 +91,8 @@ Klaar als: de duur van elke training uit Wind week 1 uit het script komt.
 ### 2. Soorten dagen en regels als data
 
 Easy-dag, zware dag, lange dag, lange dag met heuvels, rustdag, met hun blokken en duur, en de
-regels uit Uitgangspunten. Basis: de dagen uit de Excel.
+regels uit Uitgangspunten. Basis: `data/weekschema-excel-2026-11.csv`, de inhoud van de Excel
+(dag, begintijd, activiteit, werkduur; de dubbele lunch op donderdag weggelaten, 28,0 u werk).
 
 Klaar als: de huidige week uit de Excel uit de data is terug te rekenen, met dezelfde werkuren.
 
