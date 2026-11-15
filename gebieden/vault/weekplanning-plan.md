@@ -167,14 +167,17 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
 ### 8. Target per dag uit de weekplanning in `uren.py`
 
 Nu rekent `uren.py` het target met vaste werkuren per weekdag (`WEEKSCHEMAS`: ma 6,5 / di 5,5 /
-wo 6 / do 6 / vr 4). Met de weekplanning schuiven uren binnen de week, en bij een voorsprong mag een
-week onder de 28 u uitkomen. Het target per dag moet dan komen uit de geplande werkuren van die dag
-(`werk` per dag in de planning), voor weken met een weekbestand; voor andere weken blijft het vaste
-schema. Daarvoor schrijft `weekplanning.py` de werkuren per datum weg (bv. `data/weekplanning/
-werkuren.csv`: datum, gepland), en leest `uren.py` die.
+wo 6 / do 6 / vr 4). Met de weekplanning schuiven uren binnen de week, dus klopt de stand halverwege
+een week niet met de planning. Het target per dag moet dan komen uit de geplande werkuren van die dag,
+voor weken met een weekbestand; voor andere weken blijft het vaste schema. Daarvoor schrijft
+`weekplanning.py` de werkuren per datum weg (bv. `data/weekplanning/werkuren.csv`: datum, gepland),
+en leest `uren.py` die.
 
-Open: telt een week onder de 28 u (van de voorsprong) als lager target, of blijft het target 28 u en
-zakt alleen de voorsprong? Het tweede houdt de stand eerlijk tegenover het jaardoel.
+**Besloten (15-11):** het weektarget blijft altijd 28 u. Komt een week onder de 28 u uit omdat Martijn
+voor lag, dan slinkt de voorsprong (vrij na reservering); het target zakt niet. Doel: aan het eind
+van het jaar grofweg 45 × 28 = 1260 u declarabel (52 weken min 7 weken vrij-budget, zie
+[[urenregistratie]]). Het target per dag volgt dus de verdeling van de planning, maar telt per week op
+tot 28 u: werk dat van de voorsprong afging (`minder`), telt op die dag wel mee in het target.
 
 Klaar als: `uren.py` voor de week van 16-11 het target per dag uit de planning haalt.
 
