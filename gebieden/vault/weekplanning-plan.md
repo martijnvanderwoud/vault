@@ -34,6 +34,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [ ] 5. Herplannen tijdens de week
 - [ ] 6. Gelopen trainingen importeren
 - [ ] 7. Workouts voor TrainingPeaks genereren
+- [ ] 8. Target per dag uit de weekplanning in `uren.py`
 
 ## Uitgangspunten
 
@@ -163,6 +164,20 @@ Bronnen: https://help.trainingpeaks.com/hc/en-us/articles/115000325647 (import),
 https://forum.intervals.icu/t/training-peaks-does-not-import-exported-workout-fit/47143 (FIT),
 https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete-User-Guide (drempel).
 
+### 8. Target per dag uit de weekplanning in `uren.py`
+
+Nu rekent `uren.py` het target met vaste werkuren per weekdag (`WEEKSCHEMAS`: ma 6,5 / di 5,5 /
+wo 6 / do 6 / vr 4). Met de weekplanning schuiven uren binnen de week, en bij een voorsprong mag een
+week onder de 28 u uitkomen. Het target per dag moet dan komen uit de geplande werkuren van die dag
+(`werk` per dag in de planning), voor weken met een weekbestand; voor andere weken blijft het vaste
+schema. Daarvoor schrijft `weekplanning.py` de werkuren per datum weg (bv. `data/weekplanning/
+werkuren.csv`: datum, gepland), en leest `uren.py` die.
+
+Open: telt een week onder de 28 u (van de voorsprong) als lager target, of blijft het target 28 u en
+zakt alleen de voorsprong? Het tweede houdt de stand eerlijk tegenover het jaardoel.
+
+Klaar als: `uren.py` voor de week van 16-11 het target per dag uit de planning haalt.
+
 ## Bevindingen
 
 - **Stap 1 (15-11):** `scripts/trainingsduur.py` rekent per training km en duur. De planning
@@ -250,3 +265,7 @@ https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete
   bewerken. De skill (stap 4) draait altijd met `--schrijf`.
 - **Afspraak thuis** (`"thuis": true`, zoals M❤️F met Franca): geen reistijd, geen klaarmaken voor bed
   erna, en op de normale tijd naar bed, ook als de agenda tot later loopt.
+- **Voorsprong op target:** ligt Martijn voor (`vrij_na_reservering_uren` > 0), dan gaat wat een dag
+  uitloopt eerst van het werk af, tot de voorsprong op is; lucht en stabiliteitsroutines blijven dan
+  staan. Daarna gelden de gewone wijkregels. Wo 18-11: 45 min minder werk, week 27:15 bij 1:06
+  voorsprong.

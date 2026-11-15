@@ -13,7 +13,8 @@ Een week (data/weekplanning/weken/<maandag>.json) noemt de trainingsweek, de afs
 urenstand. De soort dag per weekdag komt uit de trainingen (dagsoort), de duur van Hardlopen uit
 trainingsduur.py, naar boven afgerond op een kwartier. Een afspraak (met reistijd en omschakelen
 ervoor en erna) knipt het werkblok waar hij in valt; de werkdag loopt daardoor uit. Wat uitloopt
-gaat eerst van de lucht af, dan van wat verder in wijkt_eerst staat (regels.json), en wat dan nog
+gaat bij een voorsprong op target eerst van het werk af (de week mag tot de voorsprong onder het
+werkdoel uitkomen), dan van de lucht, dan van wat verder in wijkt_eerst staat (regels.json), en wat dan nog
 over is van de lucht van de andere werkdagen.
 
 Met --schrijf komt de planning ook als notitie in gebieden/weekplanning/<maandag>.md.
@@ -198,14 +199,20 @@ def afspraak_invoegen(blokken, rij, afspraak, heel=True):
     return blokken[:i] + voor + midden + na + blokken[i + 1:]
 
 
-def wijken(blokken, werkdoel, opstaan, einde, wijkt_eerst, notities):
+def wijken(blokken, werkdoel, opstaan, einde, wijkt_eerst, notities, voorsprong=0):
     """Laat de werkdag niet langer duren dan einde (het einde van de lucht zonder afspraken).
 
-    Wat uitloopt gaat van de lucht af, dan vervallen de blokken van de volgende soort in wijkt_eerst.
-    Geeft de blokken, de rij, de conflicten en het werk in minuten dat dan nog naar andere dagen moet.
+    Wat uitloopt gaat eerst van de voorsprong op target af (minder werken, tot voorsprong minuten), dan
+    van de lucht, dan vervallen de blokken van de volgende soort in wijkt_eerst. Geeft de blokken, de
+    rij, de conflicten, het werk in minuten dat dan nog naar andere dagen moet en het werkdoel van de dag.
     """
     lucht = next(b for b in blokken if b.get("soort") == "lucht")
     standaard = lucht["duur_min"]
+    rij, _ = dag_opbouwen(blokken, werkdoel, opstaan)
+    minder = min(max(0, rij[blokken.index(lucht)][0] + standaard - einde), voorsprong)
+    if minder:
+        werkdoel -= minder
+        notities.append(f"{minder} min minder werk, van de voorsprong op target")
     for soort in wijkt_eerst:
         if soort != "lucht":
             weg = [b["activiteit"] for b in blokken if b.get("soort") == soort]
@@ -220,11 +227,11 @@ def wijken(blokken, werkdoel, opstaan, einde, wijkt_eerst, notities):
         if over <= standaard:
             lucht["duur_min"] = standaard - max(0, over)
             rij, conflicten = dag_opbouwen(blokken, werkdoel, opstaan)
-            return blokken, rij, conflicten, 0
+            return blokken, rij, conflicten, 0, werkdoel
     lucht["duur_min"] = 0
     tekort = over - standaard
     rij, conflicten = dag_opbouwen(blokken, werkdoel - tekort, opstaan)
-    return blokken, rij, conflicten, tekort
+    return blokken, rij, conflicten, tekort, werkdoel - tekort
 
 
 def avond_invoegen(blokken, rij, afspraak, notities):
@@ -295,10 +302,11 @@ def vrij_invoegen(rij, blokken):
 
 
 def dag_plannen(dagsoort, weekdag, regels, hardlopen_min=None, afspraken=(), vervalt=(), aanpassen=(),
-                opstaan_dag=None):
+                opstaan_dag=None, voorsprong=0):
     """Geeft een dict met de rij, conflicten, notities en het tekort aan werk (min) voor andere dagen.
 
     Met opstaan_dag (later opstaan) loopt de dag uit; dat gaat net als bij een afspraak van de lucht af.
+    voorsprong: minuten voorsprong op target die deze dag mogen opgaan aan minder werken.
     """
     notities, conflicten_vast = [], []
     opstaan, wijkt_eerst = hhmm_naar_min(regels["opstaan"]), regels["wijkt_eerst"]
@@ -337,7 +345,7 @@ def dag_plannen(dagsoort, weekdag, regels, hardlopen_min=None, afspraken=(), ver
         blokken = nieuw
         rij, conflicten = dag_opbouwen(blokken, werkdoel, opstaan)
 
-    tekort = 0
+    tekort = minder = 0
     lucht = next(b for b in blokken if b.get("soort") == "lucht")
     einde = rij[blokken.index(lucht)][0] + lucht["duur_min"]
     # Vrije tijd voor het eerste vaste avondblok (zoals eten) mag de werkdag ook opmaken.
@@ -378,13 +386,16 @@ def dag_plannen(dagsoort, weekdag, regels, hardlopen_min=None, afspraken=(), ver
             blokken = nieuw
             rij, conflicten = dag_opbouwen(blokken, werkdoel, opstaan)
         if overdag or later:
-            blokken, rij, conflicten, tekort = wijken(blokken, werkdoel, opstaan, einde, wijkt_eerst, notities)
+            doel = werkdoel
+            blokken, rij, conflicten, tekort, werkdoel = wijken(blokken, werkdoel, opstaan, einde, wijkt_eerst,
+                                                                 notities, voorsprong)
+            minder = doel - werkdoel - tekort
         for a in afspraken:
             if a not in overdag:
                 blokken = avond_invoegen(blokken, rij, a, notities)
-                rij, conflicten = dag_opbouwen(blokken, werkdoel - tekort, opstaan)
+                rij, conflicten = dag_opbouwen(blokken, werkdoel, opstaan)
     return {"rij": vrij_invoegen(rij, blokken), "conflicten": conflicten_vast + conflicten,
-            "notities": notities, "tekort": tekort}
+            "notities": notities, "tekort": tekort, "minder": minder}
 
 
 def lucht_inzetten(plan, max_min):
@@ -399,7 +410,9 @@ def lucht_inzetten(plan, max_min):
     return 0
 
 
-def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpassen=None, opstaan=None):
+def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpassen=None, opstaan=None,
+                 voorsprong_min=0):
+    """voorsprong_min: voorsprong op target; zoveel mag de week onder het werkdoel uitkomen."""
     dagsoorten, weekdagen, regels = lees("dagsoorten.json"), lees("weekdagen.json"), lees("regels.json")
     hardlopen, afspraken = hardlopen or {}, afspraken or {}
     vervalt, aanpassen, opstaan = vervalt or {}, aanpassen or {}, opstaan or {}
@@ -413,11 +426,13 @@ def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpa
             opstaan[dag] = min_naar_hhmm(opstaan_std + math.ceil(later_min / 15) * 15)
         if soort.get("tijdsindeling", True):
             week[dag] = dag_plannen(soort, weekdagen[dag], regels, hardlopen.get(dag), afspraken.get(dag, []),
-                                    vervalt.get(dag, []), aanpassen.get(dag, []), opstaan.get(dag))
+                                    vervalt.get(dag, []), aanpassen.get(dag, []), opstaan.get(dag),
+                                    voorsprong_min)
+            voorsprong_min -= week[dag]["minder"]
         else:
             notities = [f"afspraak {a['activiteit']} {a['van']}-{a['tot']}, training en kracht eromheen"
                         for a in afspraken.get(dag, [])]
-            week[dag] = {"rij": [], "conflicten": [], "notities": notities, "tekort": 0}
+            week[dag] = {"rij": [], "conflicten": [], "notities": notities, "tekort": 0, "minder": 0}
         bed = next((begin for begin, act, _ in week[dag]["rij"] if act == "Naar bed"), None)
         later_min = max(0, bed - naar_bed) if bed is not None else 0
         if later_min:
@@ -516,6 +531,12 @@ def notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datu
         f"**Werk** {duur_tekst(totaal_werk)} u (doel {regels['werkdoel_week_uren']} u) · "
         f"**lucht** {duur_tekst(totaal_lucht)} · **urenstand** {urenstand_tekst(urenstand).replace('.', ',')}",
         "",
+    ]
+    minder = sum(week[d]["minder"] for d in WEEKDAGEN)
+    if minder:
+        regels_md += [f"{duur_tekst(minder)} u onder het doel, van de voorsprong op target "
+                      f"({duur_tekst(round(urenstand * 60))} u): zo blijven lucht en stabiliteitsroutines staan.", ""]
+    regels_md += [
         "| Dag | Soort | Training | Op | Werk | Lucht |",
         "|---|---|---|---|---:|---:|",
     ]
@@ -623,8 +644,12 @@ def week_uit_bestand(pad, schrijf=False):
     stand = invoer.get("vrij_na_reservering_uren")
     print(f"Urenstand: {urenstand_tekst(stand)}")
 
-    week, dagsoorten, regels, weekconflicten = week_plannen(toewijzing, hardlopen, afspraken, vervalt, aanpassen, opstaan)
+    week, dagsoorten, regels, weekconflicten = week_plannen(toewijzing, hardlopen, afspraken, vervalt, aanpassen, opstaan,
+                                                           max(0, round((stand or 0) * 60)))
     week_tonen(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen)
+    minder = sum(week[d]["minder"] for d in WEEKDAGEN)
+    if minder:
+        print(f"{duur_tekst(minder)} u onder het doel, van de voorsprong op target ({duur_tekst(round(stand * 60))} u)")
     if schrijf:
         notitie = notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen,
                                     pad, stand)
