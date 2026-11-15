@@ -17,5 +17,6 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[facturen-archief]] — Waar mijn inkoop- en verkoopfacturen staan en hoe ik ze lees
 - [[hosting-transip]] — Welke TransIP-producten ik gebruik, aan welke klant ik ze doorbelast en waar de facturen staan
 - [[hostingklanten]] — Klanten met een vaste maandelijkse hostingfactuur (Construct, Afke Hennus), hun tarieven, prijsgeschiedenis en hoe ik een prijsverhoging doorreken
+- [[schrijfstem]] — Hoe Martijn schrijft in mail, pull requests en YouTrack - aanhef, groet en toon per relatie, met voorbeeldzinnen uit zijn eigen mails
 - [[uren-overzicht]] — Urenoverzicht 2026 met declarabel per klant, target, vrij-budget en gereserveerde vrije uren
 - [[urenregistratie]] — Urenregistratie in LogMyTime, de logica van de urenstand (voorheen Excel) en de LogMyTime API

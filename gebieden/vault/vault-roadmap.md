@@ -9,7 +9,7 @@ Overzicht van alle plannen, niet de plannen zelf. Elk plan heeft een eigen notit
 voortgang en bevindingen. Hier staat per plan alleen de stand en de volgende stap. Zie [[vault-doel]] voor
 het waarom en [[vault-beslissingen]] voor de gemaakte keuzes.
 
-Bijgewerkt op 12-11-2026.
+Bijgewerkt op 15-11-2026.
 
 ## Lopend
 
@@ -18,6 +18,7 @@ Bijgewerkt op 12-11-2026.
 | [[dependabot-routine-autonoom-plan]] (Debbie) | Stap 1 t/m 9 klaar; alle 21 repo's staan sinds 11-11 op autonoom | Stap 10: controlepunt na donderdag 19-11, alle runs van week 47 nakijken in het dashboard |
 | [[release-candidates-staging]] | Alle stappen gescript, eerste uitrol op 13-11 (infra-PR #999), skill `staging-release-candidates` | Testen bij de volgende uitrol, met de skill |
 | [[agents-dashboard-plan]] | Vastgelegd 11-11, nog niet begonnen | Stap 1: statusvorm en gedeelde module |
+| [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema als data in de vault, daarna de kennisnotities in de volgorde uit de interviewnotitie |
 
 ## Afgerond
 
@@ -27,6 +28,7 @@ Bijgewerkt op 12-11-2026.
 | Urenstand uit LogMyTime, skill `/uren`, Excel uitgefaseerd | 12-11-2026 | [[urenregistratie]], [[uren-overzicht]] |
 | Uren naar YouTrack, skill `/uren-naar-youtrack` | 12-11-2026 | [[urenregistratie]] |
 | Dependabot-routine als skill `/dependabot-routine` | 9-11-2026, testruns t/m 10-11 | [[dependabot-routine]] |
+| Analyse AI-Brein Bootcamp, context- en grenzenlaag van de vault | 15-11-2026 | [[vault-leren-van-bootcamp]] |
 
 Werkwijze om een terugkerende taak uit een project om te zetten in een skill:
 [[vault-skill-maken-vanuit-project]].
@@ -44,6 +46,9 @@ Werkwijze om een terugkerende taak uit een project om te zetten in een skill:
   Officiële API alleen voor goedgekeurde ontwikkelaars. Opties: berekening in de vault die
   trainingen invoerklaar opmaakt; of platform met open API (bv. intervals.icu). Nog uitzoeken.
 - **Lijsten:** boeken om te lezen, bewaarplekken ("waar ligt wat").
+- **Kennisnotities en plannen uit het interview** (Pompkracht, hardlopen, privéfinanciën, Nirvana,
+  vloerverwarming, berichtenkanalen, website): volgorde in [[interview-voortgang]].
+- **HTML-dashboard:** data in een los JS-bestand naast statische HTML, zie [[vault-leren-van-bootcamp]].
 - **Semantisch zoeken** zodra grep tekortschiet.
 - **Push** automatiseren (cron of hook) als ik vertrouwd ben met de flow.
 

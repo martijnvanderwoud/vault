@@ -13,7 +13,8 @@ taken, lijsten en kennis. Claude Code werkt hier als assistent.
 - `scripts/` deterministische helpers
 - `.claude/skills/` skills (komen later)
 
-Achtergrond, beslissingen en roadmap van de vault: `gebieden/vault/`.
+Achtergrond, beslissingen en roadmap van de vault: `gebieden/vault/`. Hoe je met mij werkt en waar
+je van afblijft: `gebieden/vault/werkafspraken.md` (lees die bij vragen over wat je zelf mag doen).
 
 ## Conventies
 
