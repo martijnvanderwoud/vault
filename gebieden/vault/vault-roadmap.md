@@ -18,7 +18,8 @@ Bijgewerkt op 15-11-2026.
 | [[dependabot-routine-autonoom-plan]] (Debbie) | Stap 1 t/m 9 klaar; alle 21 repo's staan sinds 11-11 op autonoom | Stap 10: controlepunt na donderdag 19-11, alle runs van week 47 nakijken in het dashboard |
 | [[release-candidates-staging]] | Alle stappen gescript, eerste uitrol op 13-11 (infra-PR #999), skill `staging-release-candidates` | Testen bij de volgende uitrol, met de skill |
 | [[agents-dashboard-plan]] | Vastgelegd 11-11, nog niet begonnen | Stap 1: statusvorm en gedeelde module |
-| [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema als data in de vault, daarna de kennisnotities in de volgorde uit de interviewnotitie |
+| [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema loopt via [[weekplanning-plan]]; daarna de kennisnotities in de volgorde uit de interviewnotitie |
+| [[weekplanning-plan]] | Stap 1 klaar op 15-11: `trainingsduur.py`, aannames nog te bevestigen | Stap 2: soorten dagen en regels als data |
 
 ## Afgerond
 
@@ -41,6 +42,8 @@ Werkwijze om een terugkerende taak uit een project om te zetten in een skill:
   nog niet. Gebruikt de ongedocumenteerde API; login via MD5 van wachtwoord → langlevend token.
   Eerst afwegen of ik dat token aan een third-party package geef. Gebruik: ochtendoverzicht,
   weekly review.
+- **TrainingPeaks en coach:** uitzoeken of intervals.icu (open API) naar TrainingPeaks kan schrijven, of
+  hoe ik anders met Nils (Loopwijzer) kan samenwerken zonder handwerk in TrainingPeaks.
 - **TrainingPeaks:** trainingen klaarzetten is veel handwerk. Automatiseren via browser, Playwright
   of interne API is **verboden** door de Terms of Use (art. 13, 18, 23; versie 28-7-2026).
   Officiële API alleen voor goedgekeurde ontwikkelaars. Opties: berekening in de vault die

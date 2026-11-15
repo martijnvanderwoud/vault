@@ -15,4 +15,5 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[vault-leren-van-bootcamp]] — Analyse van het startpakket van de AI-Brein Bootcamp (Brand it Up) en wat de vault daarvan heeft overgenomen
 - [[vault-roadmap]] — Overzicht van alle plannen in de vault (lopend, afgerond) en de backlog van ideeën
 - [[vault-skill-maken-vanuit-project]] — Stappenplan om een terugkerende taak in een project samen te doen en er daarna een vault-skill van te maken
+- [[weekplanning-plan]] — Plan voor een weekplanning die elke zondag uit trainingsschema, agenda en urenstand wordt gemaakt, en tijdens de week opnieuw door te rekenen is
 - [[werkafspraken]] — Hoe Claude en agents met Martijn werken - wat ze zelf mogen, wat als concept moet, wat altijd bij hem blijft, en hoe ze met hem omgaan

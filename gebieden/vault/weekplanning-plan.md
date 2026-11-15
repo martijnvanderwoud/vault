@@ -1,0 +1,174 @@
+---
+description: Plan voor een weekplanning die elke zondag uit trainingsschema, agenda en urenstand wordt gemaakt, en tijdens de week opnieuw door te rekenen is
+tags: [weekplanning, hardlopen, uren, plan]
+---
+
+# Plan: weekplanning
+
+Doel: elke week 28 uur declarabel, alle hardlooptrainingen gedaan en een beetje lucht over, met
+afspraken en klusjes tussendoor. Op zondag, tijdens de weekly review, maakt `/weekplanning` de
+planning voor de komende week. Mijn handwerk is alleen nakijken en zeggen wat er moet schuiven.
+Tijdens de week reken ik een wijziging ("later opgestaan", "run duurde 20 min langer") snel door.
+
+Vervangt het vaste weekschema in de Excel (`inbox/weekschema-Two-Rivers-general-phase.xlsx`), dat
+per weekdag vastligt en niet meeschuift als de trainingsdagen wisselen. Komt uit het interview,
+zie [[interview-voortgang]].
+
+Vastgelegd op 2026-11-15.
+
+## Zo werken we dit af
+
+Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open stap uit
+[[weekplanning-plan]]". Aan het eind van de sessie:
+
+- vink je de stap af in de voortgang hieronder
+- zet je onder `Bevindingen` wat afweek van het plan of wat een latere stap verandert
+- pas je latere stappen aan als dat nodig is
+
+## Voortgang
+
+- [x] 1. Tempo's en trainingsduur (15-11, aannames nog te bevestigen)
+- [ ] 2. Soorten dagen en regels als data
+- [ ] 3. Weekplanning doorrekenen
+- [ ] 4. Skill `/weekplanning` voor zondag
+- [ ] 5. Herplannen tijdens de week
+- [ ] 6. Gelopen trainingen importeren
+- [ ] 7. Workouts voor TrainingPeaks genereren
+
+## Uitgangspunten
+
+- **Doel per week:** 28 u declarabel (ma 6,5 / di 5,5 / wo 6 / do 6 / vr 4 als startpunt, zie
+  [[urenregistratie]]). Uren mogen binnen de week schuiven tussen dagen.
+- **Hardlopen gaat altijd door.** Nooit opofferen.
+- **Lucht: 30 min per werkdag blijft in het schema.** Loop ik achter, dan haal ik er werk mee in;
+  zo niet, dan stop ik met werken en begin ik aan inbox en kleine taken. Het is de buffer voor
+  dingen als de auto naar de garage.
+- **Wat als eerste wijkt** bij een afspraak of tekort: lucht, dan de stabiliteitsroutines
+  (pedestal & hip stability). Later opstaan op advies van de Garmin sleepcoach hangt af van voor of
+  achter op target.
+- **Voor of achter op target** = "vrij na reservering" uit `uren.py`, zie [[urenregistratie]].
+- **Easy run:** vroeg lopen, een banaan is genoeg, daarna stabiliteitsroutines, ontbijt en werken.
+- **Zware of lange training:** eerst ontbijten, 2 tot 3 uur later lopen.
+- **Kracht:** twee keer per week, op de workout-dagen (nu di en zo), niet direct na de training.
+  Eerst lunchen en de lunch laten zakken. Kracht op di 17-11 vervalt (last van de rechterknie).
+- **Rolling hills:** eens in de twee weken op de lange loop, bij het Doornse Gat, met reistijd.
+- **Weekend:** nooit werkuren. Zaterdag vrij, wandelen met Franca. Zondag geen tijdsindeling,
+  alleen de training en de weekly review.
+- **Trainingsschema:** *Marathon Excellence for Everyone* (John Davis), plan Wind. Ik zet het zelf
+  in TrainingPeaks; Nils (Loopwijzer) geeft feedback en helpt met aanpassingen.
+- **Dagen een plek naar voren:** de lange loop van zaterdag doe ik op vrijdag, zodat zaterdag vrij
+  is. Boek di → ma, wo → di, do → wo, vr → do, za → vr, zo (off) → za, en ma → de zondag aan het eind
+  van de week.
+
+## Beslissingen
+
+- **Geen interne API van TrainingPeaks.** Automatiseren via de interne API, een browser of
+  Playwright is verboden door de Terms of Use (zie de backlog in [[vault-roadmap]]). Bron voor de
+  trainingen is een foto van de weekpagina uit het boek, of een screenshot van TrainingPeaks als
+  Nils iets heeft aangepast.
+- **Duur uit tempo's, niet uit TrainingPeaks.** Per onderdeel afstand of tijd × tempo, in een
+  script. Tempo's als percentage van het 5K-tempo zijn **percentages van tempo, niet van
+  snelheid**: doeltempo = 5K-tempo × (2 − p). Bij 3:45/km is 80% dus 4:30/km, niet 4:41/km. Bron:
+  https://apps.runningwritings.com/pace-percent/
+- **Planning per soort dag, niet per weekdag.** Een week is een toewijzing van soorten dagen aan
+  weekdagen, met de afspraken uit de agenda erbovenop. Zo schuift alles mee als het schema de
+  zware training naar een andere dag zet.
+
+## Stappen
+
+### 1. Tempo's en trainingsduur
+
+- `data/hardlopen/tempos.json`: 5K-tempo (nu 3:45/km) en de zones als percentage van 5K-tempo:
+  very easy 40–50% (boek: onder 50%), easy 50–60%, moderate 60–75%. Jog tussen herhalingen en
+  herstel tussen strides op very easy. Strides 20 s, de eerste op 95%, de laatste op 110%,
+  lineair oplopend.
+- Wind 90. Bij een bandbreedte in km altijd de ondergrens; het weekdoel in km is de richtlijn.
+- `data/hardlopen/trainingen/<week>.json`: de trainingen van een week, per onderdeel.
+- Script dat per training de duur uitrekent.
+
+Klaar als: de duur van elke training uit Wind week 1 uit het script komt.
+
+### 2. Soorten dagen en regels als data
+
+Easy-dag, zware dag, lange dag, lange dag met heuvels, rustdag, met hun blokken en duur, en de
+regels uit Uitgangspunten. Basis: de dagen uit de Excel.
+
+Klaar als: de huidige week uit de Excel uit de data is terug te rekenen, met dezelfde werkuren.
+
+### 3. Weekplanning doorrekenen
+
+Script: trainingsweek + afspraken + urenstand → planning per dag met werkuren, weektotaal tegen
+28 u, lucht die overblijft en conflicten.
+
+Klaar als: de week van 23-11 (ortho-nacontrole ma 9:45–10:15) een kloppende planning geeft.
+
+### 4. Skill `/weekplanning` voor zondag
+
+Haalt agenda's (privé en zakelijk) en urenstand zelf op, vraagt om de foto of screenshot van de
+trainingen en schrijft de planning in de vault.
+
+Klaar als: ik op zondag 22-11 met de skill de week plan zonder zelf iets uit te rekenen.
+
+### 5. Herplannen tijdens de week
+
+"Later opgestaan", "run duurde langer", "afspraak erbij": rest van de dag en week opnieuw.
+
+Klaar als: een wijziging midden in de week een bijgewerkte planning geeft.
+
+### 6. Gelopen trainingen importeren
+
+Ik exporteer mijn activiteitenlijst met de hand uit Garmin Connect (CSV) naar `inbox/`; een script
+zet de gelopen trainingen in `data/hardlopen/gelopen.csv`, zonder dubbele regels bij opnieuw
+importeren. Daarmee: gepland tegenover gelopen per training en per week, km tegenover het weekdoel,
+en de werkelijke duur van trainingen op gevoel (Kenyan-style progression) om de planning bij te
+stellen. Geen automatische login bij Garmin of TrainingPeaks via een onofficiële bibliotheek,
+alleen exports die ik zelf maak. Eén keer per week, in de weekly review, is genoeg; dagelijks mag.
+
+Eerst: een export van week 47 bekijken om te zien welke kolommen erin zitten.
+
+Klaar als: de gelopen trainingen van week 47 in de vault staan en `/weekplanning` ze naast de
+planning zet.
+
+### 7. Workouts voor TrainingPeaks genereren
+
+Als mijn geschatte 5K-tempo verandert, moet ik nu alle workouts in TrainingPeaks met de hand
+omzetten. Twee routes:
+
+- **Importeren (voorkeur):** tijdens de weekplanning maakt een script `.zwo`-bestanden met de tempo's
+  uit `tempos.json`. TrainingPeaks importeert `.zwo` (en alleen dat) in de Workout Library, ook
+  meerdere tegelijk; daarna sleep ik ze naar de dag. FIT op de kalender slepen werkt volgens
+  gebruikers niet. Officiële importfunctie, dus binnen de Terms of Use.
+- **Alternatief, eerst met Nils bespreken:** workouts als percentage van drempeltempo, dan schalen
+  ze mee als ik de drempel aanpas. Valkuil: TrainingPeaks rekent percentages om naar snelheid,
+  Davis gebruikt percentages van tempo (80% tempo ≈ 83% snelheid); het script kan dat per zone
+  omrekenen. Nadeel: mijn 5K-tempo als drempel verstoort TSS, fitness en fatigue.
+
+Eerst: één workout als `.zwo` genereren en importeren, kijken of de tempo's van een hardloopworkout
+goed overkomen.
+
+Klaar als: ik na een nieuwe 5K-schatting de workouts van een week importeer in plaats van ze met de
+hand om te zetten.
+
+Bronnen: https://help.trainingpeaks.com/hc/en-us/articles/115000325647 (import),
+https://forum.intervals.icu/t/training-peaks-does-not-import-exported-workout-fit/47143 (FIT),
+https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete-User-Guide (drempel).
+
+## Bevindingen
+
+- **Stap 1 (15-11):** `scripts/trainingsduur.py` rekent per training km en duur. De planning
+  gebruikt het **midden van de bandbreedte**; de langzame en snelle kant staan ernaast. Opbouw zoals
+  Martijn het in TrainingPeaks zet: progressive warm-up = 1 km very easy, 1 km easy, 0,5 km moderate;
+  "easy progressing to moderate" = eerste helft easy, tweede helft moderate; strides midden in een
+  easy run (8 km = 6 km easy, strides, 0,7 km easy); duur van strides per training, want niet altijd
+  20 s; herstel van 1 min very easy **na elke** stride en een jog **na elke** herhaling (8 × 2 min
+  heeft 8 jogs), zo werkt TrainingPeaks; Kenyan-style progression = 10 km oplopend van 1% naar 95%,
+  dan 2 km easy.
+- **Vergeleken met TrainingPeaks (week 1):** ma 43:06 en di 57:57 gelijk (TP 43:06, 57:58); wo, do
+  en vr binnen 15 s.
+- **Kenyan-style progression** (boek p. 38–39): loop je zonder horloge, op gevoel, dus de duur is
+  een schatting. Model naar het boek: 3,5 km very easy → easy, 1,5 km easy → 80–85% (week 1: op de
+  helft), 3 km op 80–85%, laatste 2 km naar 92–95%, dan 2 km easy cool-down. Geeft 59:34 (midden),
+  TP 1:01:56 met een simpele helling van 1% naar 95%. Op zondag staan geen werkuren, dus een paar
+  minuten verschil raakt de planning niet. Na de run: werkelijke duur uit Garmin vergelijken.
+- **Trainingsweek loopt ma t/m zo:** de maandagtraining van het boek komt aan het eind, op zondag.
+  Week 1 begint ma 16-11; de eerste Kenyan-style progression is zo 22-11.

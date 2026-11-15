@@ -1,0 +1,157 @@
+{
+  "plan": "Wind 90",
+  "week": 1,
+  "fase": "general phase",
+  "start": "2026-11-16",
+  "doel_km": 65,
+  "trainingen": [
+    {
+      "dag": "ma",
+      "boekdag": "di",
+      "omschrijving": "8-12 km easy with 5 x 20 sec strides",
+      "onderdelen": [
+        {
+          "km": 6,
+          "tempo": "easy"
+        },
+        {
+          "strides": 5,
+          "s": 20
+        },
+        {
+          "km": 0.7,
+          "tempo": "easy"
+        }
+      ]
+    },
+    {
+      "dag": "di",
+      "boekdag": "wo",
+      "omschrijving": "2.5 km progressive warm-up + 4 strides, 8 x 2 min at 100% 5k with 1.5 min jog, 2 km easy cool-down",
+      "onderdelen": [
+        {
+          "km": 1,
+          "tempo": "very_easy"
+        },
+        {
+          "km": 1,
+          "tempo": "easy"
+        },
+        {
+          "km": 0.5,
+          "tempo": "moderate"
+        },
+        {
+          "strides": 4,
+          "s": 20
+        },
+        {
+          "herhaal": 8,
+          "blok": [
+            {
+              "s": 120,
+              "tempo": 100
+            },
+            {
+              "s": 90,
+              "tempo": "very_easy"
+            }
+          ]
+        },
+        {
+          "km": 2,
+          "tempo": "easy"
+        }
+      ]
+    },
+    {
+      "dag": "wo",
+      "boekdag": "do",
+      "omschrijving": "8-11 km very easy to easy",
+      "onderdelen": [
+        {
+          "km": 8,
+          "tempo": {
+            "van": "very_easy",
+            "naar": "easy"
+          }
+        }
+      ]
+    },
+    {
+      "dag": "do",
+      "boekdag": "vr",
+      "omschrijving": "10-12 km easy progressing to moderate",
+      "onderdelen": [
+        {
+          "km": 5,
+          "tempo": "easy"
+        },
+        {
+          "km": 5,
+          "tempo": "moderate"
+        }
+      ]
+    },
+    {
+      "dag": "vr",
+      "boekdag": "za",
+      "omschrijving": "18-20 km easy through rolling hills",
+      "heuvels": true,
+      "onderdelen": [
+        {
+          "km": 18,
+          "tempo": "easy"
+        }
+      ]
+    },
+    {
+      "dag": "zo",
+      "boekdag": "ma",
+      "omschrijving": "10 km Kenyan-style progression run + 2 km easy cool-down",
+      "onderdelen": [
+        {
+          "km": 3.5,
+          "tempo": {
+            "van": "very_easy",
+            "naar": "easy"
+          }
+        },
+        {
+          "km": 1.5,
+          "tempo": {
+            "van": "easy",
+            "naar": [
+              80,
+              85
+            ]
+          }
+        },
+        {
+          "km": 3,
+          "tempo": [
+            80,
+            85
+          ]
+        },
+        {
+          "km": 2,
+          "tempo": {
+            "van": [
+              80,
+              85
+            ],
+            "naar": [
+              92,
+              95
+            ]
+          }
+        },
+        {
+          "km": 2,
+          "tempo": "easy"
+        }
+      ]
+    }
+  ]
+}
