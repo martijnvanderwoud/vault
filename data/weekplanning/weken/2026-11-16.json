@@ -1,5 +1,5 @@
 {
-  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak; reistijd_terug_min als de terugreis anders is. aanpassen wijzigt een blok van die dag (wordt: nieuwe naam). Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: Google Maps, om 18:38 de deur uit (bus 73 om 18:40 van Zeist, Nepveulaan, dan bus 2), aankomst 19:14; reis 36 min, heen inclusief wachten tot 19:30. opstaan (optioneel, [{dag, om}]): zelf gekozen opstaantijd; zonder rekent het script later opstaan uit de bedtijd van de dag ervoor. thuis: true: afspraak thuis, zonder reistijd, en dan op de normale tijd naar bed. Ma 16-11 zelf gekozen 20 min later op (06:20), doorgegeven op zo 15-11.",
+  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak; reistijd_terug_min als de terugreis anders is. aanpassen wijzigt een blok van die dag (wordt: nieuwe naam). Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: Google Maps, om 18:38 de deur uit (bus 73 om 18:40 van Zeist, Nepveulaan, dan bus 2), aankomst 19:14; reis 36 min, heen inclusief wachten tot 19:30. opstaan (optioneel, [{dag, om}]): zelf gekozen opstaantijd; zonder rekent het script later opstaan uit de bedtijd van de dag ervoor. thuis: true: afspraak thuis, zonder reistijd, en dan op de normale tijd naar bed. Ma 16-11 zelf gekozen 20 min later op (06:20), doorgegeven op zo 15-11. Herpland op ma 16-11 's avonds vanaf di 17-11: maandag iets meer gewerkt dan gepland, stand uit uren.py --tot 2026-11-16 (vrij na reservering 1.55). Di 17-11 12:30-12:45 'Kapper bellen voor afspraak' uit de privé-agenda, thuis.",
   "maandag": "2026-11-16",
   "trainingen": "wind-90-week-01.json",
   "vrij_na_reservering_uren": 1.1,
@@ -11,6 +11,13 @@
     }
   ],
   "afspraken": [
+    {
+      "dag": "di",
+      "activiteit": "Kapper bellen voor afspraak",
+      "van": "12:30",
+      "tot": "12:45",
+      "thuis": true
+    },
     {
       "dag": "di",
       "activiteit": "Ledig Erf met Martijn Scholman",
@@ -41,5 +48,10 @@
       "dag": "ma",
       "om": "06:20"
     }
-  ]
+  ],
+  "herplannen": {
+    "vanaf": "2026-11-17",
+    "vrij_na_reservering_uren": 1.55,
+    "reden": "ma 16-11 meer gewerkt dan gepland (uren van vandaag staan in LogMyTime); di kapper bellen erbij"
+  }
 }
