@@ -1,17 +1,21 @@
 ---
-description: "Debbie-run rostering-api, gestart 2026-11-16 18:50: running"
+description: "Debbie-run rostering-api, gestart 2026-11-16 18:50: done (RPAAS-524)"
 agent: "debbie"
-status: "running"
+status: "done"
 repo: "rostering-api"
-issue: ""
+issue: "RPAAS-524"
 session_id: "b287288e-526a-4e33-b57e-89be65d5f999"
 started: "2026-11-16T18:50:04+01:00"
-aandacht: []
+ended: "2026-11-16T18:57:28+01:00"
+aandacht:
+  - "@graphql-tools/utils 12.0.1 (high) can't be fixed: @apollo/server 5.5.2 only allows <12.0.2. Wait for Apollo or add an override?"
 prs:
   - "#94@b08cecf"
   - "#95@6dc29b7"
 model: "claude-opus-5-5"
-pid: 69189
+kosten: 0.98
+beurten: 63
+geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w47-rostering-api.jsonl"
 laatste: true
 ---

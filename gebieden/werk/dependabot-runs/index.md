@@ -22,7 +22,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w46-profile-presentation-ui]] — Debbie-run profile-presentation-ui, gestart 2026-11-13 00:26: done (PPP-85)
 - [[2026-w47-notifications]] — Debbie-run notifications, gestart 2026-11-16 15:46: done (PN-66)
 - [[2026-w47-react-notifications]] — Debbie-run react-notifications, gestart 2026-11-16 07:30: done (PRC-63)
-- [[2026-w47-rostering-api]] — Debbie-run rostering-api, gestart 2026-11-16 18:50: running
+- [[2026-w47-rostering-api]] — Debbie-run rostering-api, gestart 2026-11-16 18:50: done (RPAAS-524)
 - [[2026-w47-rostering-application]] — Debbie-run rostering-application, gestart 2026-11-16 01:57: done (RPAAS-520)
 - [[2026-w47-rostering-ui-2]] — Debbie-run rostering-ui, gestart 2026-11-16 10:14: done (RPAAS-522)
 - [[2026-w47-rostering-ui]] — Debbie-run rostering-ui, gestart 2026-11-16 09:37: done (RPAAS-522)
