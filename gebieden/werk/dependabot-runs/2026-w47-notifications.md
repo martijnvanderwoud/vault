@@ -17,7 +17,7 @@ kosten: 0.71
 beurten: 42
 geweigerd: 2
 log: "~/dependabot-runs/.logs/2026-w47-notifications.jsonl"
-issue_state: "In Progress"
+issue_state: "Done"
 laatste: true
 ---
 # Debbie-run notifications
