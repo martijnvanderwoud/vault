@@ -17,6 +17,7 @@ kosten: 0.98
 beurten: 63
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w47-rostering-api.jsonl"
+issue_state: "In Progress"
 laatste: true
 ---
 # Debbie-run rostering-api
