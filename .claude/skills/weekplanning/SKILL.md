@@ -109,7 +109,8 @@ Kort, in het Nederlands, met getallen uit de output:
 
 - het overzicht per dag (soort dag, training, opstaan, werk, lucht) en het weektotaal tegen 28 u
 - de urenstand en wat die betekent: voor op target maakt de laatste werkdagen korter, achter op target
-  zet inhalen in de lucht (en wat niet past schuift door naar volgende week)
+  zet inhalen eerst in de vrije tijd na het werk (doorwerken tot een vast avondblok) en dan in de lucht
+  (en wat niet past schuift door naar volgende week)
 - alle meldingen en conflicten van het script, en wat ik daarvoor moet beslissen
 - welke agenda-items je hebt weggelaten
 

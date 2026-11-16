@@ -360,7 +360,8 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
   reserveert: dan is het 0 bij de start, blijft het 0 bij een vrije dag die gereserveerd was, en meet het
   precies hoeveel hij voor of achter ligt op target min de voorbije vrije uren. Niet gereserveerd budget
   telt als voorsprong; vrij zonder reservering (ziek, spontaan vrij) als achterstand, tenzij het achteraf
-  in `vrije-dagen-2026.csv` komt. **Achter:** inhalen in de lucht vanaf de eerste werkdag
+  in `vrije-dagen-2026.csv` komt. **Achter:** inhalen vanaf de eerste werkdag
+  (sinds 16-11 eerst in de vrije tijd na het werk, dan in de lucht; zie hieronder)
   (`achterstand_ingehaald`, telt niet mee in het target van die dag, want het hoort bij eerdere dagen);
   wat niet past, wordt gemeld en schuift door naar volgende week. **Voor:** eerst minder werk op dagen die
   uitlopen (zoals al), wat dan over is maakt de laatste werkdagen korter, tot het vaste werk van die soort
@@ -377,3 +378,13 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
 - **Voor stap 9:** een gereserveerde vrije dag verlaagt het werkdoel van de week; bij herplannen moet de
   berekening van wat de rest van de week nog moet doen (`over` in `week_plannen`) dat werkdoel gebruiken,
   niet vast 28 u.
+- **Inhalen eerst in de vrije tijd (16-11, op verzoek van Martijn):** een korte dag met een vast
+  avondblok (eten om 18:00, Ellie bellen om 17:30) gaf `Vrij` in het gat ervoor, terwijl inhalen in de
+  lucht ging. Dan had hij eerst een halfuur vrij en werkte daarna verder in de lucht; logischer is gewoon
+  doorwerken. Nu gaat alle inhalen (achterstand op target, werk van een andere dag, werk van een voorbije
+  dag) eerst in de vrije tijd na het werk, in de hele week, en pas als die op is in de lucht. Het script
+  plant de dag dan opnieuw met een hoger werkdoel (`vrij_inzetten`), zodat lucht en avondblokken het gat
+  in schuiven, en neemt dat alleen als lucht, bedtijd, conflicten en meldingen gelijk blijven. Het
+  ingehaalde werk loopt door in het gewone werkblok (geen apart "Werken (inhalen)"). Proef op week 16-11
+  met -1,50 u: di 30 min en vr 45 min doorwerken (werk tot 16:15 en 17:00), daarna 15 min lucht op ma;
+  eerst ging het naar de lucht van ma t/m do en bleven di en vr vrij. Targets ongewijzigd (week 28 u).
