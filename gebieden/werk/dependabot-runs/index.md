@@ -20,4 +20,8 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w46-portal-ui-common]] — Debbie-run portal-ui-common, gestart 2026-11-12 12:00: done (PKP-911)
 - [[2026-w46-portal-worker-ui]] — Debbie-run portal-worker-ui, gestart 2026-11-13 00:23: done (PKP-912)
 - [[2026-w46-profile-presentation-ui]] — Debbie-run profile-presentation-ui, gestart 2026-11-13 00:26: done (PPP-85)
+- [[2026-w47-react-notifications]] — Debbie-run react-notifications, gestart 2026-11-16 07:30: done (PRC-63)
+- [[2026-w47-rostering-application]] — Debbie-run rostering-application, gestart 2026-11-16 01:57: done (RPAAS-520)
+- [[2026-w47-rostering-ui-2]] — Debbie-run rostering-ui, gestart 2026-11-16 10:14: done (RPAAS-522)
+- [[2026-w47-rostering-ui]] — Debbie-run rostering-ui, gestart 2026-11-16 09:37: done (RPAAS-522)
 - [[debbie-dashboard]] — Dashboard van Debbie, de autonome Dependabot-routine, met de runs uit dashboard.base
