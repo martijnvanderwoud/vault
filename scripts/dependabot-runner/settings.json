@@ -51,6 +51,7 @@
       "Bash(curl -fsS https://www.githubstatus.com/*)",
       "Bash(mvn *)",
       "Bash(./gradlew *)",
+      "Bash(sbt *)",
       "Bash(npm ci *)",
       "Bash(npm ci)",
       "Bash(npm install)",

@@ -24,9 +24,15 @@ auteurs uit de frontmatter `authors` af.
 sbt-project (`build.sbt`):
 
 ```bash
-sbt "clean; scalafmtCheckAll; compile; test"
+sbt "clean; scalafmtCheckAll; compile; test" > <scratchpad>/build.log 2>&1
+grep -nE "\[error\]|\[warn\]|tests passed|tests failed" <scratchpad>/build.log
 ```
 
+- De log gaat naar de scratchpad, want hij is lang. Autonoom schrijf je het doel van de
+  redirect volledig uit: `/Users/martijn/dependabot-runs/.scratch/notifications/build.log`
+  (zie de regel over redirects in de skill). Draai de build met een timeout van 600000, want
+  hij duurt langer dan de standaard van 2 minuten. Bekijk bij een exitcode die niet 0 is ook
+  het einde van de log met `tail`. Exitcode 1 van `grep` betekent alleen dat niets matchte.
 - De root-`test` draait `testFull` voor alle modules behalve `integration`. Dat is bewust: de
   incrementele `test` van sbt 2 draait bij een dependency-update vaak geen enkele test. De
   integratietests draaien in de `Develop build` van stap 8.
@@ -38,32 +44,22 @@ sbt "clean; scalafmtCheckAll; compile; test"
 ## Stap 5. Kwetsbaarheden patchen zonder breaking changes
 
 Lees de dependencies per project uit, voor `Compile` en `Test`, zonder `root` en zonder de
-sbt-plugins. Doe hetzelfde zonder overrides. De `set` blijft in de achtergrondserver van sbt
-hangen, dus sluit die daarna altijd af met `sbt shutdown`. Gebruik hieronder `<scratchpad>`
-als absoluut pad.
+sbt-plugins. Doe hetzelfde zonder overrides. `sbt_deps.py` doet dat in één keer en sluit
+daarna de achtergrondserver van sbt af, want de `set` voor de lijst zonder overrides blijft
+daar anders hangen. Het script sluit die server ook vooraf af, zodat een `set` uit een eerdere
+sessie de lijst met overrides niet beïnvloedt. Draai het met een timeout van 600000: als de
+tool het script afbreekt, slaat het de `sbt shutdown` aan het eind over.
 
 ```bash
-rm -rf <scratchpad>/deps && mkdir -p <scratchpad>/deps/met <scratchpad>/deps/zonder
-projects=$(sbt projects 2>&1 | grep -E '^\[info\][[:space:]]+[A-Za-z0-9_-]+$' | awk '{print $2}' | grep -vx root)
-echo $projects
-met=""; zonder="set ThisBuild / dependencyOverrides := Seq();"
-for p in $projects; do
-  for c in Compile Test; do
-    met="$met $p/$c/dependencyTree list --out <scratchpad>/deps/met/$p-$c.txt;"
-    zonder="$zonder $p/$c/dependencyTree list --out <scratchpad>/deps/zonder/$p-$c.txt;"
-  done
-done
-sbt "${met%;}"
-sbt "${zonder%;}"
-sbt shutdown
+/usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/sbt_deps.py <scratchpad>/deps
 /usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/osv_jvm.py <scratchpad>/deps/met/*.txt --exclude nl.pompkracht
 /usr/bin/python3 -I ~/vault/.claude/skills/dependabot-routine/scripts/check_overrides.py --sbt build.sbt --tree <scratchpad>/deps/zonder/*.txt
 ```
 
 - De projecten komen uit `sbt projects`, zodat een nieuwe module vanzelf meegaat. Controleer dat
-  `echo $projects` alle modules toont (nu 10, zonder `root`): een lege lijst betekent dat sbt
-  de uitvoer anders opmaakt en het filter niet meer klopt. Leg dat aan mij voor. Autonoom:
-  stop.
+  de regel `projecten (<n>)` alle modules toont (nu 10, zonder `root`). Stopt het script met
+  `geen projecten gevonden`, dan maakt sbt de uitvoer anders op en klopt het filter niet meer.
+  Leg dat aan mij voor, net als elke andere exitcode die niet 0 is. Autonoom: stop.
 - Overrides staan in `ThisBuild / dependencyOverrides` in `build.sbt`, de versies in
   `project/Versions.scala`.
 - Patchen: een directe dependency pas je aan in `project/Versions.scala`. Een transitieve krijgt

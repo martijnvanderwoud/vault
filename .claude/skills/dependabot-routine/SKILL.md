@@ -575,6 +575,10 @@ gh pr merge <n> --squash --subject "<issue-id> <titel> (#<n>)"
 Gebruik als `--subject` dezelfde titel als de PR, zodat het issuenummer ook in de
 squash-commit staat (zie stap 1).
 
+Stopt `gh pr checks` direct met `no checks reported`, dan heeft GitHub de runs nog niet
+aangemaakt. Draai het commando dan na een paar seconden opnieuw. Komen er na een paar
+minuten nog geen checks, leg het mij dan voor. Autonoom: stop.
+
 Is de PR niet groen, of `mergeable=CONFLICTING`, leg het mij dan voor. Autonoom: stop.
 
 Sluit na de merge elke rode PR waarvoor je een `ignore`-regel hebt toegevoegd, met een

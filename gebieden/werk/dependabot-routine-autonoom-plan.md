@@ -700,3 +700,30 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   `dependabot-runs/`. Daarbij vielen `tags` en `cssclasses: [wide-page]` weg en kwam er
   `laatste: true` bij. Leek op Obsidian, maar was de runner. `notities()` neemt nu alleen notities
   met `agent: debbie`, net als het filter van `dashboard.base`. Andere notities mogen dus in die map.
+- 2026-11-16, stap 10: de eerste autonome run op `notifications` (sbt) pauzeerde in stap 4 (PN-66),
+  omdat de allowlist geen `sbt` kende: `--prepare` toonde sbt wel, maar `settings.json` had alleen
+  `mvn` en `./gradlew`. Na hervatten met `claude --resume` liep de rest interactief goed: #160 tot
+  en met #163 gemerged, de build op `develop` groen. Wat er veranderde, en waarom:
+  - `Bash(sbt *)` staat nu in `scripts/dependabot-runner/settings.json`, de tegenhanger van
+    `mvn *` en `./gradlew *`.
+  - Stap 5 van `projecten/notifications.md` had een lus met `for` en `$(...)`, plus `rm -rf` en
+    `mkdir`. Die weigert de run hoe de allowlist ook is ingesteld. De nieuwe
+    `scripts/sbt_deps.py` in de skill doet hetzelfde: projecten uit `sbt projects` (een nieuwe
+    module gaat dus vanzelf mee), beide lijsten, en altijd `sbt shutdown`. Gekozen voor een script
+    en niet voor de sbt-aanroepen uitgeschreven in het projectbestand: met tien modules zijn dat
+    twee regels van meer dan 2000 tekens, die bij elke nieuwe module met de hand bij moeten. Het
+    script valt al onder de bestaande regel voor de scripts van de skill, en staat in de vault
+    waar de run niet mag schrijven. Getest op `notifications`: dezelfde 40 lijsten en dezelfde
+    uitkomst van `osv_jvm.py` en `check_overrides.py` als de lus.
+  - Stap 4 van `projecten/notifications.md` stuurt de log nu naar de scratchpad en geeft het
+    `grep`-commando voor `tests passed` en warnings. De log is lang, en het projectbestand vroeg
+    die controle al zonder commando te noemen.
+  - Stap 6 van `SKILL.md` heeft een regel voor `no checks reported`. `gh pr checks --watch` stopt
+    daarmee direct als GitHub de runs van een net gemaakte PR nog niet heeft aangemaakt (bij #163
+    duurde dat ongeveer een minuut). Zonder regel was dat autonoom een stop geweest, terwijl
+    opnieuw kijken genoeg is, net als in stap 8.
+  - Na een review: `sbt_deps.py` sluit de sbt-server nu ook vooraf af (een `set` uit een
+    afgebroken sessie zou anders de lijst met overrides vervalsen) en wist de map alleen als die
+    niets anders dan `met/` en `zonder/` bevat. Stap 4 en 5 gebruiken weer `<scratchpad>` zoals
+    de skill, met alleen het doel van de redirect uitgeschreven, en noemen een timeout van
+    600000: breekt de tool het script af, dan blijft de `set` alsnog hangen.
