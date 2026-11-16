@@ -41,6 +41,9 @@ De autonome run mag alleen commando's uit een vaste lijst, en heeft geen eigen s
   Schrijf nergens anders buiten de working copy, ook niet naar `/tmp`.
 - Schrijf paden zoals in deze skill, met `~/` en niet uitgeschreven, en `gh api` met
   `{owner}/{repo}` en niet met de naam van de repo. De lijst kent alleen die vorm.
+- Uitzondering: het doel van een redirect (`>`) schrijf je volledig uit, zonder `~` en zonder
+  `..`: `/Users/martijn/dependabot-runs/.scratch/<repo>/tree.txt`. Een redirect naar een pad
+  met `~` of `..` weigert de permissiecontrole, ook als het commando zelf op de lijst staat.
 - Draai de commando's uit deze skill zoals ze er staan. Geen lussen, subshells of
   command substitution (`$(...)`): die worden geweigerd. Plak er ook geen `; echo $?` achter,
   want de exitcode zie je al. Splits zo'n commando op en neem
