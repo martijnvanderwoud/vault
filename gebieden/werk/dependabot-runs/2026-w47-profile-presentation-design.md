@@ -16,6 +16,7 @@ kosten: 1.24
 beurten: 79
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w47-profile-presentation-design.jsonl"
+issue_state: "In Progress"
 laatste: true
 ---
 # Debbie-run profile-presentation-design
