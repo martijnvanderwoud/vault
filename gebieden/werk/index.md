@@ -12,6 +12,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
 ## Notities
 
+- [[acumulus]] — Acumulus (SIEL), mijn boekhoud- en factuurprogramma - de API, de API-gebruiker en het script waarmee Claude verkoopfacturen als concept aanmaakt en de PDF ophaalt
 - [[dependabot-routine-autonoom-plan]] — Plan om de Dependabot-routine autonoom te laten draaien, opgedeeld in stappen van één sessie per stap
 - [[dependabot-routine]] — Werknotitie van mijn Dependabot-routine, als basis voor een projectoverstijgende skill
 - [[facturen-archief]] — Waar mijn inkoop- en verkoopfacturen staan en hoe ik ze lees

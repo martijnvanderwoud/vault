@@ -20,6 +20,7 @@ Bijgewerkt op 15-11-2026.
 | [[agents-dashboard-plan]] | Vastgelegd 11-11, nog niet begonnen | Stap 1: statusvorm en gedeelde module |
 | [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema loopt via [[weekplanning-plan]]; daarna de kennisnotities in de volgorde uit de interviewnotitie |
 | [[weekplanning-plan]] | Stap 1 klaar op 15-11: `trainingsduur.py`, aannames nog te bevestigen | Stap 2: soorten dagen en regels als data |
+| [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
 
 ## Afgerond
 
@@ -30,6 +31,7 @@ Bijgewerkt op 15-11-2026.
 | Uren naar YouTrack, skill `/uren-naar-youtrack` | 12-11-2026 | [[urenregistratie]] |
 | Dependabot-routine als skill `/dependabot-routine` | 9-11-2026, testruns t/m 10-11 | [[dependabot-routine]] |
 | Analyse AI-Brein Bootcamp, context- en grenzenlaag van de vault | 15-11-2026 | [[vault-leren-van-bootcamp]] |
+| Hostingfactuur FLOW via Acumulus-API, skill `/hostingfactuur-flow` (PDF nog met de hand bijvoegen) | 17-11-2026, eerste factuur 20260084 | [[hosting-transip]], [[acumulus]] |
 
 Werkwijze om een terugkerende taak uit een project om te zetten in een skill:
 [[vault-skill-maken-vanuit-project]].

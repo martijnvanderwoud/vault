@@ -27,7 +27,15 @@ staan: [[facturen-archief]].
 
 - Arbeidskracht krijgt een aparte factuur "Hosting FLOW – <maand>" (los van de urenfactuur).
   Daarop staat het bedrag excl. btw van de TransIP-regels van productie en staging, één regel
-  per omgeving met de TransIP-periode erbij. Voorbeeld: factuur 20260078 (24-10-2026).
+  per omgeving met de TransIP-periode erbij. Voorbeelden: 20260078 (september, 24-10-2026) en
+  20260084 (oktober, 17-11-2026, de eerste via de skill `hostingfactuur-flow`).
+- Welke TransIP-facturen bij welke maand horen: de factuur voor maand M gebruikt de twee
+  TransIP-facturen uit maand M+1. **Productie** komt uit die van rond de 15e, **staging** uit
+  die van rond de 1e. Neem per project het subtotaal van TransIP over. Voor oktober 2026:
+  productie 12-10 t/m 11-11 (TransIP 15-11) en staging 17-09 t/m 16-10 (TransIP 01-11). Maak de
+  factuur dus pas na de 15e van M+1.
+- In Acumulus: klant Arbeidskracht, sjabloon Standaard en kostenplaats **Hosting** (niet
+  Consultancy). De id's staan in [[acumulus]].
 - Hendrik Witteveen: hendrik.witteveen@pompkracht.nl, mail vanaf martijn@crimsoncricket.nl.
 - Domeinregistraties belast ik door aan de domeinhouder: de jaarprijs gedeeld door 12, als
   regel op de maandelijkse hostingfactuur. Nu alleen `afkehennus.nl`.

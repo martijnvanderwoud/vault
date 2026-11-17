@@ -12,7 +12,8 @@ Alle facturen van The Crimson Cricket Internet Services staan in Google Drive:
   `TransIP-F0000_2611_0011_9157.pdf` of `Anthropic-SSBB0IKI-0030.pdf`.
 - **Verkoop**: `verkoop/JJJJ/Factuur_JJJJNNNN.pdf`, doorlopend genummerd. Aan de bestandsnaam
   zie je niet voor welke klant de factuur is, dus je moet de PDF openen. Uren- en hostingfacturen
-  aan dezelfde klant zijn losse facturen.
+  aan dezelfde klant zijn losse facturen. Ik maak ze in Acumulus; `scripts/acumulus.py pdf`
+  zet de PDF hier neer (zie [[acumulus]]).
 - PDF's lees ik met de Read-tool. `pdftotext`, `pypdf` en vergelijkbare tools zijn niet
   geïnstalleerd.
 

@@ -1,0 +1,13 @@
+{
+  "contactid": 2318938,
+  "template": 2982,
+  "costcenter": 9418,
+  "description": "Hosting FLOW - oktober 2026",
+  "conceptid": 1343548,
+  "factuurnummer": "20260084",
+  "bronnen": ["TransIP-F0000_2611_0011_9157.pdf", "TransIP-F0000_2611_0003_0834.pdf"],
+  "regels": [
+    {"product": "TransIP - productie-omgeving OpenStack: 12-10-2026 t/m 11-11-2026", "unitprice": "425.89", "vatrate": 21, "quantity": 1},
+    {"product": "TransIP - staging-omgeving OpenStack: 17-09-2026 t/m 16-10-2026", "unitprice": "329.58", "vatrate": 21, "quantity": 1}
+  ]
+}

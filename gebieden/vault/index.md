@@ -8,6 +8,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 ## Notities
 
 - [[agents-dashboard-plan]] — Plan voor één statusvorm voor al mijn autonome agents, een watcher die altijd draait en een dashboard in Obsidian
+- [[gmail-zakelijk-concepten-plan]] — Plan voor een eigen script dat concept-mails met bijlage in mijn zakelijke Gmail zet, zodat skills zoals hostingfactuur-flow de factuur-PDF zelf kunnen bijvoegen
 - [[interview-voortgang]] — Voortgang van het interview om de vault te vullen (geïnspireerd op de AI-Brein Bootcamp), met wat is vastgelegd, wat geparkeerd staat en waar we gebleven zijn
 - [[vault-beslissingen]] — Beslissingen over de opzet van de vault (git, hooks, indexen, zoeken) met de reden erachter
 - [[vault-doel]] — Doel en uitgangspunten van deze vault als persoonlijk agentic OS
