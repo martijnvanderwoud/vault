@@ -62,6 +62,7 @@ Seen: <wat je zag, met links naar PR's en runs>
 Decision needed: <welke beslissing>  Proposal: <je voorstel>
 State: merged #<n> #<n>, not merged #<n> (<reden>), branch <branch of none>, base <korte commit van de base branch>, uncommitted <bestanden of none>
 Report so far: <de verslagpunten tot nu toe, of none>
+Attention so far: <de punten tot nu toe die in het verslag onder Attention horen, of none>
 Resume: cd <pwd> && claude --resume <uuid> "<your decision>, continue from step <n>"
 Fallback: cd <pwd> && claude "/dependabot-routine <subtask-id>" --add-dir ~/vault
 Resume opens this session interactively and continues once you have answered the decision in the prompt; Fallback starts a new session that rebuilds the state from this comment. The first interactive session in a clone asks whether you trust the folder: answer yes.
@@ -78,7 +79,8 @@ Resume opens this session interactively and continues once you have answered the
   met `Debbie (Dependabot routine) correction`. Elk comment van Debbie begint met
   `Debbie (Dependabot routine)`.
 - `Report so far` maakt het verslag compleet als ik via `Fallback` hervat: die sessie kent de
-  verslagpunten van voor de pauze niet.
+  verslagpunten van voor de pauze niet. `Attention so far` zegt welke daarvan onder
+  `Attention` horen.
 - Stop je voordat de subtask bestaat, plaats dan geen comment. De reden staat dan alleen in
   de statusregel.
 
@@ -114,7 +116,8 @@ een gepauzeerde run. Lees eerst het projectbestand, zoals bij `Projectspecifieke
 3. Ga verder bij de stap uit het pauze-comment. Doe die stap opnieuw vanaf het begin, maar
    sla over wat volgens de controle al gedaan is: merge geen PR twee keer, maak geen tweede
    branch of PR.
-4. Neem `Report so far` op in het verslag van stap 9, samen met de reden van de pauze.
+4. Neem `Report so far` op in het verslag van stap 9, samen met de reden van de pauze. Zet de
+   punten uit `Attention so far` onder het kopje `Attention`.
 
 Hervatten is interactief, want ik ben erbij. Wil ik dat je autonoom verdergaat, dan geef ik
 beide argumenten: `/dependabot-routine autonoom PCATA-617`. Hervat ik met
@@ -649,6 +652,22 @@ is klaar. Plaats zonder te vragen een verslag als comment in de subtask uit stap
 - resultaat van de build uit stap 8
 - als er meer dan één Dependabot-PR gemerged is: dat de checks van latere PR's tegen de
   oude base draaiden, en dat de build uit stap 8 de samengevoegde stand dekt
+
+Begin het verslag met een kopje `Attention`. In autonome modus komt dat kopje direct onder
+de regel `Debbie (Dependabot routine) report`.
+
+Zet onder het kopje alles wat ik nog moet doen. Is er niets, zet er dan `none`.
+
+Wat hoort eronder? In autonome modus: elke situatie waarbij in deze skill "Autonoom:
+verslag" staat en die zich in deze run voordeed. Dat geldt ook voor situaties van vóór een
+pauze. Die vind je in het pauze-comment, bij `Attention so far`. In interactieve modus: alles
+wat nog op mij wacht.
+
+Noem elk punt daarna ook gewoon in de lijst hierboven.
+
+In autonome modus geef je elk punt onder het kopje ook als `RUN_ATTENTION`-regel. Er is één
+uitzondering. Lukt het niet om de subtask op `Done` te zetten? Geef dat dan alleen als
+`RUN_ATTENTION`-regel. Het verslag is dan namelijk al geplaatst.
 
 Geef daarna in de chat een kort verslag met de link naar het issue. Verder doe je niets met
 het issue: de state blijft `In Progress` en de uren schrijf ik zelf.
