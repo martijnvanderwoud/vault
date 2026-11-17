@@ -1,5 +1,5 @@
 {
-  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak; reistijd_terug_min als de terugreis anders is. aanpassen wijzigt een blok van die dag (wordt: nieuwe naam). Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: Google Maps, om 18:38 de deur uit (bus 73 om 18:40 van Zeist, Nepveulaan, dan bus 2), aankomst 19:14; reis 36 min, heen inclusief wachten tot 19:30. opstaan (optioneel, [{dag, om}]): zelf gekozen opstaantijd; zonder rekent het script later opstaan uit de bedtijd van de dag ervoor. thuis: true: afspraak thuis, zonder reistijd, en dan op de normale tijd naar bed. Ma 16-11 zelf gekozen 20 min later op (06:20), doorgegeven op zo 15-11. Herpland op ma 16-11 's avonds vanaf di 17-11: maandag iets meer gewerkt dan gepland, stand uit uren.py --tot 2026-11-16 (vrij na reservering 1.55). Di 17-11 12:30-12:45 'Kapper bellen voor afspraak' uit de privé-agenda, thuis. Herpland op di 17-11 's avonds vanaf wo 18-11: dinsdag klaar, uren t/m vandaag in LogMyTime, stand uit uren.py --tot 2026-11-17 (vrij na reservering 1.25). Di avond niet naar Ledig Erf maar op visite bij Martijn Scholman (Nedereindseweg 542, Utrecht), met de auto: reistijd uit de privé-agenda, heen 18:30-19:05 (35 min), terug 21:30-21:58 (28 min); geen omschakelen (op verzoek: een paar minuten later aankomen is niet erg, om 21:30 vertrekken daar). Wo 18-11 14:00-14:30 kleuren voor de slaapkamers bekijken met Franca, thuis. Wo-training in TrainingPeaks ingekort van 8 naar 5 km (weektotaal 65 km). Do 19-11 M❤️F in de agenda ingekort tot 19:30-21:30 (terugkerend), zodat hij voor de bedtijd klaar is. Wo 18-11 zelf gekozen 20 min langer slapen na de zware training van di (berekend 06:45, wordt 07:05). Vr 20-11 kledingmand en was 5 min later (15:35), zodat er geen los werkblok van 5 min na de was overblijft.",
+  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak; reistijd_terug_min als de terugreis anders is. aanpassen wijzigt een blok van die dag (wordt: nieuwe naam). Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ledig Erf: Google Maps, om 18:38 de deur uit (bus 73 om 18:40 van Zeist, Nepveulaan, dan bus 2), aankomst 19:14; reis 36 min, heen inclusief wachten tot 19:30. opstaan (optioneel, [{dag, om}]): zelf gekozen opstaantijd; zonder rekent het script later opstaan uit de bedtijd van de dag ervoor. thuis: true: afspraak thuis, zonder reistijd, en dan op de normale tijd naar bed. Ma 16-11 zelf gekozen 20 min later op (06:20), doorgegeven op zo 15-11. Herpland op ma 16-11 's avonds vanaf di 17-11: maandag iets meer gewerkt dan gepland, stand uit uren.py --tot 2026-11-16 (vrij na reservering 1.55). Di 17-11 12:30-12:45 'Kapper bellen voor afspraak' uit de privé-agenda, thuis. Herpland op di 17-11 's avonds vanaf wo 18-11: dinsdag klaar, uren t/m vandaag in LogMyTime, stand uit uren.py --tot 2026-11-17 (vrij na reservering 1.25). Di avond niet naar Ledig Erf maar op visite bij Martijn Scholman (Nedereindseweg 542, Utrecht), met de auto: reistijd uit de privé-agenda, heen 18:30-19:05 (35 min), terug 21:30-21:58 (28 min); geen omschakelen (op verzoek: een paar minuten later aankomen is niet erg, om 21:30 vertrekken daar). Wo 18-11 14:00-14:30 kleuren voor de slaapkamers bekijken met Franca, thuis. Wo-training in TrainingPeaks ingekort van 8 naar 5 km (weektotaal 65 km). Do 19-11 M❤️F in de agenda ingekort tot 19:30-21:30 (terugkerend), zodat hij voor de bedtijd klaar is. Wo 18-11 zelf gekozen 20 min langer slapen na de zware training van di (berekend 06:40, wordt 07:00; opstaan na later naar bed nu afgerond op 5 min i.p.v. een kwartier). Vr 20-11 kledingmand en was eerst naar 15:35 geschoven tegen een los werkblok van 5 min; na de nieuwe opstaanregel niet meer nodig, weer om 15:30.",
   "maandag": "2026-11-16",
   "trainingen": "wind-90-week-01.json",
   "vrij_na_reservering_uren": 1.1,
@@ -48,11 +48,6 @@
       "activiteit": "Eten, afwas, tanden poetsen",
       "wordt": "Eten (Franca doet de afwas)",
       "duur_min": 30
-    },
-    {
-      "dag": "vr",
-      "activiteit": "Kledingmand opruimen en 30 graden was aanzetten",
-      "om": "15:35"
     }
   ],
   "opstaan": [
@@ -62,7 +57,7 @@
     },
     {
       "dag": "wo",
-      "om": "07:05"
+      "om": "07:00"
     }
   ],
   "herplannen": {

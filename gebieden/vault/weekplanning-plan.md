@@ -282,8 +282,9 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
   een avondafspraak geen downtime maar bijkomen en spullen wegleggen, de bedroutine en dan naar bed,
   ook als dat later is.
 - **Na een late avond:** na thuiskomst van een avondafspraak eerst 10 min bijkomen en spullen
-  wegleggen (`bijkomen_na_afspraak_min`), dan de bedroutine: 30 min na aankomst in bed. Elk begonnen kwartier later in bed dan 21:50 is de volgende dag een
-  kwartier later opstaan; het script rekent dat uit (`opstaan` in het weekbestand alleen voor een
+  wegleggen (`bijkomen_na_afspraak_min`), dan de bedroutine: 30 min na aankomst in bed. Zoveel later in bed
+  dan 21:50, zoveel later opstaan de volgende dag, naar boven afgerond op 5 min (`kleinste_blok_min`;
+  tot 17-11 per begonnen kwartier); het script rekent dat uit (`opstaan` in het weekbestand alleen voor een
   zelf gekozen tijd). Later opstaan laat de dag uitlopen; dat gaat zoals bij een afspraak eerst van
   de vrije tijd voor het eten, dan van de lucht, dan vervallen de stabiliteitsroutines. Di 17-11 om
   22:44 in bed, dus wo 18-11 op om 7:00: stabiliteitsroutines vervallen, lucht blijft 30 min.

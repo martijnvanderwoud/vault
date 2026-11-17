@@ -626,9 +626,9 @@ def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpa
         if korter.get(dag):
             weekdag = weekdag | {"werkdoel_uren": weekdag["werkdoel_uren"] - korter[dag] / 60}
         soort = dagsoorten[toewijzing[dag]]
-        # Elk (begonnen) kwartier later naar bed dan normaal is een kwartier later opstaan.
+        # Later naar bed dan normaal is evenveel later opstaan, naar boven afgerond op het kleinste blok.
         if later_min and dag not in opstaan:
-            opstaan[dag] = min_naar_hhmm(opstaan_std + math.ceil(later_min / 15) * 15)
+            opstaan[dag] = min_naar_hhmm(opstaan_std + op_blok(later_min))
         if soort.get("tijdsindeling", True):
             def plannen(weekdag, voorsprong, dag=dag, soort=soort):
                 return dag_plannen(soort, weekdag, regels, hardlopen.get(dag), afspraken.get(dag, []),
