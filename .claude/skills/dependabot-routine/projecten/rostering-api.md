@@ -1,5 +1,5 @@
 ---
-description: Aanvullingen op de Dependabot-routine voor rostering-api (Gradle-codegen en de graphql-uitzondering)
+description: Aanvullingen op de Dependabot-routine voor rostering-api (Gradle-codegen, de graphql-uitzondering en wachten op @apollo/server)
 repo: Flow-Cloud-Systems/rostering-api
 autonoom: true
 ---
@@ -26,6 +26,22 @@ regel uit de skill.
 
 CI en `npm run codegen` draaien `./gradlew`, dus de wrapper. Zo staat in `.sdkmanrc`
 dezelfde Gradle-versie als die CI test.
+
+## Stap 5. Kwetsbaarheden patchen zonder breaking changes
+
+### Wachten op @apollo/server voor @graphql-tools/utils
+
+`@apollo/server` 5.5.2 beperkt `@graphql-tools/utils` tot `>=12.0.0 <12.0.2`, dus de fix
+voor GHSA-c4qx-w738-7hr3 (12.0.2+) past niet. Voeg hiervoor geen override toe: de kwetsbare
+`mergeIncrementalResult` wordt in dit project niet gebruikt. Controleer bij elke routine of
+de nieuwste `@apollo/server` 12.0.2+ toestaat:
+
+```bash
+npm view @apollo/server dependencies
+```
+
+Is dat zo, werk `@apollo/server` dan bij en leg mij voor om deze sectie te verwijderen.
+Autonoom: verslag. Is dat niet zo, noem het alleen in het verslag, zonder `Decision needed`.
 
 ## Stap 7. Projectstappen
 
