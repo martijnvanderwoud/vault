@@ -20,6 +20,8 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w46-portal-ui-common]] — Debbie-run portal-ui-common, gestart 2026-11-12 12:00: done (PKP-911)
 - [[2026-w46-portal-worker-ui]] — Debbie-run portal-worker-ui, gestart 2026-11-13 00:23: done (PKP-912)
 - [[2026-w46-profile-presentation-ui]] — Debbie-run profile-presentation-ui, gestart 2026-11-13 00:26: done (PPP-85)
+- [[2026-w47-cata]] — Debbie-run cata, gestart 2026-11-16 22:29: paused bij stap 4 (PCATA-623)
+- [[2026-w47-iam]] — Debbie-run iam, gestart 2026-11-17 01:02: done (PKIAM-843)
 - [[2026-w47-notifications]] — Debbie-run notifications, gestart 2026-11-16 15:46: done (PN-66)
 - [[2026-w47-react-notifications]] — Debbie-run react-notifications, gestart 2026-11-16 07:30: done (PRC-63)
 - [[2026-w47-roep]] — Debbie-run roep, gestart 2026-11-16 19:27: paused bij stap 4 (ROEP-1082)
