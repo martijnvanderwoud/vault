@@ -23,6 +23,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w47-cata]] — Debbie-run cata, gestart 2026-11-16 22:29: done (PCATA-623)
 - [[2026-w47-iam]] — Debbie-run iam, gestart 2026-11-17 01:02: done (PKIAM-843)
 - [[2026-w47-notifications]] — Debbie-run notifications, gestart 2026-11-16 15:46: done (PN-66)
+- [[2026-w47-profile-presentation-design]] — Debbie-run profile-presentation-design, gestart 2026-11-17 15:42: done (PRC-64)
 - [[2026-w47-react-notifications]] — Debbie-run react-notifications, gestart 2026-11-16 07:30: done (PRC-63)
 - [[2026-w47-roep]] — Debbie-run roep, gestart 2026-11-16 19:27: done (ROEP-1082)
 - [[2026-w47-rostering-api]] — Debbie-run rostering-api, gestart 2026-11-16 18:50: done (RPAAS-524)
