@@ -297,9 +297,9 @@ def avond_invoegen(blokken, rij, afspraak, notities, conflicten):
     Begint de afspraak (met reistijd en omschakelen) al in de lucht, dan gaat hij van de lucht af.
     Avondblokken die voor de afspraak niet meer af zijn, gaan naar een vrij gat voor een blok met een
     vaste tijd, en anders na de afspraak. Blokken met een vaste tijd voor de afspraak (zoals eten)
-    blijven ervoor en geven zo nodig een conflict. Na de afspraak geen downtime: klaarmaken voor bed
-    en dan naar bed, ook als dat later is dan de bedtijd. Een afspraak thuis ('thuis': true) loopt
-    hooguit tot de bedtijd, en dan gewoon naar bed.
+    blijven ervoor en geven zo nodig een conflict. Na de afspraak geen downtime: bijkomen en spullen
+    wegleggen, de bedroutine en dan naar bed, ook als dat later is dan de bedtijd. Een afspraak thuis
+    ('thuis': true) loopt hooguit tot de bedroutine, en dan op de normale tijd naar bed.
     """
     begin_a, _ = afspraak_tijden(afspraak)
     li = next(i for i, b in enumerate(blokken) if b.get("soort") == "lucht")
@@ -320,8 +320,9 @@ def avond_invoegen(blokken, rij, afspraak, notities, conflicten):
     for b in avond:
         if b in ervoor or b in verplaatst or "duur_min" not in b and "om" not in b:
             continue
-        if b.get("soort") == "bed" and not afspraak.get("thuis"):
-            erna.append({"activiteit": "Klaarmaken voor bed", "duur_min": b["klaarmaken_min"]})
+        if b.get("soort") in ("bedroutine", "bed") and not afspraak.get("thuis"):
+            if b.get("soort") == "bedroutine":
+                erna.append({"activiteit": "Bijkomen, spullen wegleggen", "duur_min": b["bijkomen_min"]})
             b = {k: v for k, v in b.items() if k != "om"}
         erna.append(b)
 
@@ -342,11 +343,11 @@ def avond_invoegen(blokken, rij, afspraak, notities, conflicten):
     if verplaatst:
         notities.append(f"na {afspraak['activiteit']}: {', '.join(b['activiteit'] for b in verplaatst)}")
     if afspraak.get("thuis"):
-        bed = next((b["om"] for b in erna if b.get("soort") == "bed"), None)
-        if bed and hhmm_naar_min(afspraak["tot"]) > hhmm_naar_min(bed):
+        routine = next((b["om"] for b in erna if b.get("soort") == "bedroutine"), None)
+        if routine and hhmm_naar_min(afspraak["tot"]) > hhmm_naar_min(routine):
             notities.append(f"{afspraak['activiteit']} staat tot {afspraak['tot']} in de agenda, "
-                            f"naar bed op de normale tijd ({bed})")
-            afspraak = afspraak | {"tot": bed}
+                            f"bedroutine op de normale tijd ({routine})")
+            afspraak = afspraak | {"tot": routine}
     return blokken[:li + 1] + nieuw + afspraak_blokken(afspraak) + verplaatst + erna
 
 
@@ -378,9 +379,21 @@ def dag_plannen(dagsoort, weekdag, regels, hardlopen_min=None, afspraken=(), ver
     """
     notities, conflicten_vast = [], []
     opstaan, wijkt_eerst = hhmm_naar_min(regels["opstaan"]), regels["wijkt_eerst"]
+    # Aanpassen van een klusje (zoals een andere tijd) gaat in het klusje zelf, voor het ingepland wordt.
+    namen = {k["activiteit"] for k in weekdag["klusjes"]}
+    klusjes = [k | next(({x: v for x, v in a.items() if x not in ("dag", "activiteit")}
+                         for a in aanpassen if a["activiteit"] == k["activiteit"]), {})
+               for k in weekdag["klusjes"]]
+    klusjes = [k | {"activiteit": k.pop("wordt")} if "wordt" in k else k for k in klusjes]
+    weekdag = weekdag | {"klusjes": klusjes}
+    aanpassen = [a for a in aanpassen if a["activiteit"] not in namen]
     blokken = blokken_met_klusjes(dagsoort, weekdag, notities)
-    blokken.append({"activiteit": "Naar bed", "soort": "bed", "om": regels["naar_bed"], "duur_min": 0,
-                    "klaarmaken_min": regels["klaarmaken_voor_bed_min"]})
+    # De bedroutine eindigt op de bedtijd; na een avondafspraak eerst nog bijkomen en spullen wegleggen.
+    bed = hhmm_naar_min(regels["naar_bed"])
+    blokken.append({"activiteit": "Bedroutine", "soort": "bedroutine",
+                    "om": min_naar_hhmm(bed - regels["bedroutine_min"]), "duur_min": regels["bedroutine_min"],
+                    "bijkomen_min": regels["bijkomen_na_afspraak_min"]})
+    blokken.append({"activiteit": "Naar bed", "soort": "bed", "om": regels["naar_bed"], "duur_min": 0})
     for a in aanpassen:
         b = next((b for b in blokken if b["activiteit"] == a["activiteit"]), None)
         if b is None:
@@ -551,6 +564,19 @@ def dag_target(plan, weekdag):
     return dag_gepland(plan) + plan["minder"] + plan["onverdeeld"] - plan.get("achterstand_ingehaald", 0)
 
 
+def prognose(week, stand, vanaf=0):
+    """Urenstand (vrij na reservering, in uren) aan het einde van de week als de rest gaat zoals gepland:
+    de stand van het begin van dag vanaf, plus het geplande werk min het target van die dag en de dagen erna."""
+    weekdagen = lees("weekdagen.json")
+    return stand + sum(dag_gepland(week[d]) - dag_target(week[d], weekdagen[d]) for d in WEEKDAGEN[vanaf:]) / 60
+
+
+def prognose_tekst(uren):
+    if round(uren * 60) == 0:
+        return "0.00 u vrij na reservering, precies op target"
+    return f"{uren:.2f} u vrij na reservering, {'voor' if uren > 0 else 'achter'} op target"
+
+
 def week_plannen(toewijzing, hardlopen=None, afspraken=None, vervalt=None, aanpassen=None, opstaan=None,
                  stand_min=0, vanaf=0, vorige=None, werkelijk=None, vast=None):
     """stand_min: urenstand (vrij na reservering) in minuten. Voor (positief): zoveel mag de week onder het
@@ -717,11 +743,18 @@ def week_tonen(week, toewijzing, dagsoorten, regels, weekconflicten, datums=None
         totaal_lucht += lucht
         datum = f" {datums[dag]:%d-%m}" if dag in datums else ""
         if plan.get("voorbij"):
-            print(f"\n{VOLUIT[dag]}{datum}: voorbij, werk {werk / 60:.2f} u gepland, target "
+            gewerkt = f"{plan['gewerkt'] / 60:.2f} u gewerkt, " if "gewerkt" in plan else ""
+            print(f"\n{VOLUIT[dag]}{datum}: voorbij, {gewerkt}werk {werk / 60:.2f} u gepland, target "
                   f"{plan['target_vast'] / 60:.2f} u")
-            continue
-        print(f"\n{VOLUIT[dag]}{datum} ({toewijzing[dag]}), werk {werk / 60:.2f} u, lucht {duur_tekst(lucht)}")
-        if dag in trainingen:
+            if not plan.get("vandaag"):
+                continue
+            # Vandaag is het werk voorbij, maar de avond nog niet: die bepaalt de bedtijd en morgen het opstaan.
+            print("  Vandaag zoals gepland (het werk telt niet meer mee):")
+            plan = plan["vandaag"]
+            rij = plan["rij"]
+        else:
+            print(f"\n{VOLUIT[dag]}{datum} ({toewijzing[dag]}), werk {werk / 60:.2f} u, lucht {duur_tekst(lucht)}")
+        if dag in trainingen and not week[dag].get("voorbij"):
             t, km, duur_s, gepland = trainingen[dag]
             print(f"  Training: {t['omschrijving']} ({km:.1f} km, {s_naar_tekst(duur_s)}, "
                   f"gepland {duur_tekst(gepland)})")
@@ -753,10 +786,11 @@ def urenstand_tekst(stand):
 
 
 def notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen, invoer_pad,
-                      urenstand, herpland_vanaf=None):
+                      urenstand, herpland_vanaf=None, eindstand=None):
     """Schrijft de planning als Markdown-notitie naar gebieden/weekplanning/<maandag>.md.
 
     urenstand: de laatste (bij herplannen die van herpland_vanaf, een datum als JJJJ-MM-DD).
+    eindstand: de prognose van de urenstand aan het einde van de week.
     """
     def datum_tekst(d):
         return f"{d.day} {MAANDEN[d.month - 1]}"
@@ -786,6 +820,9 @@ def notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datu
         f"**lucht** {duur_tekst(totaal_lucht)} · **urenstand** {urenstand_tekst(urenstand).replace('.', ',')}",
         "",
     ]
+    if eindstand is not None:
+        regels_md += [f"**Prognose eind van de week:** {prognose_tekst(eindstand).replace('.', ',')}, als de rest "
+                      "van de week gaat zoals gepland.", ""]
     if herpland_vanaf:
         vanaf = date.fromisoformat(herpland_vanaf)
         regels_md += [f"Herpland vanaf {VOLUIT[WEEKDAGEN[vanaf.weekday()]]} {datum_tekst(vanaf)}, met de "
@@ -803,7 +840,12 @@ def notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datu
         rij = week[dag]["rij"]
         werk = dag_gepland(week[dag])
         if week[dag].get("voorbij"):
-            regels_md.append(f"| {VOLUIT[dag]} {datums[dag].day} | voorbij | | | {duur_tekst(werk) if werk else ''} | |")
+            # Gewerkt uit LogMyTime als dat er is; het geplande werk staat erbij.
+            gewerkt = week[dag].get("gewerkt")
+            soort = f"voorbij (gepland {duur_tekst(werk)})" if gewerkt is not None and werk else "voorbij"
+            getoond = werk if gewerkt is None else gewerkt
+            regels_md.append(f"| {VOLUIT[dag]} {datums[dag].day} | {soort} | | | "
+                             f"{duur_tekst(getoond) if getoond else ''} | |")
             continue
         training = ""
         if dag in trainingen:
@@ -818,10 +860,16 @@ def notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datu
     for dag in WEEKDAGEN:
         plan, rij = week[dag], week[dag]["rij"]
         if plan.get("voorbij"):
-            continue
-        regels_md += ["", f"## {VOLUIT[dag].capitalize()} {datum_tekst(datums[dag])}: "
-                          f"{dagsoorten[toewijzing[dag]]['naam'].lower()}", ""]
-        if dag in trainingen:
+            if not plan.get("vandaag"):
+                continue
+            plan, rij = plan["vandaag"], plan["vandaag"]["rij"]
+            regels_md += ["", f"## {VOLUIT[dag].capitalize()} {datum_tekst(datums[dag])}: vandaag", "",
+                          "Het werk is voorbij en staat in LogMyTime; de rest van de dag zoals gepland, voor de "
+                          "bedtijd en het opstaan van morgen.", ""]
+        else:
+            regels_md += ["", f"## {VOLUIT[dag].capitalize()} {datum_tekst(datums[dag])}: "
+                              f"{dagsoorten[toewijzing[dag]]['naam'].lower()}", ""]
+        if dag in trainingen and not week[dag].get("voorbij"):
             tr, km, duur_s, gepland = trainingen[dag]
             regels_md += [f"Training: {tr['omschrijving']} ({km:.1f} km, {s_naar_tekst(duur_s)}, gepland "
                           f"{duur_tekst(gepland)}).", ""]
@@ -885,7 +933,7 @@ def excel_week(controleer):
     excel = excel_lezen()
     verschillen = []
     for dag in WEEKDAGEN:
-        ons = [r for r in week[dag]["rij"] if r[1] != "Naar bed"]
+        ons = [r for r in week[dag]["rij"] if r[1] not in ("Bedroutine", "Naar bed")]
         hun = excel.get(VOLUIT[dag], [])
         for i in range(max(len(ons), len(hun))):
             a = ons[i] if i < len(ons) else None
@@ -956,8 +1004,23 @@ def week_uit_bestand(pad, schrijf=False):
                 print(f"LET OP: {VOLUIT[dag]} staat niet in {WERKUREN_CSV.relative_to(VAULT)}, target uit de planning")
         stand = herplannen["vrij_na_reservering_uren"]
         print(f"Herpland vanaf {VOLUIT[WEEKDAGEN[vanaf]]} {herplannen['vanaf']}: urenstand {urenstand_tekst(stand)}")
+        vorige = week
         week, dagsoorten, regels, weekconflicten = week_plannen(*args, round((stand or 0) * 60), vanaf, week,
                                                                werkelijk, vast)
+        # Herpland vanaf morgen: vandaag blijft zichtbaar, de avond ervan bepaalt het opstaan van morgen.
+        for dag in WEEKDAGEN[:vanaf]:
+            if datums[dag] == date.today():
+                week[dag]["vandaag"] = vorige[dag]
+        # Van de voorbije dagen het declarabele werk uit LogMyTime, zoals uren.py het telt.
+        if vanaf:
+            try:
+                from uren import haal_stand
+                per_dag = haal_stand(datums["ma"], datums[WEEKDAGEN[vanaf - 1]])["per_dag"]
+            except Exception as fout:  # zonder LogMyTime alleen het geplande werk
+                print(f"LET OP: gewerkte uren niet uit LogMyTime gehaald ({fout}), alleen gepland")
+            else:
+                for dag in WEEKDAGEN[:vanaf]:
+                    week[dag]["gewerkt"] = round(per_dag.get(datums[dag], 0) * 60)
     for t in invoer.get("trainingsduur", []):
         week[t["dag"]]["notities"].insert(0, f"Hardlopen duurde {duur_tekst(t['duur_min'])}"
                                              + (f" ({t['reden']})" if "reden" in t else ""))
@@ -965,9 +1028,13 @@ def week_uit_bestand(pad, schrijf=False):
     minder = sum(week[d]["minder"] for d in WEEKDAGEN)
     if minder:
         print(f"{duur_tekst(minder)} u onder het doel, van de voorsprong op target")
+    eindstand = None
+    if stand is not None:
+        eindstand = prognose(week, stand, vanaf if herplannen else 0)
+        print(f"Prognose eind van de week: {prognose_tekst(eindstand)}")
     if schrijf:
         notitie = notitie_schrijven(week, toewijzing, dagsoorten, regels, weekconflicten, datums, trainingen,
-                                    pad, stand, herplannen["vanaf"] if herplannen else None)
+                                    pad, stand, herplannen["vanaf"] if herplannen else None, eindstand)
         print(f"Geschreven naar {notitie.relative_to(VAULT)}")
         target = werkuren_schrijven(week, datums)
         print(f"Werkuren per dag naar {WERKUREN_CSV.relative_to(VAULT)} (target week {duur_tekst(target)} u)")

@@ -77,7 +77,7 @@ def haal_stand(vanaf, tot):
         '$select': 'ProjectID,StartTime,DurationSeconds,TypeID,AbsenceID',
     })
 
-    stand = {'per_klant': defaultdict(float), 'per_maand': defaultdict(float),
+    stand = {'per_klant': defaultdict(float), 'per_maand': defaultdict(float), 'per_dag': defaultdict(float),
              'niet_declarabel': 0.0, 'per_type': defaultdict(float)}
     for e in entries:
         dag = lokale_datum(e['StartTime'])
@@ -93,6 +93,7 @@ def haal_stand(vanaf, tot):
         else:
             stand['per_klant'][klant] += uren
             stand['per_maand'][(dag.month, klant)] += uren
+            stand['per_dag'][dag] += uren
     stand['declarabel'] = sum(stand['per_klant'].values())
     stand['target'] = target_uren(vanaf, tot)
     stand['vrij'] = stand['target'] - stand['declarabel']
@@ -193,4 +194,5 @@ def main():
         print('Geschreven naar %s' % OVERZICHT)
 
 
-main()
+if __name__ == '__main__':
+    main()

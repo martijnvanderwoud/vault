@@ -278,10 +278,11 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
   Martijn maakt een screenshot van Google Maps, met de aankomsttijd ingesteld. Heen telt vanaf het
   vertrek van huis tot het begin van de afspraak, wachten meegerekend.
 - **Bedtijd:** Martijn staat om 6:00 op en ligt meestal om 21:50 in bed (`naar_bed` in `regels.json`).
-  Elke dag eindigt met `Naar bed` om 21:50. Na een avondafspraak geen downtime maar klaarmaken voor
-  bed en dan naar bed, ook als dat later is.
-- **Na een late avond:** na een avondafspraak eerst een halfuur klaarmaken voor bed
-  (`klaarmaken_voor_bed_min`). Elk begonnen kwartier later in bed dan 21:50 is de volgende dag een
+  Elke dag eindigt met 20 min `Bedroutine` (`bedroutine_min`, van 21:30) en `Naar bed` om 21:50. Na
+  een avondafspraak geen downtime maar bijkomen en spullen wegleggen, de bedroutine en dan naar bed,
+  ook als dat later is.
+- **Na een late avond:** na thuiskomst van een avondafspraak eerst 10 min bijkomen en spullen
+  wegleggen (`bijkomen_na_afspraak_min`), dan de bedroutine: 30 min na aankomst in bed. Elk begonnen kwartier later in bed dan 21:50 is de volgende dag een
   kwartier later opstaan; het script rekent dat uit (`opstaan` in het weekbestand alleen voor een
   zelf gekozen tijd). Later opstaan laat de dag uitlopen; dat gaat zoals bij een afspraak eerst van
   de vrije tijd voor het eten, dan van de lucht, dan vervallen de stabiliteitsroutines. Di 17-11 om
@@ -290,8 +291,9 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
   naar `gebieden/weekplanning/<maandag>.md`: een overzicht van de week (soort dag, training, opstaan,
   werk, lucht) en per dag een tabel met tijden, plus de meldingen. Gegenereerd, niet met de hand
   bewerken. De skill (stap 4) draait altijd met `--schrijf`.
-- **Afspraak thuis** (`"thuis": true`, zoals M❤️F met Franca): geen reistijd, geen klaarmaken voor bed
-  erna, en op de normale tijd naar bed, ook als de agenda tot later loopt.
+- **Afspraak thuis** (`"thuis": true`, zoals M❤️F met Franca): geen reistijd, geen bijkomen erna; de
+  afspraak loopt hooguit tot de bedroutine (21:30), en dan op de normale tijd naar bed, ook als de
+  agenda tot later loopt.
 - **Voorsprong op target:** ligt Martijn voor (`vrij_na_reservering_uren` > 0), dan gaat wat een dag
   uitloopt eerst van het werk af, tot de voorsprong op is; lucht en stabiliteitsroutines blijven dan
   staan. Daarna gelden de gewone wijkregels. Wo 18-11: 45 min minder werk, week 27:15 bij 1:06

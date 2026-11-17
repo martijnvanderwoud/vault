@@ -70,10 +70,10 @@
       "dag": "wo",
       "boekdag": "do",
       "dagsoort": "easy",
-      "omschrijving": "8-11 km very easy to easy",
+      "omschrijving": "5 km very easy to easy (ingekort van 8 km in TrainingPeaks, zodat de week op 65 km uitkomt)",
       "onderdelen": [
         {
-          "km": 8,
+          "km": 5,
           "tempo": {
             "van": "very_easy",
             "naar": "easy"
