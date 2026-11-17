@@ -12,13 +12,13 @@ tags: [werk, uren]
 
 | Stand | Uren | | Declarabel per klant | Uren |
 |---|---:|---|---|---:|
-| Declarabel | 1121,75 | | Pompkracht | 1121,20 |
+| Declarabel | 1122,40 | | Pompkracht | 1121,85 |
 | Target (werkuren) | 1282,50 | | Construct | 0,55 |
-| Vrij opgenomen | 160,75 | | **Totaal declarabel** | **1121,75** |
+| Vrij opgenomen | 160,10 | | **Totaal declarabel** | **1122,40** |
 | Vrij-budget | 196,00 | | Niet declarabel | 8,75 |
-| Vrij over | 35,25 | |  |  |
+| Vrij over | 35,90 | |  |  |
 | Nog gereserveerd | 34,00 | |  |  |
-| **Vrij na reservering** | **1,25** | |  |  |
+| **Vrij na reservering** | **1,90** | |  |  |
 
 ## Vrije uren: gepland en gereserveerd
 
@@ -62,4 +62,4 @@ Bron: `data/vrije-dagen-2026.csv`. Is een geplande dag voorbij, zet dan `nog_ger
 | aug | 115,30 | 0,00 | 115,30 |
 | sep | 99,80 | 0,00 | 99,80 |
 | okt | 128,15 | 0,00 | 128,15 |
-| nov | 65,60 | 0,55 | 66,15 |
+| nov | 66,25 | 0,55 | 66,80 |
