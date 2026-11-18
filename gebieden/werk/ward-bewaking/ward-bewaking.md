@@ -104,7 +104,6 @@ De referentie pas ik altijd met de hand aan, nooit automatisch.
 
 ## Openstaand
 
-- PKI-1133 op Done zetten.
 - Meer checks: schijfruimte, certificaten, kernelversies, back-ups.
 - Het log toont elke dag de hele tabel (ruim 40 regels). Korter maken als het te groot wordt.
 

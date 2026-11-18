@@ -151,7 +151,7 @@ watcher of dashboard voor Ward veranderen.
 - In de beschrijving van PKI-1132 is punt 4 van het plan ("to do") doorgestreept en vervangen door
   de werkende check; de hotfix-trigger noemt de mail van Ward.
 - Comments in PKI-1132 (wat de check doet, wat er bij een alarm gebeurt) en PKI-1133 (samenvatting
-  van de zes stappen, en dat de laptop aan moet staan). PKI-1133 op Done beslis ik zelf.
+  van de zes stappen, en dat de laptop aan moet staan). PKI-1133 staat sinds 18-11 op Done.
 
 ## Opruimen
 
