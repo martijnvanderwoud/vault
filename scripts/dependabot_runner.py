@@ -19,6 +19,7 @@ mislukte run, of een run die deze ISO-week al klaar is met dezelfde PR's, slaat 
 Gebruik: dependabot_runner.py --prepare --repo NAAM [--repo NAAM ...]
 Zet de clone in ~/dependabot-runs/NAAM klaar (clonen of fetchen, moet schoon zijn) en toont de
 tools die een run daar krijgt. Werkt ook zonder mijn shellprofiel, zoals onder launchd.
+Run-notities volgens gebieden/agents/agent-runs.md, via scripts/agentruns.py.
 Plan: gebieden/werk/dependabot-routine-autonoom-plan.md.
 """
 import argparse
@@ -34,6 +35,10 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import agentruns  # noqa: E402
+from agentruns import proces_leeft  # noqa: E402
 
 VAULT = Path(__file__).resolve().parent.parent
 PROJECTEN = VAULT / '.claude/skills/dependabot-routine/projecten'
@@ -60,7 +65,8 @@ DEFAULT_MODEL = 'claude-opus-5-5'
 DEFAULT_TIMEOUT = 120  # minuten; stap 8 van de skill wacht op de build van de base branch
 YOUTRACK_API = 'https://crimsoncricket.myjetbrains.com/youtrack/api'
 VERSLAG_KOP = 'Debbie (Dependabot routine) report'
-VELDEN = ['description', 'agent', 'status', 'repo', 'issue', 'step', 'reason', 'session_id', 'started',
+# De volgorde in de run-notities. `onderwerp` is bij Debbie de naam van het project (de repo).
+VELDEN = ['description', 'agent', 'status', 'onderwerp', 'issue', 'step', 'reason', 'session_id', 'started',
           'ended', 'resume', 'aandacht', 'prs', 'model', 'pid', 'kosten', 'beurten', 'geweigerd', 'log', 'issue_state', 'laatste']
 LIJSTEN = ('aandacht', 'prs')
 
@@ -136,8 +142,8 @@ def vingerafdruk(prs):
 
 def laatste_run(name):
     """De run-notitie van dit project met de laatste `started`, of None."""
-    runs = [fm for fm in (notitie_lezen(p)[0] for p in notities()) if fm.get('repo') == name]
-    return max(runs, key=lambda fm: fm.get('started', ''), default=None)
+    laatste = agentruns.laatste_per_onderwerp(notities(), LIJSTEN).get(name)
+    return laatste[1] if laatste else None
 
 
 def iso_week(moment):
@@ -265,69 +271,18 @@ def tools_tonen(clone, env):
 
 # --- Run-notities ---------------------------------------------------------------------------
 
-def yaml_waarde(value):
-    if value is None or value == '':
-        return ' ""'
-    if isinstance(value, bool):
-        return ' true' if value else ' false'
-    if isinstance(value, list):
-        return ' []' if not value else ''.join('\n  - ' + json.dumps(v, ensure_ascii=False) for v in value)
-    if isinstance(value, (int, float)):
-        return ' %s' % value
-    return ' ' + json.dumps(str(value), ensure_ascii=False)
-
-
 def notitie_schrijven(path, fm, tekst):
-    regels = ['---'] + ['%s:%s' % (k, yaml_waarde(fm.get(k))) for k in VELDEN if k in fm] + ['---', '']
-    path.write_text('\n'.join(regels) + tekst.rstrip() + '\n', encoding='utf-8')
-
-
-def yaml_lezen(value):
-    """Een waarde uit de frontmatter. De runner schrijft JSON, maar Obsidian schrijft de hele frontmatter
-    opnieuw als ik daar een property wijzig (`status`, `gezien`): dan staan strings zonder quotes."""
-    try:
-        return json.loads(value)
-    except ValueError:
-        pass
-    if len(value) >= 2 and value[0] == value[-1] == "'":
-        return value[1:-1].replace("''", "'")
-    return value
+    agentruns.notitie_schrijven(path, fm, tekst, VELDEN)
 
 
 def notitie_lezen(path):
-    """Frontmatter en tekst van een run-notitie, van `notitie_schrijven` of daarna door Obsidian bewerkt."""
-    kop, _, tekst = path.read_text(encoding='utf-8')[4:].partition('\n---\n')
-    fm, key, blok = {}, None, None
-    for line in kop.splitlines():
-        if blok is not None and (line.startswith('  ') or not line.strip()):
-            blok.append(line[2:])
-            continue
-        if blok is not None:  # einde van een blok-string (`|-` of `>-`) van Obsidian
-            fm[key] = ('\n' if fm[key].startswith('|') else ' ').join(blok).strip('\n')
-            blok = None
-        if line.lstrip().startswith('- ') and key:
-            fm[key].append(yaml_lezen(line.lstrip()[2:].strip()))
-            continue
-        key, _, value = line.partition(':')
-        key, value = key.strip(), value.strip()
-        if value[:1] in ('|', '>'):
-            fm[key], blok = value, []
-        else:
-            fm[key] = [] if value in ('', '[]') else yaml_lezen(value)
-    if blok is not None:
-        fm[key] = ('\n' if fm[key].startswith('|') else ' ').join(blok).strip('\n')
-    for key, value in fm.items():
-        if value == [] and key not in LIJSTEN:
-            fm[key] = ''
-    return fm, tekst.lstrip('\n')
+    return agentruns.notitie_lezen(path, LIJSTEN)
 
 
 def notities():
     """De run-notities: alleen die met `agent: debbie`, zoals in dashboard.base. Andere notities in
     de map, zoals debbie-dashboard.md, schrijft de runner zo nooit opnieuw."""
-    if not RUNS.is_dir():
-        return []
-    return [p for p in sorted(RUNS.glob('*.md')) if frontmatter(p).get('agent') == 'debbie']
+    return agentruns.notities(RUNS, 'debbie')
 
 
 def nieuwe_notitie(name, moment):
@@ -342,20 +297,18 @@ def nieuwe_notitie(name, moment):
 def beschrijving(fm):
     status = fm['status'] + (' bij stap %s' % fm['step'] if fm.get('step') else '')
     issue = ' (%s)' % fm['issue'] if fm.get('issue') else ''
-    return 'Debbie-run %s, gestart %s: %s%s' % (fm['repo'], fm['started'][:16].replace('T', ' '), status, issue)
+    return 'Debbie-run %s, gestart %s: %s%s' % (fm['onderwerp'], fm['started'][:16].replace('T', ' '), status, issue)
 
 
 def laatste_markeren():
     """Zet `laatste: true` op de laatste run van elk project en haalt het weg bij de andere. Het
     dashboard toont per project alleen die run, en Bases kan dat niet zelf. Geeft True bij een wijziging."""
-    runs = [(path,) + notitie_lezen(path) for path in notities()]
-    laatste = {}
-    for path, fm, _ in runs:
-        if fm.get('started', '') >= laatste.get(fm.get('repo'), (None, ''))[1]:
-            laatste[fm.get('repo')] = (path, fm.get('started', ''))
+    paden = notities()
+    laatste = agentruns.laatste_per_onderwerp(paden, LIJSTEN)
     gewijzigd = False
-    for path, fm, tekst in runs:
-        if bool(fm.get('laatste')) == (laatste[fm.get('repo')][0] == path):
+    for path in paden:
+        fm, tekst = notitie_lezen(path)
+        if bool(fm.get('laatste')) == (laatste[fm.get('onderwerp')][0] == path):
             continue
         if fm.get('laatste'):
             fm.pop('laatste')
@@ -384,18 +337,6 @@ def resume_regel(name, sessie):
 
 def nu_lokaal():
     return datetime.now().astimezone().replace(microsecond=0)
-
-
-def proces_leeft(pid):
-    """Leeft het proces nog, en is het `claude`? Een hergebruikt pid telt niet."""
-    try:
-        os.kill(int(pid), 0)
-    except (ProcessLookupError, ValueError, TypeError):
-        return False
-    except PermissionError:
-        pass
-    comm = subprocess.run(['ps', '-o', 'comm=', '-p', str(pid)], capture_output=True, text=True).stdout
-    return os.path.basename(comm.strip()) == 'claude'
 
 
 def verslag_na(issue, sinds):
@@ -444,7 +385,7 @@ def opruimen(dry_run):
             fm['ended'] = nu_lokaal().isoformat()
             fm.pop('pid', None)
             if fm.get('session_id'):
-                fm['resume'] = resume_regel(fm['repo'], fm['session_id'])
+                fm['resume'] = resume_regel(fm['onderwerp'], fm['session_id'])
         elif status in ('paused', 'failed') and state == 'Done':
             nieuw = 'done'
             tekst += '\n\nOp `done` gezet op %s: na de %s%s (%s) staat %s op Done.\n' % (
@@ -472,7 +413,7 @@ def opruimen(dry_run):
             fm['description'] = beschrijving(fm)
         notitie_schrijven(path, fm, tekst)
         if nieuw == 'failed':
-            melden('Debbie: %s failed' % fm['repo'], fm['reason'])
+            melden('Debbie: %s failed' % fm['onderwerp'], fm['reason'])
     if not dry_run and (regels or laatste_markeren()):
         index_bijwerken()
     return regels
@@ -523,7 +464,7 @@ def run_starten(project, prs, model, timeout):
     gestart = nu_lokaal()
     path, stem = nieuwe_notitie(project['name'], gestart)
     log = LOGS / (stem + '.jsonl')
-    fm = {'agent': 'debbie', 'status': 'running', 'repo': project['name'], 'issue': '', 'started': gestart.isoformat(),
+    fm = {'agent': 'debbie', 'status': 'running', 'onderwerp': project['name'], 'issue': '', 'started': gestart.isoformat(),
           'aandacht': [], 'prs': vingerafdruk(prs), 'model': model}
     tekst = '# Debbie-run %s\n\nPR\'s bij de start: %s.\n' % (project['name'], ' '.join(fm['prs']))
 

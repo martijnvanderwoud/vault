@@ -2,7 +2,7 @@
 description: "Debbie-run portal-worker-ui, gestart 2026-11-13 00:23: done (PKP-912)"
 agent: "debbie"
 status: "done"
-repo: "portal-worker-ui"
+onderwerp: "portal-worker-ui"
 issue: "PKP-912"
 session_id: "0a42ec17-00f4-4776-8809-57f975ae81ae"
 started: "2026-11-13T00:23:53+01:00"

@@ -2,7 +2,7 @@
 description: "Debbie-run insights, gestart 2026-11-18 11:46: done (PI-205)"
 agent: "debbie"
 status: "done"
-repo: "insights"
+onderwerp: "insights"
 issue: "PI-205"
 session_id: "56772754-ca3a-4b1a-b5c5-5feccf2c36a4"
 started: "2026-11-18T11:46:03+01:00"

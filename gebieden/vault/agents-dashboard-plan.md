@@ -26,11 +26,21 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 ## Voortgang
 
-- [ ] 1. Statusvorm en gedeelde module
+- [x] 1. Statusvorm en gedeelde module (18-11, op twee controles na, zie hieronder)
 - [ ] 2. Dashboard genereren
 - [ ] 3. Watcher die altijd draait
 - [ ] 4. Taken uit de runner naar de watcher
 - [ ] 5. Opruimen
+
+Nog nakijken uit stap 1. Dit blokkeert stap 2 niet: het dashboard leest alleen notities via de
+module, en dat is getest. Het gaat om de runner van Debbie zelf.
+
+- [ ] De eerste runner-tik onder launchd op de nieuwe code (vanaf 14:03 op 18-11):
+  `sed -n '/^-- 2026-11-18T14:/,$p' ~/dependabot-runs/.logs/runner.log` toont de projecten
+  zonder traceback.
+- [ ] De eerste echte run van Debbie op de module (bij de volgende Dependabot-PR's): de nieuwe
+  run-notitie heeft `onderwerp` en geen `repo`, en er staan geen `.tmp`-bestanden in
+  `gebieden/werk/dependabot-runs/`.
 
 ## Beslissingen
 
@@ -152,6 +162,8 @@ Doel: wat niet specifiek is voor Debbie, doet de watcher, voor alle agents.
 - Runner en watcher schrijven in dezelfde notities. De watcher schrijft geen notitie van een run
   die `running` is met een levend proces, en leest een notitie opnieuw vlak voordat hij hem
   schrijft.
+- De watcher leest en schrijft met `lijsten` uit `agents()` en zonder `volgorde`, zodat een
+  notitie zijn velden, hun volgorde en lege lijsten houdt (zie de bevindingen van stap 1).
 
 Klaar als: een issue op `Done` binnen een paar minuten op het dashboard te zien is, en een
 afgebroken run binnen een paar seconden als `failed` verschijnt, zonder de runner.
@@ -182,4 +194,36 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
 
 ## Bevindingen
 
-Nog geen.
+- 2026-11-18, stap 1:
+  - Gekozen: `repo` hernoemd naar `onderwerp`, geen uitzondering in de module. Een eenmalig script
+    zette de 27 run-notities om (de diff is per notitie alleen die regel), en `dashboard.base`
+    gebruikt nu `onderwerp` (formule `project`, sortering, groepering), zodat de base werkt tot
+    stap 5. Het plan van Debbie noemt de hernoeming onder `Bevindingen`.
+  - De afspraak staat in [[agent-runs]], de notitie van Debbie in [[debbie]] met
+    `runs: gebieden/werk/dependabot-runs` en `lijsten: [prs]`.
+  - `scripts/agentruns.py`: `notitie_lezen(path, lijsten)`, `notitie_schrijven(path, fm, tekst,
+    volgorde)`, `notities(runs, agent)`, `laatste_per_onderwerp(paden)`, `proces_leeft(pid, naam)`
+    en `agents()`. De runner houdt dunne wrappers met zijn eigen `VELDEN` (volgorde) en `LIJSTEN`.
+  - Zonder `volgorde` schrijft de module de velden in de volgorde van de notitie zelf. Een eigen
+    vaste volgorde in de module zou elke notitie omgooien die de watcher in stap 4 schrijft.
+  - Velden die de runner niet kent, blijven nu bewaard (ze komen achteraan). De oude runner gooide
+    ze weg, zoals `tags` als ik die in Obsidian toevoegde.
+  - Een leeg veld is dubbelzinnig: Obsidian kan een lege lijst en een lege tekst allebei als
+    `veld:` schrijven. De lezer maakt er een lijst van als het veld in `lijsten` staat, anders `""`.
+    Daarom `lijsten` in de notitie van de agent, en `agents()` geeft `aandacht` plus die velden
+    terug. **Stap 4:** de watcher moet bij lezen en schrijven `agents()[agent]['lijsten']`
+    meegeven, anders wordt `prs: []` bij Debbie `prs: ""`.
+  - De lezer kent nu ook inline lijsten (`[a, b]`), voor de notities per agent.
+  - Atomair schrijven: `.<naam>.<willekeurig>.tmp` in dezelfde map, dan `os.replace`. Obsidian
+    negeert bestanden met een punt ervoor.
+  - Getest: alle 27 notities gaan byte voor byte heen en terug, zowel via de runner als generiek
+    (zoals de watcher straks), vóór en na de hernoeming; een notitie in Obsidian-stijl (blok-string,
+    enkele quotes, `issue:` leeg, extra `tags`) leest goed. Op een kopie van de runmap: een
+    `running`-run met een dood pid wordt `failed` met `resume`, zonder `pid`, en wordt de laatste
+    van zijn onderwerp; de overslaglogica geeft `run loopt al`, `vorige run is failed`, `deze week
+    al gedaan met dezelfde PR's` en `run` waar dat hoort. `--dry-run` onder `env -i` werkt.
+  - Een echte run kon niet: geen enkel project had open PR's. Een handmatige runner-tik weigerde
+    de auto-modus, en op de tik van launchd hebben we niet gewacht. Beide staan onder `Voortgang`
+    als nog na te kijken.
+  - Voor stap 2: het dashboard kan `agents()`, `notities()` en `laatste_per_onderwerp()` direct
+    gebruiken.

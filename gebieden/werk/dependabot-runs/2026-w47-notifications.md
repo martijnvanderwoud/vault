@@ -2,7 +2,7 @@
 description: "Debbie-run notifications, gestart 2026-11-16 15:46: done (PN-66)"
 agent: "debbie"
 status: "done"
-repo: "notifications"
+onderwerp: "notifications"
 issue: "PN-66"
 session_id: "ce1a4fc3-c6a2-4d01-8650-d3b53bdc31cf"
 started: "2026-11-16T15:46:51+01:00"

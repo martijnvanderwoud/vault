@@ -2,7 +2,7 @@
 description: "Debbie-run portal-employee-ui, gestart 2026-11-12 19:44: paused bij stap 1 (PKP-909)"
 agent: "debbie"
 status: "resolved"
-repo: "portal-employee-ui"
+onderwerp: "portal-employee-ui"
 issue: "PKP-909"
 step: "1"
 reason: "gh pr merge denied by permission allowlist"

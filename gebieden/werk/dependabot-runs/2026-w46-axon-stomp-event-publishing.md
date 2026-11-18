@@ -2,7 +2,7 @@
 description: "Debbie-run axon-stomp-event-publishing, gestart 2026-11-11 19:21: done (PMD-9)"
 agent: "debbie"
 status: "done"
-repo: "axon-stomp-event-publishing"
+onderwerp: "axon-stomp-event-publishing"
 issue: "PMD-9"
 session_id: "32438b8b-38b0-4211-ac36-29a440a5e960"
 started: "2026-11-11T19:21:58+01:00"

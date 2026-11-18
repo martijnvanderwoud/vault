@@ -2,7 +2,7 @@
 description: "Debbie-run insights, gestart 2026-11-17 22:34: paused bij stap 0"
 agent: "debbie"
 status: "resolved"
-repo: "insights"
+onderwerp: "insights"
 issue: ""
 step: "0"
 reason: "YouTrack create_issue fails: Can't put in read-only transaction"

@@ -2,7 +2,7 @@
 description: "Debbie-run react-notifications, gestart 2026-11-16 07:30: done (PRC-63)"
 agent: "debbie"
 status: "done"
-repo: "react-notifications"
+onderwerp: "react-notifications"
 issue: "PRC-63"
 session_id: "2dc5d01a-9280-44e4-b4db-cc6087033dbc"
 started: "2026-11-16T07:30:20+01:00"

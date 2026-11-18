@@ -2,7 +2,7 @@
 description: "Debbie-run rostering-ui, gestart 2026-11-16 10:14: done (RPAAS-522)"
 agent: "debbie"
 status: "done"
-repo: "rostering-ui"
+onderwerp: "rostering-ui"
 issue: "RPAAS-522"
 session_id: "b4905b44-5933-459c-afb5-0e3dc5417028"
 started: "2026-11-16T10:14:33+01:00"

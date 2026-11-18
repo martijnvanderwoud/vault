@@ -2,7 +2,7 @@
 description: "Debbie-run portal-enrollment-ui, gestart 2026-11-12 07:55: done (PKP-910)"
 agent: "debbie"
 status: "done"
-repo: "portal-enrollment-ui"
+onderwerp: "portal-enrollment-ui"
 issue: "PKP-910"
 session_id: "ea9cbc45-dad2-430e-a3c6-c42a3dbc36d5"
 started: "2026-11-12T07:55:45+01:00"

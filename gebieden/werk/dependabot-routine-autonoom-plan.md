@@ -727,3 +727,7 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
     niets anders dan `met/` en `zonder/` bevat. Stap 4 en 5 gebruiken weer `<scratchpad>` zoals
     de skill, met alleen het doel van de redirect uitgeschreven, en noemen een timeout van
     600000: breekt de tool het script af, dan blijft de `set` alsnog hangen.
+- 2026-11-18, stap 1 van [[agents-dashboard-plan]]: het veld `repo` in de run-notities heet nu
+  `onderwerp`, zoals in de gedeelde statusvorm ([[agent-runs]]). Alle bestaande notities en
+  `dashboard.base` zijn omgezet. Lezen en schrijven van run-notities zit nu in
+  `scripts/agentruns.py`; de runner gebruikt die module.

@@ -2,7 +2,7 @@
 description: "Debbie-run rostering-application, gestart 2026-11-16 01:57: done (RPAAS-520)"
 agent: "debbie"
 status: "done"
-repo: "rostering-application"
+onderwerp: "rostering-application"
 issue: "RPAAS-520"
 session_id: "513c4a01-c306-43c2-800d-879bbe6c3b83"
 started: "2026-11-16T01:57:16+01:00"

@@ -2,7 +2,7 @@
 description: "Debbie-run profile-presentation-design, gestart 2026-11-17 15:42: done (PRC-64)"
 agent: "debbie"
 status: "done"
-repo: "profile-presentation-design"
+onderwerp: "profile-presentation-design"
 issue: "PRC-64"
 session_id: "567a5f1f-8690-4702-a7f1-9409992b3bc1"
 started: "2026-11-17T15:42:43+01:00"

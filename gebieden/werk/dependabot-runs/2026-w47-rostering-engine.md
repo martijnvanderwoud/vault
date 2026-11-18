@@ -2,7 +2,7 @@
 description: "Debbie-run rostering-engine, gestart 2026-11-18 10:39: done (RPAAS-529)"
 agent: "debbie"
 status: "done"
-repo: "rostering-engine"
+onderwerp: "rostering-engine"
 issue: "RPAAS-529"
 session_id: "9089eeb0-9744-47d7-972f-5cdb73998b0d"
 started: "2026-11-18T10:39:34+01:00"

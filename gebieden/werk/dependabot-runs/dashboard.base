@@ -4,7 +4,7 @@ filters:
     - agent == "debbie"
 formulas:
   run: link(file, file.name.slice(0, 8))
-  project: link(file, repo)
+  project: link(file, onderwerp)
   toestand: if(status == "running", "🔄 Bezig", if(status == "paused", "⏸️ Wacht op mij", if(status == "failed", "❌ Mislukt", if(status == "resolved", "↩️ Vrijgegeven", if(aandacht.isEmpty() || issue_state == "Done", "✅ Klaar", "⚠️ Klaar, met aandachtspunten")))))
   issue_link: if(issue, link("https://crimsoncricket.myjetbrains.com/youtrack/issue/" + issue, issue), "")
   wanneer: if(started, date(started.toString().slice(0, 19).replace("T", " ")).format("dd D MMM, HH:mm"), "")
@@ -68,7 +68,7 @@ views:
       - formula.waarom
       - resume
     sort:
-      - property: repo
+      - property: onderwerp
         direction: ASC
     columnSize:
       formula.project: 220
@@ -79,7 +79,7 @@ views:
   - type: table
     name: Geschiedenis
     groupBy:
-      property: repo
+      property: onderwerp
       direction: ASC
     order:
       - formula.run

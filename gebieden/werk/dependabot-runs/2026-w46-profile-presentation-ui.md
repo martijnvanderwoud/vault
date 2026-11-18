@@ -2,7 +2,7 @@
 description: "Debbie-run profile-presentation-ui, gestart 2026-11-13 00:26: done (PPP-85)"
 agent: "debbie"
 status: "done"
-repo: "profile-presentation-ui"
+onderwerp: "profile-presentation-ui"
 issue: "PPP-85"
 session_id: "38253053-e306-407b-92cb-e35cc899bfc4"
 started: "2026-11-13T00:26:44+01:00"
