@@ -1,7 +1,7 @@
 ---
 description: "Debbie-run insights, gestart 2026-11-17 22:34: paused bij stap 0"
 agent: "debbie"
-status: "paused"
+status: "resolved"
 repo: "insights"
 issue: ""
 step: "0"
@@ -19,7 +19,6 @@ kosten: 0.32
 beurten: 11
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w47-insights.jsonl"
-laatste: true
 ---
 # Debbie-run insights
 
