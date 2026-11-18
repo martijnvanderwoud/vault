@@ -1,19 +1,24 @@
 #!/usr/bin/python3
 """Run-notities van de autonome agents lezen en schrijven, volgens gebieden/agents/agent-runs.md.
 
-Gedeeld door de runners (zoals dependabot_runner.py), en later het dashboard en de watcher.
+Gedeeld door de runners (zoals dependabot_runner.py), het dashboard en de watcher.
 Plan: gebieden/vault/agents-dashboard-plan.md.
 """
 import json
 import os
 import subprocess
 import tempfile
+from datetime import datetime, timedelta
 from pathlib import Path
 
 VAULT = Path(__file__).resolve().parent.parent
 AGENTS = VAULT / 'gebieden/agents'
 LIJSTEN = ('aandacht',)
 STATUSSEN = ('running', 'paused', 'done', 'failed', 'resolved')
+# Buiten de vault: anders wijzigt er elke paar seconden een bestand in Obsidian en in git.
+WATCHER = Path.home() / '.agent-watcher'
+HEARTBEAT = WATCHER / 'heartbeat'
+HEARTBEAT_MAX = timedelta(minutes=3)
 
 
 def yaml_waarde(value):
@@ -138,3 +143,17 @@ def proces_leeft(pid, naam='claude'):
         pass
     comm = subprocess.run(['ps', '-o', 'comm=', '-p', str(pid)], capture_output=True, text=True).stdout
     return os.path.basename(comm.strip()) == naam
+
+
+def heartbeat_schrijven(nu):
+    WATCHER.mkdir(exist_ok=True)
+    atomair_schrijven(HEARTBEAT, nu.isoformat(timespec='seconds') + '\n')
+
+
+def watcher_stil(nu):
+    """None als de watcher leeft, anders sinds wanneer niet (een datetime) of 'nooit'."""
+    try:
+        laatste = datetime.fromisoformat(HEARTBEAT.read_text(encoding='utf-8').strip())
+    except (OSError, ValueError):
+        return 'nooit'
+    return None if nu - laatste <= HEARTBEAT_MAX else laatste

@@ -10,11 +10,15 @@ gebieden/vault/agents-dashboard-plan.md.
     agent_dashboard.py [--agents MAP] [--uit BESTAND]
 """
 import argparse
+import os
 import re
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import agentruns
+# Met `python3 -I` (zoals onder launchd) staat de map van het script niet in sys.path.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import agentruns  # noqa: E402
 
 UIT = agentruns.AGENTS / 'dashboard.md'
 YOUTRACK = 'https://crimsoncricket.myjetbrains.com/youtrack/issue/'
@@ -157,6 +161,16 @@ def stil_blok(agents, runs, nu):
     return ['> [!warning] Stil (%d)' % len(stil)] + stil + [''] if stil else []
 
 
+def watcher_blok(nu):
+    """Een waarschuwing als de watcher geen heartbeat meer schrijft: dan loopt dit dashboard achter."""
+    stil = agentruns.watcher_stil(nu)
+    if stil is None:
+        return []
+    sinds = 'nog nooit gedraaid' if stil == 'nooit' else 'laatste teken van leven %s' % wanneer(stil.isoformat())
+    return ['> [!danger] De watcher draait niet', '> %s. Dit dashboard ververst niet vanzelf, zie '
+            '[[agents-dashboard-plan]] (stap 3).' % sinds.capitalize(), '']
+
+
 def bezig_blok(runs):
     bezig = [r for r in runs if r[2].get('status') == 'running']
     regels = ['> [!info] Nu bezig (%d)' % len(bezig)]
@@ -199,7 +213,7 @@ def dashboard(agents, nu):
         '# Agents',
         '',
     ]
-    regels += aandacht_blok(runs) + [''] + stil_blok(agents, runs, nu) + bezig_blok(runs) + [''] + tabellen(agents, runs, nu)
+    regels += watcher_blok(nu) + aandacht_blok(runs) + [''] + stil_blok(agents, runs, nu) + bezig_blok(runs) + [''] + tabellen(agents, runs, nu)
     regels += [
         '',
         '---',

@@ -4,8 +4,8 @@
 Gebruik: dependabot_runner.py [--repo NAAM ...] [--model MODEL] [--timeout MINUTEN]
 Zonder --repo alleen de projecten met `autonoom: true` in de frontmatter. Werkt eerst de run-notities bij (zie `opruimen`) en start dan per repo die in aanmerking komt een
 run, één tegelijk. Per run een notitie in gebieden/werk/dependabot-runs/<jaar>-w<week>-<repo>.md
-en een log in ~/dependabot-runs/.logs/. Bij `paused` of `failed` een macOS-melding. Een tweede
-runner-proces stopt meteen (lock). Een `paused`- of `failed`-run blokkeert de repo. Na een
+en een log in ~/dependabot-runs/.logs/. Bij `paused` of `failed` een macOS-melding, en ook als de
+watcher van het agents-dashboard niet draait. Een tweede runner-proces stopt meteen (lock). Een `paused`- of `failed`-run blokkeert de repo. Na een
 hervatting zet de runner hem op `done` zodra er een verslag van Debbie in het issue staat. Anders
 geef ik hem met de hand vrij met `status: resolved`. De state van het issue neemt hij over in
 `issue_state`; zet ik het issue op Done, dan is de run afgehandeld. Overzicht: dependabot-runs/dashboard.base.
@@ -331,6 +331,17 @@ def melden(titel, tekst):
                     titel, tekst], check=False, capture_output=True)
 
 
+def watcher_controleren():
+    """Meldt het als de watcher van het dashboard geen heartbeat meer schrijft. Het dashboard toont dat
+    zelf pas als het opnieuw gemaakt wordt, en dat doet juist de watcher."""
+    stil = agentruns.watcher_stil(nu_lokaal())
+    if stil is None:
+        return
+    sinds = 'nog nooit gedraaid' if stil == 'nooit' else 'stil sinds %s' % stil.strftime('%d-%m %H:%M')
+    print('agent-watcher %s' % sinds)
+    melden('Agent-watcher draait niet', '%s, het agents-dashboard ververst niet' % sinds.capitalize())
+
+
 def resume_regel(name, sessie):
     return 'cd ~/dependabot-runs/%s && claude --resume %s' % (name, sessie)
 
@@ -622,6 +633,7 @@ def main():
         print('er draait al een runner (%s)' % LOCK)
         return
     signal.signal(signal.SIGTERM, sigterm)
+    watcher_controleren()
     for regel in opruimen(dry_run=False):
         print('bijgewerkt: ' + regel)
     for project, prs, besluit, reden in selecteer(args.repo):

@@ -28,7 +28,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 - [x] 1. Statusvorm en gedeelde module (18-11)
 - [x] 2. Dashboard genereren (18-11)
-- [ ] 3. Watcher die altijd draait
+- [x] 3. Watcher die altijd draait (18-11)
 - [ ] 4. Taken uit de runner naar de watcher
 - [ ] 5. Opruimen
 
@@ -41,6 +41,13 @@ module, en dat is getest. Het gaat om de runner van Debbie zelf.
 - [x] De eerste echte run van Debbie op de module (bij de volgende Dependabot-PR's): de nieuwe
   run-notitie heeft `onderwerp` en geen `repo`, en er staan geen `.tmp`-bestanden in
   `gebieden/werk/dependabot-runs/`. Gecontroleerd op `2026-w47-portal` (18-11 14:33): klopt.
+
+Nog nakijken uit stap 3:
+
+- [ ] Een property van een run-notitie wijzigen in Obsidian en het dashboard binnen een paar
+  seconden zien veranderen. Met de hand (ter plekke en atomair) is het getest, via Obsidian nog niet.
+- [ ] Na een herstart van de Mac: `tail ~/.agent-watcher/watcher.log` toont `watcher gestart`, en de
+  runner stuurt geen melding `Agent-watcher draait niet`.
 
 ## Beslissingen
 
@@ -256,3 +263,30 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
   - `gebieden/agents/dashboard.md` staat in `.gitignore`.
   - Voor stap 3: `Stil` en de grens van 7 dagen hangen van de tijd af, dus de watcher maakt het
     dashboard ook elke minuut opnieuw, en kijkt ook naar de notities per agent (staat bij stap 3).
+- 2026-11-18, stap 3:
+  - `scripts/agent_watcher.py` kijkt elke 2 seconden naar de `mtime` van `gebieden/agents/` en de
+    notities daarin, van elke runmap en van de `.md`-bestanden daarin (geen `dashboard.md`). De map
+    zelf vangt nieuwe, verwijderde en atomair geschreven notities, de bestanden een bewerking ter
+    plekke. De stand wordt vóór het genereren opgenomen, zodat een wijziging tijdens het genereren
+    de volgende tik alsnog telt. Daarnaast elke minuut. Het dashboard draait als subproces
+    (`python3 -I`): een fout of een gewijzigd script raakt de watcher niet. Een fout in een tik wordt
+    gelogd en de watcher loopt door. Optie `--tik` en `--eenmalig` voor tests.
+  - Heartbeat en log buiten de vault, in `~/.agent-watcher/` (`heartbeat`, `watcher.log`), want
+    elke 2 seconden een gewijzigd bestand in de vault is ruis voor Obsidian en git.
+    `agentruns.heartbeat_schrijven()` en `watcher_stil()`, grens `HEARTBEAT_MAX` 3 minuten.
+  - Het dashboard toont bovenaan `[!danger] De watcher draait niet` met de laatste heartbeat. De
+    runner van Debbie controleert de heartbeat bij elke echte tik (niet bij `--dry-run`) en stuurt
+    dan een macOS-melding, elk half uur zolang de watcher weg is.
+  - Plist in `scripts/agent-watcher/`, met `KeepAlive`, `RunAtLoad` en `ThrottleInterval` 30 (een
+    watcher die meteen crasht, start niet eindeloos opnieuw). De shell maakt `~/.agent-watcher` aan.
+  - Gevonden: `agent_dashboard.py` uit stap 2 werkte niet onder `python3 -I` (de scriptmap staat dan
+    niet in `sys.path`). Nu met dezelfde `sys.path.insert` als de runner.
+  - Getest, de watcher los: een nieuwe en een verwijderde run, een bewerking ter plekke en een nieuwe
+    notitie per agent staan binnen 1 seconde op het dashboard; de verversing per minuut loopt; een
+    oude heartbeat geeft de waarschuwing op het dashboard en de melding van de runner. Onder launchd:
+    draait na `bootstrap`, en na `kill` startte launchd hem binnen 20 seconden opnieuw (de throttle
+    telt vanaf de vorige start).
+  - Voor stap 4: de YouTrack-poll en het opruimen horen in de lus van de watcher, met een eigen
+    interval (elke paar minuten), en ná die schrijfacties ververst de volgende tik het dashboard
+    vanzelf. Een fout bij YouTrack mag de tik voor het dashboard niet blokkeren: eigen `try`. De
+    melding kan `melden()` uit de runner naar `agentruns.py` verhuizen.

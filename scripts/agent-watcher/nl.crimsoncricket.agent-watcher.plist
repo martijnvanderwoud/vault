@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>nl.crimsoncricket.agent-watcher</string>
+    <key>ProgramArguments</key>
+    <array>
+        <!-- launchd breidt ~ en $HOME niet uit, de shell wel: zo staan er geen absolute paden in -->
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>mkdir -p "$HOME/.agent-watcher" &amp;&amp; exec /usr/bin/python3 -I "$HOME/vault/scripts/agent_watcher.py" &gt;&gt; "$HOME/.agent-watcher/watcher.log" 2&gt;&amp;1</string>
+    </array>
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+    <!-- valt hij steeds meteen weg, dan start launchd hem hooguit elke 30 seconden opnieuw -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+</dict>
+</plist>
