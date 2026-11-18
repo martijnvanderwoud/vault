@@ -1,0 +1,28 @@
+{
+  "hosts": [
+    "shared-hosting-ha-proxy-0",
+    "shared-hosting-k3s-0",
+    "shared-hosting-k3s-1",
+    "shared-hosting-k3s-2",
+    "pompkracht-dev-ha-proxy-0",
+    "pompkracht-dev-k3s-0",
+    "pompkracht-dev-k3s-1",
+    "pompkracht-dev-k3s-2",
+    "pompkracht-dev-k3s-3",
+    "pompkracht-dev-k3s-4",
+    "pompkracht-dev-k3s-5",
+    "pompkracht-prd-ha-proxy-0",
+    "pompkracht-prd-k3s-0",
+    "pompkracht-prd-k3s-2",
+    "pompkracht-prd-k3s-3",
+    "pompkracht-prd-k3s-4",
+    "pompkracht-prd-k3s-5",
+    "pompkracht-prd-k3s-6",
+    "pompkracht-prd-k3s-7",
+    "pompkracht-prd-k3s-8"
+  ],
+  "cpu": {
+    "model": "Intel Xeon Processor (Cascadelake)",
+    "avx512vbmi": false
+  }
+}

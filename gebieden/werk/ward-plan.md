@@ -24,7 +24,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 ## Voortgang
 
 - [x] 1. SSH onder launchd
-- [ ] 2. Runner en CPU-check
+- [x] 2. Runner en CPU-check
 - [ ] 3. Ward headless
 - [ ] 4. Schedule met launchd en status vastleggen
 - [ ] 5. Aansluiten op het agents-dashboard
@@ -120,7 +120,7 @@ een notitie schrijft en mij mailt.
   met de bevinding, wat hij heeft nagegaan en de volgende stap (bij `alarm`: de hotfix uit
   PKI-1132). Hij mailt dezelfde inhoud, met `Ward` in het onderwerp.
 - De runner schrijft de status, niet het model. Een mislukte sessie leidt tot een macOS-melding.
-- Test met een nagemaakte `warn` en `alarm` via een aangepaste referentie.
+- Test met een nagemaakte `warn` en `alarm` via nagemaakte uitkomsten van de runner (een `alarm` komt niet uit een aangepaste referentie, zie Bevindingen).
 
 Klaar als: een nagemaakte `alarm` een notitie en een mail oplevert, en een mail naar een ander
 adres wordt geweigerd.
@@ -167,6 +167,24 @@ Klaar als: beide issues bijgewerkt zijn en PKI-1133 op `Done` kan.
 
 ## Bevindingen
 
+- **Stap 2, 2026-11-18 (klaar).** `scripts/ward/ward_runner.py`
+  met `scripts/ward/ssh.py` (hostlijst en parallelle SSH) en `scripts/ward/checks/cpu.py`; de
+  referentie staat in `data/ward/baseline.json` met de 20 hosts uit `~/.ssh/config`. Het
+  vergelijken van de hostlijst met de referentie zit in de runner als check `hosts`, want het
+  geldt voor alle checks. Exitcode 0/1/2 voor `ok`/`warn`/`alarm`. Getest met nagemaakte
+  SSH-uitvoer: `ok`, ander model (`warn`), onbereikbaar (`warn`), nieuwe en ontbrekende host
+  (`warn`), `avx512vbmi` (`alarm`), en `avx512_vbmi2` zonder `avx512vbmi` blijft `ok`. SSH naar de
+  hosts kan ik in auto mode niet (zie stap 1), dus de echte run doet Martijn:
+  `/usr/bin/python3 -I scripts/ward/ward_runner.py --dry-run`, en met een kopie van de referentie
+  met een ander `model` voor `warn`. De echte run van Martijn (18-11) gaf 20 keer `ok` voor `hosts` en
+  voor `cpu`, alle hosts Cascadelake. De `warn` met een aangepaste referentie is alleen getest met
+  nagemaakte uitvoer, niet op de echte hosts.
+- **Een echte `alarm` komt niet uit een aangepaste referentie.** Het alarm hangt aan de flag op de
+  host, niet aan de referentie: zet je `avx512vbmi: true`, dan geeft elke host `warn` (verwacht
+  aanwezig, is afwezig). Gevolg voor stap 3: een nagemaakte `alarm` kan niet via de referentie.
+  Laat Ward daar testen met een nagemaakte uitkomst van de runner (de prompt krijgt de uitkomsten
+  als data), bijvoorbeeld een testoptie die de uitkomsten uit een JSON-bestand leest in plaats van
+  de checks te draaien.
 - **Stap 1, 2026-11-18 (klaar).** In een Claude-sessie in auto mode blokkeert de classifier
   SSH naar de hosts ("Unauthorized Access"). De test draait dus Martijn zelf. Voor stap 3 telt
   dat niet direct (Ward draait met `--permission-mode dontAsk` en een allowlist, niet in auto
