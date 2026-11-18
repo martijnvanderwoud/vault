@@ -21,3 +21,4 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[schrijfstem]] — Hoe Martijn schrijft in mail, pull requests en YouTrack - aanhef, groet en toon per relatie, met voorbeeldzinnen uit zijn eigen mails
 - [[uren-overzicht]] — Urenoverzicht 2026 met declarabel per klant, target, vrij-budget en gereserveerde vrije uren
 - [[urenregistratie]] — Urenregistratie in LogMyTime, de logica van de urenstand (voorheen Excel) en de LogMyTime API
+- [[ward-plan]] — Plan voor Ward, de lokale bewaker van system health; eerste check is AVX-512 VBMI op de hosts (PKI-1133)
