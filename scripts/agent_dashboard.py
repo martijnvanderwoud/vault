@@ -78,21 +78,11 @@ def run_link(path, label, tabel=False):
     return tekst(label)
 
 
-def afgehandeld(fm):
-    return fm.get('issue_state') == 'Done' or fm.get('status') == 'resolved'
-
-
-def wacht_op_mij(fm):
-    status = fm.get('status')
-    return (status != 'running' and not afgehandeld(fm)
-            and (status in ('paused', 'failed') or bool(fm.get('aandacht'))))
-
-
 def status_cel(fm):
     status = str(fm.get('status', ''))
     if status not in ICONEN:
         return '❓ ' + tekst(status)
-    if status == 'done' and wacht_op_mij(fm):
+    if status == 'done' and agentruns.wacht_op_mij(fm):
         return '⚠️ klaar, met aandachtspunten'
     return '%s %s' % (ICONEN[status], WOORDEN[status])
 
@@ -115,7 +105,7 @@ def runs_lezen(agents):
 
 
 def aandacht_blok(runs):
-    wachtend = [r for r in runs if wacht_op_mij(r[2])]
+    wachtend = [r for r in runs if agentruns.wacht_op_mij(r[2])]
     if not wachtend:
         return ['> [!success] Niets wacht op jou']
     regels = ['> [!danger] Aandacht nodig (%d)' % len(wachtend)]
@@ -188,7 +178,7 @@ def tabellen(agents, runs, nu):
     for naam in agents:
         regels += ['', '### ' + wikilink(naam, naam.capitalize()), '']
         recent = [r for r in runs if r[0] == naam and (
-            r[2].get('status') == 'running' or wacht_op_mij(r[2])
+            r[2].get('status') == 'running' or agentruns.wacht_op_mij(r[2])
             or (tijd(r[2].get('started')) or datetime.min.replace(tzinfo=nu.tzinfo)) >= grens)]
         if not recent:
             regels.append('Geen runs.')

@@ -40,8 +40,21 @@ Eigen velden van een agent mogen erbij, zoals `prs` en `session_id` bij Debbie. 
 
 - De runner van de agent schrijft de status, niet het model. Zo blijft een vastgelopen run
   zichtbaar als `failed`.
+- De watcher (`scripts/agent_watcher.py`) doet wat voor elke agent geldt, zodat een runner dat niet
+  zelf hoeft:
+  - een `running`-run waarvan het proces 15 seconden weg is, wordt `failed` (de runner krijgt die
+    tijd om na het einde van het proces zijn eindstatus te schrijven)
+  - elke 3 minuten `issue_state` voor runs die niet lopen en niet zijn afgehandeld; staat het issue
+    van een `paused`- of `failed`-run op Done, dan wordt de run `done`
+  - een macOS-melding bij `paused` en `failed` en bij nieuwe aandachtspunten, zolang de run niet is
+    afgehandeld. Wat al gemeld is, staat in `~/.agent-watcher/gemeld.json`.
+  - bij een nieuwe status schrijft hij `description` opnieuw (`<Agent>-run <onderwerp>, gestart …`)
+- Zet `resume` daarom al bij de start van een run: de watcher kent het commando niet, en een run die
+  hij op `failed` zet, houdt het zo. Bij `done` haalt de runner het weer weg.
+- De watcher schrijft nooit een notitie van een run die `running` is met een levend proces, en leest
+  een notitie opnieuw vlak voordat hij hem schrijft.
 - Lezen en schrijven gaat via `scripts/agentruns.py`: `notitie_lezen()`, `notitie_schrijven()`,
-  `laatste_per_onderwerp()`, `proces_leeft()` en `agents()`. Schrijven gaat atomair (tijdelijk
+  `laatste_per_onderwerp()`, `proces_leeft()`, `agents()`, `beschrijving()` en `melden()`. Schrijven gaat atomair (tijdelijk
   bestand en `rename`), omdat runner, watcher en Obsidian dezelfde notities aanraken.
 - Obsidian schrijft de hele frontmatter opnieuw als ik een property wijzig, zonder quotes en met
   blok-strings. De module leest beide vormen.
@@ -57,6 +70,8 @@ Eigen velden van een agent mogen erbij, zoals `prs` en `session_id` bij Debbie. 
   bij het opnieuw schrijven een lijst blijft
 - `interval`: optioneel, de langste tijd tussen twee runs, zoals `8d`, `12h` of `30m`. Is er
   langer dan dat geen run begonnen en loopt er geen, dan zet het dashboard de agent onder `Stil`.
+- `proces`: optioneel, de naam van het proces achter `pid` (standaard `claude`). Een `pid` dat
+  intussen een ander proces is, telt zo niet als levend.
 
 En in de tekst: wat de agent doet, waar zijn plan staat en hoe je een run hervat. De watcher
 vindt de runmappen via deze notities, en het dashboard linkt ernaar.

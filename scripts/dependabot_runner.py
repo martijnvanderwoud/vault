@@ -4,11 +4,13 @@
 Gebruik: dependabot_runner.py [--repo NAAM ...] [--model MODEL] [--timeout MINUTEN]
 Zonder --repo alleen de projecten met `autonoom: true` in de frontmatter. Werkt eerst de run-notities bij (zie `opruimen`) en start dan per repo die in aanmerking komt een
 run, één tegelijk. Per run een notitie in gebieden/werk/dependabot-runs/<jaar>-w<week>-<repo>.md
-en een log in ~/dependabot-runs/.logs/. Bij `paused` of `failed` een macOS-melding, en ook als de
-watcher van het agents-dashboard niet draait. Een tweede runner-proces stopt meteen (lock). Een `paused`- of `failed`-run blokkeert de repo. Na een
-hervatting zet de runner hem op `done` zodra er een verslag van Debbie in het issue staat. Anders
-geef ik hem met de hand vrij met `status: resolved`. De state van het issue neemt hij over in
-`issue_state`; zet ik het issue op Done, dan is de run afgehandeld. Overzicht: dependabot-runs/dashboard.base.
+en een log in ~/dependabot-runs/.logs/. Een macOS-melding als de watcher van het agents-dashboard
+niet draait. Een tweede runner-proces stopt meteen (lock). Een `paused`- of `failed`-run blokkeert de
+repo. Na een hervatting zet de runner hem op `done` zodra er een verslag van Debbie in het issue staat.
+Anders geef ik hem met de hand vrij met `status: resolved`, of zet ik het issue op Done.
+De watcher (scripts/agent_watcher.py) doet wat voor alle agents geldt: de melding bij `paused` en
+`failed`, `issue_state` bijhouden, en een afgebroken run op `failed` zetten.
+Overzicht: gebieden/agents/dashboard.md (en nog dependabot-runs/dashboard.base).
 
 Gebruik: dependabot_runner.py --dry-run [--repo NAAM ...]
 Toont per project uit de skill welke repo's nu een run zouden krijgen, zonder iets te wijzigen.
@@ -30,7 +32,6 @@ import re
 import signal
 import subprocess
 import sys
-import urllib.request
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -38,7 +39,6 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import agentruns  # noqa: E402
-from agentruns import proces_leeft  # noqa: E402
 
 VAULT = Path(__file__).resolve().parent.parent
 PROJECTEN = VAULT / '.claude/skills/dependabot-routine/projecten'
@@ -63,7 +63,6 @@ LOGS = CLONES / '.logs'
 LOCK = CLONES / '.runner.lock'
 DEFAULT_MODEL = 'claude-opus-5-5'
 DEFAULT_TIMEOUT = 120  # minuten; stap 8 van de skill wacht op de build van de base branch
-YOUTRACK_API = 'https://crimsoncricket.myjetbrains.com/youtrack/api'
 VERSLAG_KOP = 'Debbie (Dependabot routine) report'
 # De volgorde in de run-notities. `onderwerp` is bij Debbie de naam van het project (de repo).
 VELDEN = ['description', 'agent', 'status', 'onderwerp', 'issue', 'step', 'reason', 'session_id', 'started',
@@ -215,17 +214,9 @@ def node_bin(clone):
     return str(Path(out.strip().splitlines()[-1]).parent)
 
 
-def env_waarde(naam):
-    """Uit ~/vault/.env, of None. Wordt nooit getoond."""
-    for line in reversed((VAULT / '.env').read_text().splitlines()):
-        if line.startswith(naam + '='):
-            return line.split('=', 1)[1].strip().strip('"\'')
-    return None
-
-
 def youtrack_token():
-    """Voor ${YOUTRACK_TOKEN} in mcp.json en voor de comments in `verslag_na`."""
-    token = env_waarde('YOUTRACK_TOKEN')
+    """Voor ${YOUTRACK_TOKEN} in mcp.json."""
+    token = agentruns.env_waarde('YOUTRACK_TOKEN')
     if not token:
         raise Stop('YOUTRACK_TOKEN ontbreekt in ' + str(VAULT / '.env'))
     return token
@@ -241,7 +232,7 @@ def omgeving(clone):
     env['YOUTRACK_TOKEN'] = youtrack_token()
     # Voor ${NPM_TOKEN} in de .npmrc van de npm-repo's (Nexus van Pompkracht). Zet mijn .zshrc ook.
     if (clone / '.npmrc').exists() and 'NPM_TOKEN' in (clone / '.npmrc').read_text():
-        token = env_waarde('NPM_TOKEN')
+        token = agentruns.env_waarde('NPM_TOKEN')
         if not token:
             raise Stop('NPM_TOKEN ontbreekt in %s, en .npmrc vraagt erom' % (VAULT / '.env'))
         env['NPM_TOKEN'] = token
@@ -294,12 +285,6 @@ def nieuwe_notitie(name, moment):
     return RUNS / (stem + '.md'), stem
 
 
-def beschrijving(fm):
-    status = fm['status'] + (' bij stap %s' % fm['step'] if fm.get('step') else '')
-    issue = ' (%s)' % fm['issue'] if fm.get('issue') else ''
-    return 'Debbie-run %s, gestart %s: %s%s' % (fm['onderwerp'], fm['started'][:16].replace('T', ' '), status, issue)
-
-
 def laatste_markeren():
     """Zet `laatste: true` op de laatste run van elk project en haalt het weg bij de andere. Het
     dashboard toont per project alleen die run, en Bases kan dat niet zelf. Geeft True bij een wijziging."""
@@ -324,22 +309,16 @@ def index_bijwerken():
     subprocess.run([sys.executable, str(VAULT / 'scripts/build_index.py')], check=False, capture_output=True)
 
 
-def melden(titel, tekst):
-    """macOS-melding. Een comment op mijn eigen issue geeft waarschijnlijk geen notificatie."""
-    subprocess.run(['osascript', '-e', 'on run argv', '-e',
-                    'display notification (item 2 of argv) with title (item 1 of argv)', '-e', 'end run',
-                    titel, tekst], check=False, capture_output=True)
-
-
 def watcher_controleren():
     """Meldt het als de watcher van het dashboard geen heartbeat meer schrijft. Het dashboard toont dat
-    zelf pas als het opnieuw gemaakt wordt, en dat doet juist de watcher."""
+    zelf pas als het opnieuw gemaakt wordt, en dat doet juist de watcher. Zonder watcher komen er ook
+    geen meldingen bij `paused` en `failed` en worden afgebroken runs niet `failed`."""
     stil = agentruns.watcher_stil(nu_lokaal())
     if stil is None:
         return
     sinds = 'nog nooit gedraaid' if stil == 'nooit' else 'stil sinds %s' % stil.strftime('%d-%m %H:%M')
     print('agent-watcher %s' % sinds)
-    melden('Agent-watcher draait niet', '%s, het agents-dashboard ververst niet' % sinds.capitalize())
+    agentruns.melden('Agent-watcher draait niet', '%s, het agents-dashboard ververst niet' % sinds.capitalize())
 
 
 def resume_regel(name, sessie):
@@ -352,10 +331,8 @@ def nu_lokaal():
 
 def verslag_na(issue, sinds):
     """Staat er in het issue een verslag van Debbie dat na `sinds` geplaatst is? None bij een fout."""
-    url = '%s/issues/%s/comments?fields=text,created&$top=200' % (YOUTRACK_API, issue)
     try:
-        headers = {'Authorization': 'Bearer ' + youtrack_token(), 'Accept': 'application/json'}
-        comments = json.load(urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=30))
+        comments = agentruns.youtrack_get('/issues/%s/comments?fields=text,created&$top=200' % issue)
     except Exception as e:  # netwerk of YouTrack: volgende keer opnieuw
         print('  YouTrack %s niet te lezen: %s' % (issue, e))
         return None
@@ -364,67 +341,32 @@ def verslag_na(issue, sinds):
                for c in comments)
 
 
-def issue_state(issue):
-    """De State van het issue in YouTrack, of None bij een fout."""
-    url = '%s/issues/%s?fields=customFields(name,value(name))' % (YOUTRACK_API, issue)
-    try:
-        headers = {'Authorization': 'Bearer ' + youtrack_token(), 'Accept': 'application/json'}
-        velden = json.load(urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=30))
-    except Exception as e:  # netwerk of YouTrack: volgende keer opnieuw
-        print('  YouTrack %s niet te lezen: %s' % (issue, e))
-        return None
-    return next(((f.get('value') or {}).get('name') for f in velden.get('customFields', [])
-                 if f.get('name') == 'State'), None)
-
-
 def opruimen(dry_run):
-    """Zet een `running`-notitie zonder levend proces op `failed`, en een gepauzeerde of mislukte run
-    op `done` als er na het einde een verslag van Debbie in het issue staat (hervat) of als het issue
-    op Done staat (door mij afgehandeld). Neemt de state van het issue over in `issue_state`, tot die
-    Done is. Geeft regels."""
+    """Zet een gepauzeerde of mislukte run op `done` als er na het einde een verslag van Debbie in het
+    issue staat (hervat). Geeft regels. Een afgebroken run op `failed` zetten, `issue_state` bijhouden
+    en melden doet de watcher (scripts/agent_watcher.py), voor alle agents."""
     regels = []
     for path in notities():
-        fm, tekst = notitie_lezen(path)
-        status, nieuw = fm.get('status'), None
-        stap = ' bij stap %s' % fm['step'] if fm.get('step') else ''
-        state = None
-        if fm.get('issue') and status != 'running' and fm.get('issue_state') != 'Done':
-            state = issue_state(fm['issue'])
-        if status == 'running' and not proces_leeft(fm.get('pid')):
-            nieuw = 'failed'
-            fm['reason'] = 'run gestopt zonder status, runner of claude is afgebroken'
-            fm['ended'] = nu_lokaal().isoformat()
-            fm.pop('pid', None)
-            if fm.get('session_id'):
-                fm['resume'] = resume_regel(fm['onderwerp'], fm['session_id'])
-        elif status in ('paused', 'failed') and state == 'Done':
-            nieuw = 'done'
-            tekst += '\n\nOp `done` gezet op %s: na de %s%s (%s) staat %s op Done.\n' % (
-                nu_lokaal().isoformat(), status, stap, fm.get('reason') or '?', fm['issue'])
-        elif status in ('paused', 'failed') and fm.get('issue') and fm.get('ended') and \
-                verslag_na(fm['issue'], fm['ended']):
-            nieuw = 'done'
-            tekst += '\n\nOp `done` gezet op %s: na de %s%s (%s) staat er een verslag in %s.\n' % (
-                nu_lokaal().isoformat(), status, stap, fm.get('reason') or '?', fm['issue'])
-        if nieuw == 'done':
-            for key in ('step', 'reason', 'resume'):
-                fm.pop(key, None)
-        state_gewijzigd = state and state != fm.get('issue_state')
-        if not nieuw and not state_gewijzigd:
+        fm, _ = notitie_lezen(path)
+        status = fm.get('status')
+        if status not in ('paused', 'failed') or not fm.get('issue') or not fm.get('ended') or \
+                agentruns.afgehandeld(fm) or not verslag_na(fm['issue'], fm['ended']):
             continue
-        regels.append('%s: %s' % (path.stem, ', '.join(
-            ([status + ' -> ' + nieuw] if nieuw else []) +
-            (['issue %s -> %s' % (fm.get('issue_state') or '?', state)] if state_gewijzigd else []))))
+        regels.append('%s: %s -> done' % (path.stem, status))
         if dry_run:
             continue
-        if state_gewijzigd:
-            fm['issue_state'] = state
-        if nieuw:
-            fm['status'] = nieuw
-            fm['description'] = beschrijving(fm)
+        # Opnieuw lezen: de watcher kan de notitie intussen geschreven hebben (YouTrack duurt even).
+        fm, tekst = notitie_lezen(path)
+        if fm.get('status') != status:
+            continue
+        stap = ' bij stap %s' % fm['step'] if fm.get('step') else ''
+        tekst += '\n\nOp `done` gezet op %s: na de %s%s (%s) staat er een verslag in %s.\n' % (
+            nu_lokaal().isoformat(), status, stap, fm.get('reason') or '?', fm['issue'])
+        for key in ('step', 'reason', 'resume'):
+            fm.pop(key, None)
+        fm['status'] = 'done'
+        fm['description'] = agentruns.beschrijving(fm)
         notitie_schrijven(path, fm, tekst)
-        if nieuw == 'failed':
-            melden('Debbie: %s failed' % fm['onderwerp'], fm['reason'])
     if not dry_run and (regels or laatste_markeren()):
         index_bijwerken()
     return regels
@@ -484,11 +426,11 @@ def run_starten(project, prs, model, timeout):
         fm.pop('pid', None)
         if status in ('paused', 'failed') and fm.get('session_id'):
             fm['resume'] = resume_regel(project['name'], fm['session_id'])
-        fm['description'] = beschrijving(fm)
+        else:
+            fm.pop('resume', None)
+        fm['description'] = agentruns.beschrijving(fm)
         notitie_schrijven(path, fm, tekst)
         index_bijwerken()
-        if status in ('paused', 'failed'):
-            melden('Debbie: %s %s' % (project['name'], status), fm.get('reason') or fm.get('issue') or '')
         return status
 
     try:
@@ -507,8 +449,10 @@ def run_starten(project, prs, model, timeout):
     with open(log, 'w') as uit:
         proc = subprocess.Popen(args, cwd=clone, env=env, stdin=subprocess.DEVNULL, stdout=uit,
                                 stderr=subprocess.STDOUT, start_new_session=True)
-    fm.update(session_id=sessie, pid=proc.pid, log=str(log).replace(str(HOME), '~', 1))
-    fm['description'] = beschrijving(fm)
+    # `resume` al bij de start: zet de watcher een afgebroken run op `failed`, dan staat het commando er al.
+    fm.update(session_id=sessie, pid=proc.pid, resume=resume_regel(project['name'], sessie),
+              log=str(log).replace(str(HOME), '~', 1))
+    fm['description'] = agentruns.beschrijving(fm)
     notitie_schrijven(path, fm, tekst)
     index_bijwerken()
     print('  gestart: sessie %s, log %s' % (sessie, fm['log']))

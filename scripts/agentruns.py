@@ -8,17 +8,20 @@ import json
 import os
 import subprocess
 import tempfile
+import urllib.request
 from datetime import datetime, timedelta
 from pathlib import Path
 
 VAULT = Path(__file__).resolve().parent.parent
 AGENTS = VAULT / 'gebieden/agents'
+ENV = VAULT / '.env'
 LIJSTEN = ('aandacht',)
 STATUSSEN = ('running', 'paused', 'done', 'failed', 'resolved')
 # Buiten de vault: anders wijzigt er elke paar seconden een bestand in Obsidian en in git.
 WATCHER = Path.home() / '.agent-watcher'
 HEARTBEAT = WATCHER / 'heartbeat'
 HEARTBEAT_MAX = timedelta(minutes=3)
+YOUTRACK_API = 'https://crimsoncricket.myjetbrains.com/youtrack/api'
 
 
 def yaml_waarde(value):
@@ -143,6 +146,57 @@ def proces_leeft(pid, naam='claude'):
         pass
     comm = subprocess.run(['ps', '-o', 'comm=', '-p', str(pid)], capture_output=True, text=True).stdout
     return os.path.basename(comm.strip()) == naam
+
+
+def afgehandeld(fm):
+    """Het issue staat op Done, of ik heb de run vrijgegeven (`resolved`)."""
+    return fm.get('issue_state') == 'Done' or fm.get('status') == 'resolved'
+
+
+def wacht_op_mij(fm):
+    status = fm.get('status')
+    return (status != 'running' and not afgehandeld(fm)
+            and (status in ('paused', 'failed') or bool(fm.get('aandacht'))))
+
+
+def beschrijving(fm):
+    """De `description` van een run-notitie, zoals `Debbie-run cata, gestart 2026-11-18 12:25: paused bij
+    stap 4 (CATA-123)`. Runner en watcher schrijven hem opnieuw als de status verandert."""
+    status = fm['status'] + (' bij stap %s' % fm['step'] if fm.get('step') else '')
+    issue = ' (%s)' % fm['issue'] if fm.get('issue') else ''
+    return '%s-run %s, gestart %s: %s%s' % (str(fm['agent']).capitalize(), fm['onderwerp'],
+                                           fm['started'][:16].replace('T', ' '), status, issue)
+
+
+def melden(titel, tekst):
+    """macOS-melding. Een comment op mijn eigen issue geeft waarschijnlijk geen notificatie."""
+    subprocess.run(['osascript', '-e', 'on run argv', '-e',
+                    'display notification (item 2 of argv) with title (item 1 of argv)', '-e', 'end run',
+                    titel, tekst], check=False, capture_output=True)
+
+
+def env_waarde(naam):
+    """Uit ~/vault/.env, of None. Wordt nooit getoond."""
+    for line in reversed(ENV.read_text().splitlines()):
+        if line.startswith(naam + '='):
+            return line.split('=', 1)[1].strip().strip('"\'')
+    return None
+
+
+def youtrack_get(pad):
+    """JSON van de REST-API van YouTrack. Gooit een fout bij netwerk, YouTrack of een ontbrekend token."""
+    token = env_waarde('YOUTRACK_TOKEN')
+    if not token:
+        raise LookupError('YOUTRACK_TOKEN ontbreekt in ' + str(ENV))
+    headers = {'Authorization': 'Bearer ' + token, 'Accept': 'application/json'}
+    return json.load(urllib.request.urlopen(urllib.request.Request(YOUTRACK_API + pad, headers=headers), timeout=30))
+
+
+def issue_state(issue):
+    """De State van het issue in YouTrack. Gooit een fout als dat niet lukt."""
+    velden = youtrack_get('/issues/%s?fields=customFields(name,value(name))' % issue)
+    return next(((f.get('value') or {}).get('name') for f in velden.get('customFields', [])
+                 if f.get('name') == 'State'), None)
 
 
 def heartbeat_schrijven(nu):

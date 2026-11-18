@@ -29,7 +29,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 1. Statusvorm en gedeelde module (18-11)
 - [x] 2. Dashboard genereren (18-11)
 - [x] 3. Watcher die altijd draait (18-11)
-- [ ] 4. Taken uit de runner naar de watcher
+- [x] 4. Taken uit de runner naar de watcher (18-11)
 - [ ] 5. Opruimen
 
 Nog nakijken uit stap 1. Dit blokkeert stap 2 niet: het dashboard leest alleen notities via de
@@ -47,6 +47,14 @@ Nog nakijken uit stap 3:
 - [x] Een property van een run-notitie wijzigen in Obsidian en het dashboard binnen een paar
   seconden zien veranderen. Gecontroleerd op 18-11 met een testnotitie: `status` op `resolved` in
   Obsidian (frontmatter zonder quotes opnieuw geschreven) gaf binnen seconden ☑️ op het dashboard.
+
+Nog nakijken uit stap 4:
+
+- [ ] De eerste runner-tik onder launchd op de nieuwe code (vanaf 15:33 op 18-11):
+  `sed -n '/^-- 2026-11-18T15:3/,$p' ~/dependabot-runs/.logs/runner.log` toont geen traceback.
+- [ ] De eerste echte run van Debbie na stap 4: de notitie heeft `resume` al tijdens `running`, en
+  na `done` niet meer; bij `paused` of `failed` komt er één melding (van de watcher, in
+  `~/.agent-watcher/watcher.log`), niet twee.
 
 ## Beslissingen
 
@@ -292,3 +300,38 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
     interval (elke paar minuten), en ná die schrijfacties ververst de volgende tik het dashboard
     vanzelf. Een fout bij YouTrack mag de tik voor het dashboard niet blokkeren: eigen `try`. De
     melding kan `melden()` uit de runner naar `agentruns.py` verhuizen.
+- 2026-11-18, stap 4:
+  - In de lus van de watcher, elk met een eigen `try`: heartbeat, processen (elke tik), YouTrack
+    (`YOUTRACK_ELKE` 3 minuten, de eerste keer bij de start), dan meldingen en dashboard als de stand
+    wijzigt. Na een eigen schrijfactie draait hij `build_index.py`, want `description` staat in de
+    index van de runmap.
+  - Een afgebroken run wordt pas `failed` als het proces `PROCES_WEG` (15 s) weg is. Anders zou de
+    watcher in de seconde tussen het einde van `claude` en de eindstatus van de runner `failed`
+    schrijven en melden. Het plan zei "binnen een paar seconden"; het werden er 15 tot 17.
+  - Nieuw: `proces` in de notitie per agent (standaard `claude`), want de watcher moet weten hoe het
+    proces achter `pid` heet. Staat in [[agent-runs]].
+  - De oude runner zette bij een afgebroken run `resume` uit `session_id`; dat is specifiek voor
+    Debbie. Nu schrijft de runner `resume` al bij de start, en haalt hij het weg bij `done`. De
+    afspraak vraagt dat van elke agent.
+  - `description` schrijft de watcher opnieuw met `agentruns.beschrijving()`, met de agentnaam met
+    hoofdletter: voor Debbie dezelfde tekst als voorheen.
+  - Naar `agentruns.py`: `melden()`, `env_waarde()` (met `ENV`), `youtrack_get()`, `issue_state()`
+    (gooit nu een fout in plaats van `None`), `beschrijving()`, `afgehandeld()` en `wacht_op_mij()`
+    (uit het dashboard). De runner gebruikt ze; `verslag_na()` blijft in de runner, op
+    `youtrack_get()`.
+  - `opruimen()` in de runner doet nu alleen `verslag_na()`, en leest de notitie opnieuw vlak voor het
+    schrijven. De runner meldt geen `paused` of `failed` meer; alleen nog een stille watcher. Valt de
+    watcher weg, dan zijn er dus ook geen meldingen per run, maar wel die over de watcher zelf.
+  - Meldingen: bij een andere status naar `paused`/`failed` of een nieuw aandachtspunt, alleen voor
+    runs die niet lopen en niet zijn afgehandeld. `~/.agent-watcher/gemeld.json` houdt per notitie
+    status en aandachtspunten bij. Ontbreekt het bestand, dan legt de watcher alleen de stand vast
+    (anders 28 meldingen bij de eerste start).
+  - Gevonden: de pyenv-`python3` in mijn shell heeft geen SSL (`unknown url type: https`). Test
+    YouTrack-code met `/usr/bin/python3`, zoals launchd.
+  - Getest in een tijdelijke vault (16 gevallen: wachttijd, velden en volgorde, lege lijsten, Obsidian-
+    stijl, YouTrack-fout, meldingen, herstart zonder dubbele meldingen, afgehandeld zonder melding,
+    notitie zonder `agent`). Op een kopie van de runmap met de echte YouTrack: geen wijzigingen, en
+    een verzonnen `issue_state` komt byte voor byte terug. Onder launchd met twee testnotities: dood
+    pid na 17 s `failed` met melding, `paused` op een Done-issue (PA-1105) na 3 minuten `done`,
+    beide op het dashboard. De testnotities zijn weg.
+  - Voor stap 5: de runner-docstring noemt `dashboard.base` nog als overzicht.

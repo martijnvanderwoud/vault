@@ -24,5 +24,6 @@ dagen geen run begonnen (`interval: 8d`), dan staat ze op het dashboard onder `S
 
 Een `paused`- of `failed`-run heeft in `resume` het commando, zoals
 `cd ~/dependabot-runs/cata && claude --resume <sessie>`. Na een hervatting zet de runner de run op
-`done` zodra er een verslag van Debbie in het issue staat. Zonder issue geef ik hem vrij met
-`status: resolved`. Een `paused`- of `failed`-run blokkeert zijn project tot hij is afgehandeld.
+`done` zodra er een verslag van Debbie in het issue staat. Zet ik het issue op Done, dan doet de
+watcher dat binnen een paar minuten. Zonder issue geef ik hem vrij met `status: resolved`. De
+melding bij `paused` en `failed` komt van de watcher, niet van de runner. Een `paused`- of `failed`-run blokkeert zijn project tot hij is afgehandeld.
