@@ -46,8 +46,6 @@ Nog nakijken uit stap 3:
 
 - [ ] Een property van een run-notitie wijzigen in Obsidian en het dashboard binnen een paar
   seconden zien veranderen. Met de hand (ter plekke en atomair) is het getest, via Obsidian nog niet.
-- [ ] Na een herstart van de Mac: `tail ~/.agent-watcher/watcher.log` toont `watcher gestart`, en de
-  runner stuurt geen melding `Agent-watcher draait niet`.
 
 ## Beslissingen
 
@@ -276,7 +274,10 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
     `agentruns.heartbeat_schrijven()` en `watcher_stil()`, grens `HEARTBEAT_MAX` 3 minuten.
   - Het dashboard toont bovenaan `[!danger] De watcher draait niet` met de laatste heartbeat. De
     runner van Debbie controleert de heartbeat bij elke echte tik (niet bij `--dry-run`) en stuurt
-    dan een macOS-melding, elk half uur zolang de watcher weg is.
+    dan een macOS-melding, elk half uur zolang de watcher weg is. Dat gebeurt pas na `opruimen()`:
+    na het inloggen starten runner en watcher tegelijk, en een controle vooraf kon de heartbeat van
+    vóór de herstart zien en onterecht melden. Een aparte test na een herstart is niet nodig: de
+    runner van Debbie laadt via dezelfde map in `~/Library/LaunchAgents/` en draaide na een herstart.
   - Plist in `scripts/agent-watcher/`, met `KeepAlive`, `RunAtLoad` en `ThrottleInterval` 30 (een
     watcher die meteen crasht, start niet eindeloos opnieuw). De shell maakt `~/.agent-watcher` aan.
   - Gevonden: `agent_dashboard.py` uit stap 2 werkte niet onder `python3 -I` (de scriptmap staat dan

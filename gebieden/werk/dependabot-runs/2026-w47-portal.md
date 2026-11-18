@@ -18,6 +18,7 @@ kosten: 0.62
 beurten: 33
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w47-portal.jsonl"
+issue_state: "In Progress"
 laatste: true
 ---
 # Debbie-run portal

@@ -633,9 +633,11 @@ def main():
         print('er draait al een runner (%s)' % LOCK)
         return
     signal.signal(signal.SIGTERM, sigterm)
-    watcher_controleren()
     for regel in opruimen(dry_run=False):
         print('bijgewerkt: ' + regel)
+    # Pas na opruimen (YouTrack, een paar seconden): na het inloggen starten runner en watcher
+    # tegelijk, en dan heeft de watcher zijn eerste heartbeat nog niet geschreven.
+    watcher_controleren()
     for project, prs, besluit, reden in selecteer(args.repo):
         print(regel_tonen(project, prs, besluit, reden))
         if besluit == 'run':
