@@ -28,7 +28,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 3. Ward headless
 - [x] 4. Schedule met launchd en status vastleggen
 - [x] 5. Aansluiten op het agents-dashboard (18-11)
-- [ ] 6. PKI-1132 bijwerken
+- [x] 6. PKI-1132 bijwerken (18-11)
 
 Nog nakijken uit stap 5:
 
@@ -176,6 +176,11 @@ Doel: in PKI-1132 en PKI-1133 staat dat de check draait en wat er bij een alarm 
 Klaar als: beide issues bijgewerkt zijn en PKI-1133 op `Done` kan.
 
 ## Bevindingen
+
+- **Stap 6, 2026-11-18 (klaar).** In PKI-1132 is punt 4 van het plan doorgestreept en vervangen
+  door de werkende check, en de hotfix-trigger noemt de mail van Ward. Comments in PKI-1132 (wat de
+  check doet, wat er bij een alarm gebeurt) en PKI-1133 (samenvatting van de zes stappen en de
+  beperking dat de laptop aan moet staan). PKI-1133 is nog niet op Done gezet: dat beslist Martijn.
 
 - **Stap 5, 2026-11-18 (klaar).** Stap 1 van [[agents-dashboard-plan]] was al
   klaar. Watcher en dashboard zijn niet aangepast; Ward sluit aan met [[ward]]

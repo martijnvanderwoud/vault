@@ -21,7 +21,7 @@ Bijgewerkt op 18-11-2026.
 | [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema loopt via [[weekplanning-plan]]; daarna de kennisnotities in de volgorde uit de interviewnotitie |
 | [[weekplanning-plan]] | Stap 1 klaar op 15-11: `trainingsduur.py`, aannames nog te bevestigen | Stap 2: soorten dagen en regels als data |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
-| [[ward-plan]] (Ward) | Stap 1 t/m 5 klaar (18-11): launchd draait de runner elke dag om 9:00; Ward start alleen bij een verandering en staat met een run-notitie per check op het agents-dashboard | Stap 6: PKI-1132 bijwerken |
+| [[ward-plan]] (Ward) | Klaar (18-11): launchd draait de runner elke dag om 9:00; Ward start alleen bij een verandering en staat met een run-notitie per check op het agents-dashboard; PKI-1132 en PKI-1133 bijgewerkt | PKI-1133 op Done; later meer checks (schijfruimte, certificaten, kernelversies, back-ups) |
 
 ## Afgerond
 
