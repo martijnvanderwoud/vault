@@ -6,7 +6,7 @@ weigert deze hook elke Gmail-tool behalve `send_message`, en `send_message` zodr
 `bcc` een ander adres bevat dan ONTVANGER, `to` leeg is of er een `draftId` is (een concept wordt
 verstuurd zoals het is, met zijn eigen ontvangers). Een reply in een bestaande thread weigert hij
 ook. Bij een fout in de invoer weigert hij, nooit stil doorlaten.
-Plan: gebieden/werk/ward-plan.md, stap 3.
+Achtergrond: gebieden/werk/ward-bewaking/ward-bewaking-logboek.md, stap 3.
 """
 import json
 import sys

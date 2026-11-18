@@ -5,8 +5,8 @@ tags: [vault, roadmap]
 
 # Roadmap van de vault
 
-Overzicht van alle plannen, niet de plannen zelf. Elk plan heeft een eigen notitie met stappen,
-voortgang en bevindingen. Hier staat per plan alleen de stand en de volgende stap. Zie [[vault-doel]] voor
+Overzicht van alle plannen, niet de plannen zelf. Elk lopend plan heeft een eigen notitie met
+stappen, voortgang en bevindingen. Hier staat per plan alleen de stand en de volgende stap. Zie [[vault-doel]] voor
 het waarom en [[vault-beslissingen]] voor de gemaakte keuzes.
 
 Bijgewerkt op 18-11-2026.
@@ -17,11 +17,10 @@ Bijgewerkt op 18-11-2026.
 |---|---|---|
 | [[dependabot-routine-autonoom-plan]] (Debbie) | Stap 1 t/m 9 klaar; alle 21 repo's staan sinds 11-11 op autonoom | Stap 10: controlepunt na donderdag 19-11, alle runs van week 47 nakijken op het agents-dashboard en in de run-notities |
 | [[release-candidates-staging]] | Alle stappen gescript, eerste uitrol op 13-11 (infra-PR #999), skill `staging-release-candidates` | Testen bij de volgende uitrol, met de skill |
-| [[agents-dashboard-plan]] | Stap 1 t/m 5 klaar (18-11): `scripts/agent_watcher.py` draait onder launchd, ververst `gebieden/agents/dashboard.md`, houdt `issue_state` bij en meldt; het oude `dashboard.base` is weg | Nakijken van stap 4 bij de eerste echte run van Debbie; daarna een tweede agent ([[ward-plan]]) |
+| [[agents-dashboard-plan]] | Stap 1 t/m 5 klaar (18-11): `scripts/agent_watcher.py` draait onder launchd, ververst `gebieden/agents/dashboard.md`, houdt `issue_state` bij en meldt; het oude `dashboard.base` is weg | Nakijken van stap 4 bij de eerste echte run van Debbie (Ward is de tweede agent, sinds 18-11) |
 | [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema loopt via [[weekplanning-plan]]; daarna de kennisnotities in de volgorde uit de interviewnotitie |
 | [[weekplanning-plan]] | Stap 1 klaar op 15-11: `trainingsduur.py`, aannames nog te bevestigen | Stap 2: soorten dagen en regels als data |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
-| [[ward-plan]] (Ward) | Klaar (18-11): launchd draait de runner elke dag om 9:00; Ward start alleen bij een verandering en staat met een run-notitie per check op het agents-dashboard; PKI-1132 en PKI-1133 bijgewerkt | PKI-1133 op Done; later meer checks (schijfruimte, certificaten, kernelversies, back-ups) |
 
 ## Afgerond
 
@@ -33,6 +32,7 @@ Bijgewerkt op 18-11-2026.
 | Dependabot-routine als skill `/dependabot-routine` | 9-11-2026, testruns t/m 10-11 | [[dependabot-routine]] |
 | Analyse AI-Brein Bootcamp, context- en grenzenlaag van de vault | 15-11-2026 | [[vault-leren-van-bootcamp]] |
 | Hostingfactuur FLOW via Acumulus-API, skill `/hostingfactuur-flow` (PDF nog met de hand bijvoegen) | 17-11-2026, eerste factuur 20260084 | [[hosting-transip]], [[acumulus]] |
+| Ward: elke ochtend de hosts van Pompkracht controleren (eerst AVX-512 VBMI voor Java4Shell), melden bij een verandering, op het agents-dashboard | 18-11-2026 (PKI-1133) | [[ward-bewaking]] |
 
 Werkwijze om een terugkerende taak uit een project om te zetten in een skill:
 [[vault-skill-maken-vanuit-project]].
@@ -62,5 +62,11 @@ Werkwijze om een terugkerende taak uit een project om te zetten in een skill:
 
 - Nieuw plan: eigen notitie met voortgang (zoals [[agents-dashboard-plan]]) en een regel onder
   `Lopend`.
-- Plan klaar: regel naar `Afgerond`. Stappen en bevindingen blijven in de notitie van het plan.
+- Plan klaar: regel naar `Afgerond`, en het plan wordt een eigen map met drie notities, zoals
+  [[release-candidates-staging]] en [[ward-bewaking]]:
+  - `<onderwerp>.md`: de documentatie, wat het doet en hoe ik het gebruik, leesbaar voor mensen
+  - `<onderwerp>-beslissingen.md`: de beslissingen met de reden erachter
+  - `<onderwerp>-logboek.md`: hoe het chronologisch verliep, met de stappen en bevindingen
+  De plannotitie verdwijnt. Wat het proces later oplevert (uitrolnotities, meldingen) komt in een
+  submap van dezelfde map, zodat alles over één onderwerp bij elkaar staat.
 - Idee wordt een plan: weg uit de backlog, regel onder `Lopend`.

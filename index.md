@@ -19,3 +19,4 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
 - [[CLAUDE]]
 - [[README]]
+- [[ward-bewaking-logboek]]

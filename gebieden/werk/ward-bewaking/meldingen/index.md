@@ -1,7 +1,7 @@
 ---
-description: Gegenereerde index van ward-meldingen
+description: Gegenereerde index van meldingen
 ---
-# ward-meldingen
+# meldingen
 
 _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 

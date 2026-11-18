@@ -2,7 +2,7 @@
 
 Geen wachtwoordprompt (BatchMode) en een korte timeout: een host die niet antwoordt, levert een
 fout op in plaats van een hangende run. De sleutels komen uit de agent, die ze onder launchd zelf
-uit de keychain laadt (UseKeychain en AddKeysToAgent, zie stap 1 van gebieden/werk/ward-plan.md).
+uit de keychain laadt (UseKeychain en AddKeysToAgent, zie stap 1 in gebieden/werk/ward-bewaking/ward-bewaking-logboek.md).
 """
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path

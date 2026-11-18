@@ -5,7 +5,7 @@
 
 ONDERWERP is een van de sleutels van COMMANDO'S. HOST moet in ~/.ssh/config staan. Zo krijgt Ward
 geen vrije SSH: de allowlist laat alleen dit script toe, en het script kiest het commando.
-Plan: gebieden/werk/ward-plan.md, stap 3.
+Achtergrond: gebieden/werk/ward-bewaking/ward-bewaking-logboek.md, stap 3.
 """
 import os
 import sys

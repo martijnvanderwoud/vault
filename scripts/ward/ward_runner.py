@@ -5,7 +5,7 @@ De hosts komen uit ~/.ssh/config (de `Host`-regels zonder wildcard), de verwacht
 data/ward/baseline.json. Die referentie pas ik bewust met de hand aan, nooit automatisch. Behalve
 de checks uit scripts/ward/checks/ vergelijkt de runner de hostlijst met de referentie: een host die
 erbij komt of uit de config verdwijnt, is een `warn` van de check `hosts`.
-Plan: gebieden/werk/ward-plan.md.
+Documentatie: gebieden/werk/ward-bewaking/ward-bewaking.md.
 
     ward_runner.py [--dry-run] [--referentie PAD] [--uitkomsten PAD] [--status PAD] [--model MODEL]
 
@@ -13,7 +13,7 @@ Toont per check en host de uitkomst (`ok`, `warn` of `alarm`) met details, en wa
 sinds de vorige run (de status in ~/.ward/status.json). Exitcode 0 als alles `ok` is, 1 bij een
 `warn`, 2 bij een `alarm`. Alleen een verandering levert iets op, een bekend probleem niet elke dag
 opnieuw. Wordt een host slechter of anders niet `ok`, dan start een headless sessie met Ward
-(`claude -p`), die de bevinding nagaat, een notitie in gebieden/werk/ward-meldingen/ schrijft en
+(`claude -p`), die de bevinding nagaat, een notitie in gebieden/werk/ward-bewaking/meldingen/ schrijft en
 mij mailt. Is er alleen herstel naar `ok`, dan schrijft de runner zelf een korte notitie daar en
 volgt een macOS-melding, zonder model en zonder mail (mailen kan alleen via de claude.ai-koppeling,
 dus via een sessie). Mislukt de sessie, dan volgt een macOS-melding (van de watcher, via de
@@ -21,10 +21,11 @@ run-notitie) en blijft de oude status staan, zodat de volgende run het
 opnieuw probeert. De status, met de tijd van de laatste geslaagde run, schrijft alleen een geslaagde
 run. Een tweede runner stopt meteen (lock). launchd start de runner elke dag om 9:00
 (scripts/ward/nl.crimsoncricket.ward.plist). Log in ~/.ward/logs/.
-Voor het agents-dashboard schrijft de runner per check een run-notitie in gebieden/werk/ward-runs/
-(gebieden/agents/agent-runs.md): bij de start `running`, aan het eind `done` met de hosts die niet
-`ok` zijn als aandachtspunten, of `failed` als de sessie met Ward mislukt. Elke run schrijft dezelfde
-notitie opnieuw: per check telt alleen de laatste run. De melding bij `failed` komt van de watcher.
+Voor het agents-dashboard schrijft de runner per check een run-notitie in
+gebieden/werk/ward-bewaking/runs/ (gebieden/agents/agent-runs.md): bij de start `running`, aan het
+eind `done` met de hosts die niet `ok` zijn als aandachtspunten, of `failed` als de sessie met Ward
+mislukt. Elke run schrijft dezelfde notitie opnieuw: per check telt alleen de laatste run. De
+melding bij `failed` komt van de watcher.
 `--dry-run` toont alleen de uitkomsten en veranderingen, zonder lock, sessie of status. `--referentie`
 neemt een andere referentie, om `warn` te testen. `--uitkomsten` leest de uitkomsten uit een
 JSON-bestand ({check: {host: [uitkomst, details]}}) in plaats van de checks te draaien: een test, die
@@ -53,14 +54,14 @@ VAULT = Path(__file__).resolve().parent.parent.parent
 REFERENTIE = VAULT / 'data/ward/baseline.json'
 HEADLESS = Path(__file__).resolve().parent / 'headless'
 MAIL_HOOK = Path(__file__).resolve().parent / 'mail_hook.py'
-MELDINGEN = VAULT / 'gebieden/werk/ward-meldingen'  # bevindingen en herstel, de geschiedenis van Ward
+MELDINGEN = VAULT / 'gebieden/werk/ward-bewaking/meldingen'  # bevindingen en herstel, de geschiedenis van Ward
 
 HOME = Path.home()
 WARD = HOME / '.ward'  # werkmap van de sessie, buiten de vault: geen projectinstellingen of hooks
 LOGS = WARD / 'logs'
 STATUS = WARD / 'status.json'
 LOCK = WARD / 'runner.lock'
-RUNS = VAULT / 'gebieden/werk/ward-runs'
+RUNS = VAULT / 'gebieden/werk/ward-bewaking/runs'
 # Volgorde van de velden in een run-notitie; een gestopte run start je opnieuw met launchd.
 VELDEN = ('description', 'agent', 'onderwerp', 'status', 'started', 'ended', 'reason', 'step', 'aandacht',
           'resume', 'pid', 'kosten', 'beurten', 'model', 'log', 'notitie')
@@ -342,7 +343,7 @@ def runs_afsluiten(uitkomsten, veranderd, moment, gelukt, reden, sessie):
                 '%s %s -> %s' % (host, was[0], nu[0]) for host, (was, nu) in veranderd[onderwerp].items()))
         if nodig:
             regels.append('Ward: %s ([[%s]]).' % ('klaar' if gelukt else 'mislukt, %s' % reden, sessie['notitie']))
-        regels += ['', 'De runner schrijft deze notitie bij elke run opnieuw; zie [[ward]] en [[ward-plan]].']
+        regels += ['', 'De runner schrijft deze notitie bij elke run opnieuw; zie [[ward-bewaking]].']
         run_schrijven(onderwerp, velden, '\n'.join(regels) + '\n')
 
 
