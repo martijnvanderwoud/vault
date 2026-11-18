@@ -1,17 +1,10 @@
 {
   "items": [
     {
-      "type": "group",
-      "ctime": 1794410654744,
-      "items": [
-        {
-          "type": "file",
-          "ctime": 1794411681695,
-          "path": "gebieden/werk/dependabot-runs/debbie-dashboard.md",
-          "title": "Debbie dashboard"
-        }
-      ],
-      "title": "Pompkracht"
+      "type": "file",
+      "ctime": 1795015779448,
+      "path": "gebieden/agents/dashboard.md",
+      "title": "Agents Dashboard"
     },
     {
       "type": "file",
