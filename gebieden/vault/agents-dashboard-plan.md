@@ -26,7 +26,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 ## Voortgang
 
-- [x] 1. Statusvorm en gedeelde module (18-11, op twee controles na, zie hieronder)
+- [x] 1. Statusvorm en gedeelde module (18-11)
 - [x] 2. Dashboard genereren (18-11)
 - [ ] 3. Watcher die altijd draait
 - [ ] 4. Taken uit de runner naar de watcher
@@ -38,9 +38,9 @@ module, en dat is getest. Het gaat om de runner van Debbie zelf.
 - [x] De eerste runner-tik onder launchd op de nieuwe code (vanaf 14:03 op 18-11):
   `sed -n '/^-- 2026-11-18T14:/,$p' ~/dependabot-runs/.logs/runner.log` toont de projecten
   zonder traceback. Gecontroleerd: de tikken van 14:03 en 14:33 liepen goed.
-- [ ] De eerste echte run van Debbie op de module (bij de volgende Dependabot-PR's): de nieuwe
+- [x] De eerste echte run van Debbie op de module (bij de volgende Dependabot-PR's): de nieuwe
   run-notitie heeft `onderwerp` en geen `repo`, en er staan geen `.tmp`-bestanden in
-  `gebieden/werk/dependabot-runs/`.
+  `gebieden/werk/dependabot-runs/`. Gecontroleerd op `2026-w47-portal` (18-11 14:33): klopt.
 
 ## Beslissingen
 
