@@ -20,6 +20,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w46-portal-ui-common]] — Debbie-run portal-ui-common, gestart 2026-11-12 12:00: done (PKP-911)
 - [[2026-w46-portal-worker-ui]] — Debbie-run portal-worker-ui, gestart 2026-11-13 00:23: done (PKP-912)
 - [[2026-w46-profile-presentation-ui]] — Debbie-run profile-presentation-ui, gestart 2026-11-13 00:26: done (PPP-85)
+- [[2026-w47-axon-stomp-event-publishing]] — Debbie-run axon-stomp-event-publishing, gestart 2026-11-18 19:17: done (PMD-10)
 - [[2026-w47-cata]] — Debbie-run cata, gestart 2026-11-16 22:29: done (PCATA-623)
 - [[2026-w47-iam]] — Debbie-run iam, gestart 2026-11-17 01:02: done (PKIAM-843)
 - [[2026-w47-insights-2]] — Debbie-run insights, gestart 2026-11-18 11:46: done (PI-205)

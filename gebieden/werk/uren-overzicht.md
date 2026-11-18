@@ -6,19 +6,19 @@ tags: [werk, uren]
 # Urenoverzicht 2026
 
 > Gegenereerd door `scripts/uren.py --schrijf` (skill `/uren`) uit LogMyTime. Niet met de hand bewerken.
-> Peildatum **17-11-2026**. Achtergrond en logica: [[urenregistratie]].
+> Peildatum **18-11-2026**. Achtergrond en logica: [[urenregistratie]].
 
 ## Stand
 
 | Stand | Uren | | Declarabel per klant | Uren |
 |---|---:|---|---|---:|
-| Declarabel | 1122,40 | | Pompkracht | 1121,85 |
-| Target (werkuren) | 1282,50 | | Construct | 0,55 |
-| Vrij opgenomen | 160,10 | | **Totaal declarabel** | **1122,40** |
+| Declarabel | 1127,30 | | Pompkracht | 1126,75 |
+| Target (werkuren) | 1288,50 | | Construct | 0,55 |
+| Vrij opgenomen | 161,20 | | **Totaal declarabel** | **1127,30** |
 | Vrij-budget | 196,00 | | Niet declarabel | 8,75 |
-| Vrij over | 35,90 | |  |  |
+| Vrij over | 34,80 | |  |  |
 | Nog gereserveerd | 34,00 | |  |  |
-| **Vrij na reservering** | **1,90** | |  |  |
+| **Vrij na reservering** | **0,80** | |  |  |
 
 ## Vrije uren: gepland en gereserveerd
 
@@ -62,4 +62,4 @@ Bron: `data/vrije-dagen-2026.csv`. Is een geplande dag voorbij, zet dan `nog_ger
 | aug | 115,30 | 0,00 | 115,30 |
 | sep | 99,80 | 0,00 | 99,80 |
 | okt | 128,15 | 0,00 | 128,15 |
-| nov | 66,25 | 0,55 | 66,80 |
+| nov | 71,15 | 0,55 | 71,70 |
