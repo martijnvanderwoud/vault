@@ -53,7 +53,7 @@ Meer mag niet, en meer is ook niet nodig. Probeer geen andere tools of commando'
 
    ```
    ---
-   description: Ward $datum - <ergste uitkomst>: <bevinding in één regel>
+   description: "Ward $datum - <ergste uitkomst>, <bevinding in één regel>"
    tags: [ward]
    ---
 
@@ -63,6 +63,9 @@ Meer mag niet, en meer is ook niet nodig. Probeer geen andere tools of commando'
    ## Nagegaan
    ## Volgende stap
    ```
+
+   Zet `description` tussen dubbele quotes, zonder dubbele quotes erin: anders is de frontmatter
+   ongeldig.
 
    Onder `Nagegaan` wat je gedraaid hebt en wat eruit kwam, ook als het de bevinding van de runner
    tegenspreekt. Onder `Volgende stap` wat Martijn moet doen. Bij een `alarm`: de hotfix uit

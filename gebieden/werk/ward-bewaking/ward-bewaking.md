@@ -43,7 +43,8 @@ flowchart TD
 4. **Alleen herstel naar `ok`:** de runner schrijft zelf een korte melding en geeft een
    macOS-melding, zonder model en zonder mail.
 5. **Dashboard.** Per check staat de laatste run op het agents-dashboard
-   (`gebieden/agents/dashboard.md`), ook als er niets aan de hand is.
+   (`gebieden/agents/dashboard.md`), ook als er niets aan de hand is. Het is één run voor alle
+   checks, maar elke check heeft een eigen rij, met dezelfde starttijd.
 
 ## De checks en hun uitkomsten
 
@@ -106,8 +107,6 @@ De referentie pas ik altijd met de hand aan, nooit automatisch.
 - PKI-1133 op Done zetten.
 - Meer checks: schijfruimte, certificaten, kernelversies, back-ups.
 - Het log toont elke dag de hele tabel (ruim 40 regels). Korter maken als het te groot wordt.
-- Op het dashboard staat Ward met een rij per check (`cpu`, `hosts`), die op aparte runs lijken.
-  Het is één run. Nog beslissen of dat zo blijft of één rij wordt.
 
 ## Meer
 

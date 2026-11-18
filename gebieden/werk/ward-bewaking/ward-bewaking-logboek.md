@@ -90,7 +90,7 @@ notitie schrijft en mij mailt.
 - `--uitkomsten PAD` voor nagemaakte uitkomsten; Ward hoort dan dat het een test is, en `TEST` komt
   in het onderwerp. De testrun met een nagemaakte `alarm` (prd-k3s-4) en `warn` (dev-k3s-2) kostte
   $0,22 in 7 beurten. Ward ging het na op de echte hosts, zag geen `avx512vbmi`, schreef een notitie
-  en mailde "Ward TEST: CPU-alarm niet bevestigd" ([[meldingen/ward-2026-11-18|ward-2026-11-18]]).
+  en mailde "Ward TEST: CPU-alarm niet bevestigd".
 
 ## Stap 4: schedule met launchd en status vastleggen
 
@@ -159,4 +159,10 @@ watcher of dashboard voor Ward veranderen.
   [[ward-bewaking-beslissingen]] en dit logboek, zoals bij [[release-candidates-staging]]. Alles
   van Ward staat nu in `gebieden/werk/ward-bewaking/`, met `meldingen/` (eerst
   `gebieden/werk/ward-meldingen/`) en `runs/` (eerst `gebieden/werk/ward-runs/`). De beschrijving
-  van PKI-1133 noemt nog `gebieden/werk/ward-plan.md`.
+  van PKI-1133 is bijgewerkt naar de nieuwe map.
+- Een rij per check op het dashboard blijft, ook al lijken de rijen op aparte runs.
+- De testmelding van stap 3 is weg. Obsidian gaf er "ongeldige eigenschappen" bij: Ward had de
+  `description` zonder quotes geschreven, met `(TEST): ` erin, en de voorbeeldopbouw in de prompt
+  had zelf al een `: ` na de uitkomst. Nu vraagt de prompt om quotes (en heeft de opbouw geen `: `
+  meer), en schrijft de runner na de sessie de frontmatter opnieuw met `agentruns`, dat altijd
+  quotes zet. Getest op een kopie van de testmelding.

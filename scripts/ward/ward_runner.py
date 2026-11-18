@@ -250,6 +250,15 @@ def log_uitlezen(log):
     return result, mails
 
 
+def melding_normaliseren(notitie):
+    """Schrijft de frontmatter van de melding van Ward opnieuw, met quotes. Ward schrijft hem zelf, en een
+    `: ` in een `description` zonder quotes maakt hem ongeldig voor Obsidian."""
+    if notitie.exists():
+        fm, tekst = agentruns.notitie_lezen(notitie)
+        if fm:
+            agentruns.notitie_schrijven(notitie, fm, tekst)
+
+
 def ward_starten(uitkomsten, veranderd, model, test):
     """Eén sessie met Ward. Geeft (gelukt, reden, sessie): `sessie` met model, log en eventueel kosten en
     beurten, voor de run-notities."""
@@ -268,6 +277,7 @@ def ward_starten(uitkomsten, veranderd, model, test):
                                         stderr=subprocess.STDOUT, timeout=TIMEOUT * 60).returncode
         except subprocess.TimeoutExpired:
             return False, 'sessie duurde langer dan %d minuten' % TIMEOUT, info
+    melding_normaliseren(notitie)
     subprocess.run([sys.executable, str(VAULT / 'scripts/build_index.py')], check=False, capture_output=True)
 
     result, mails = log_uitlezen(log)

@@ -68,6 +68,8 @@ Waarom [[ward-bewaking]] werkt zoals het werkt. Hoe het zo gekomen is, staat in
 - **Geen vrije SSH voor Ward.** Een allowlist op `ssh host *` laat elk commando toe. Ward krijgt
   `nagaan.py HOST ONDERWERP`, met een vast read-only commando per onderwerp, alleen voor hosts uit
   `~/.ssh/config`.
+- **De runner schrijft de frontmatter van de melding van Ward opnieuw,** met quotes. Ward schrijft
+  hem zelf, en één `: ` in een `description` zonder quotes maakt hem ongeldig in Obsidian.
 - **De sessie draait in `~/.ward/`, buiten de vault,** zodat de projectinstellingen, hooks en de
   auto-commit van de vault niet meedoen. Ward mag alleen zijn eigen melding schrijven.
 - **De runner schrijft de status, niet het model,** en keurt de sessie pas goed als de melding er
@@ -82,7 +84,8 @@ Waarom [[ward-bewaking]] werkt zoals het werkt. Hoe het zo gekomen is, staat in
 - **Eén run-notitie per check, bij elke run opnieuw geschreven.** Zo staat de status per check op
   het dashboard, en houdt de watcher per notitie bij wat hij gemeld heeft, waardoor een bekende
   bevinding niet elke dag een nieuwe melding geeft. Tijdens `running` blijven de aandachtspunten
-  van de vorige run staan, om dezelfde reden.
+  van de vorige run staan, om dezelfde reden. Dat de rijen op aparte runs lijken, neem ik voor lief
+  (18-11): met meer checks zie je zo meteen welke check een probleem heeft.
 - **Hosts die niet `ok` zijn, zijn aandachtspunten** en blijven op het dashboard tot de host weer
   `ok` is of ik de referentie aanpas. `resolved` zetten helpt niet: de volgende run schrijft de
   notitie opnieuw.
