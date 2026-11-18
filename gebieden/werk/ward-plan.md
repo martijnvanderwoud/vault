@@ -23,7 +23,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 ## Voortgang
 
-- [ ] 1. SSH onder launchd
+- [x] 1. SSH onder launchd
 - [ ] 2. Runner en CPU-check
 - [ ] 3. Ward headless
 - [ ] 4. Schedule met launchd en status vastleggen
@@ -167,7 +167,7 @@ Klaar als: beide issues bijgewerkt zijn en PKI-1133 op `Done` kan.
 
 ## Bevindingen
 
-- **Stap 1, 2026-11-18 (half af).** In een Claude-sessie in auto mode blokkeert de classifier
+- **Stap 1, 2026-11-18 (klaar).** In een Claude-sessie in auto mode blokkeert de classifier
   SSH naar de hosts ("Unauthorized Access"). De test draait dus Martijn zelf. Voor stap 3 telt
   dat niet direct (Ward draait met `--permission-mode dontAsk` en een allowlist, niet in auto
   mode), maar test daar of SSH headless wel doorkomt.
@@ -180,9 +180,12 @@ Klaar als: beide issues bijgewerkt zijn en PKI-1133 op `Done` kan.
   ze niet overschrijft. Vorige versie: `~/.ssh/config.before-ward-identity`.
 - Na `ssh-add --apple-use-keychain` van de drie clustersleutels (in een gewone Terminal; `!` in
   Claude Code kan geen passphrase ontvangen) haalde de test-LaunchAgent om 15:40 alle 20 hosts,
-  ook die achter `ProxyJump`. Daarmee is de koppeling sleutel–cluster bevestigd. Nog te doen
-  voor stap 1: dezelfde test na een herstart (de agent staat in `~/Library/LaunchAgents` met
-  `RunAtLoad`, dus hij draait vanzelf bij het inloggen), daarna de test-agent opruimen.
+  ook die achter `ProxyJump`. Daarmee is de koppeling sleutel–cluster bevestigd.
+- Na een herstart (run 15:47) was de agent leeg (`The agent has no identities`, nieuwe socket)
+  en haalde de test toch alle 20 hosts: `AddKeysToAgent` en `UseKeychain` laden de sleutels uit
+  de keychain. Gevolg voor stap 2: de runner hoeft `SSH_AUTH_SOCK` niet zelf te zetten en geen
+  sleutels te laden. De test-agent en het testscript zijn opgeruimd; het log staat nog in
+  `~/Library/Logs/ward-ssh-test.log`.
 - `UseKeychain yes` en `AddKeysToAgent yes` staan onder `Host *` onderaan `~/.ssh/config`, buiten
   de blokken van `infra/Justfile`. De vorige versie staat in `~/.ssh/config.before-ward`.
 - In een interactieve shell wijst `SSH_AUTH_SOCK` naar de socket van launchd
