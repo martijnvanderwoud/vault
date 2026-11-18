@@ -44,8 +44,9 @@ module, en dat is getest. Het gaat om de runner van Debbie zelf.
 
 Nog nakijken uit stap 3:
 
-- [ ] Een property van een run-notitie wijzigen in Obsidian en het dashboard binnen een paar
-  seconden zien veranderen. Met de hand (ter plekke en atomair) is het getest, via Obsidian nog niet.
+- [x] Een property van een run-notitie wijzigen in Obsidian en het dashboard binnen een paar
+  seconden zien veranderen. Gecontroleerd op 18-11 met een testnotitie: `status` op `resolved` in
+  Obsidian (frontmatter zonder quotes opnieuw geschreven) gaf binnen seconden ☑️ op het dashboard.
 
 ## Beslissingen
 
