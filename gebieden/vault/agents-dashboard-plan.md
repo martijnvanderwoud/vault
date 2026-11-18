@@ -27,7 +27,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 ## Voortgang
 
 - [x] 1. Statusvorm en gedeelde module (18-11, op twee controles na, zie hieronder)
-- [ ] 2. Dashboard genereren
+- [x] 2. Dashboard genereren (18-11)
 - [ ] 3. Watcher die altijd draait
 - [ ] 4. Taken uit de runner naar de watcher
 - [ ] 5. Opruimen
@@ -35,9 +35,9 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 Nog nakijken uit stap 1. Dit blokkeert stap 2 niet: het dashboard leest alleen notities via de
 module, en dat is getest. Het gaat om de runner van Debbie zelf.
 
-- [ ] De eerste runner-tik onder launchd op de nieuwe code (vanaf 14:03 op 18-11):
+- [x] De eerste runner-tik onder launchd op de nieuwe code (vanaf 14:03 op 18-11):
   `sed -n '/^-- 2026-11-18T14:/,$p' ~/dependabot-runs/.logs/runner.log` toont de projecten
-  zonder traceback.
+  zonder traceback. Gecontroleerd: de tikken van 14:03 en 14:33 liepen goed.
 - [ ] De eerste echte run van Debbie op de module (bij de volgende Dependabot-PR's): de nieuwe
   run-notitie heeft `onderwerp` en geen `repo`, en er staan geen `.tmp`-bestanden in
   `gebieden/werk/dependabot-runs/`.
@@ -142,6 +142,11 @@ Doel: het dashboard ververst binnen een paar seconden na een wijziging, zonder d
   een bestand buiten de vault). Is die ouder dan een paar minuten, dan toont het dashboard bovenaan
   een waarschuwing. Die werkt dan wel pas bij de volgende generatie, dus ook de runner van Debbie
   controleert de heartbeat en stuurt een melding.
+- Naast wijzigingen draait de watcher `agent_dashboard.py` ook elke minuut. Het blok `Stil` en de
+  grens van 7 dagen hangen af van de tijd, niet van een bestand (zie de bevindingen van stap 2).
+  Het script schrijft alleen bij een andere inhoud, dus dat kost niets.
+- Kijk ook naar `gebieden/agents/*.md` zelf, niet alleen naar de runmappen: een nieuwe agent of een
+  ander `interval` moet ook op het dashboard komen.
 - Testen: een run-notitie wijzigen, met de hand en via Obsidian, en het dashboard binnen een paar
   seconden zien veranderen. De watcher stoppen (`kill`) en zien dat launchd hem opnieuw start.
 
@@ -227,3 +232,27 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
     als nog na te kijken.
   - Voor stap 2: het dashboard kan `agents()`, `notities()` en `laatste_per_onderwerp()` direct
     gebruiken.
+- 2026-11-18, stap 2:
+  - `scripts/agent_dashboard.py` schrijft `gebieden/agents/dashboard.md`: `[!danger] Aandacht
+    nodig` of `[!success] Niets wacht op jou`, dan `[!warning] Stil` (alleen als er iets stil is),
+    `[!info] Nu bezig`, en per agent een tabel `Afgelopen 7 dagen`. Opties `--agents` en `--uit`
+    voor tests.
+  - Nieuw, niet in het oorspronkelijke plan: `interval` in de notitie per agent (zoals `8d`), de
+    langste tijd tussen twee runs. Is er langer geen run begonnen en loopt er geen, dan staat de
+    agent onder `Stil`; een onleesbaar interval staat daar ook. Debbie heeft `interval: 8d`. Het
+    veld staat in [[agent-runs]].
+  - Agents zonder runs in de afgelopen 7 dagen blijven staan met `Geen runs.`: ook dat is een
+    signaal. Aandacht nodig is één lijst voor alle agents, op starttijd; groeperen per agent is nog
+    niet nodig.
+  - In de tabel krijgt een `done`-run met aandachtspunten op een open issue ⚠️. Een run in de
+    tabel: gestart binnen 7 dagen, of nog bezig, of wacht op mij.
+  - Tekst uit een run-notitie: op één regel, met een backslash voor ``\`*_[]<>#|~=$%^!&{}:``. De `:`
+    houdt een kale URL ongelinkt. Wikilinks naar de run alleen als bestandsnaam en onderwerp
+    `[\w.-]+` zijn, issue-links alleen bij een geldig ID. In een tabel krijgt de alias `\|`,
+    erbuiten niet. Getest in Obsidian met een notitie vol Markdown, HTML, callout, embed en URL:
+    alles komt als letterlijke tekst.
+  - `atomair_schrijven()` zit nu in `agentruns.py`, voor run-notities en het dashboard;
+    `agents(map)` kan een andere map lezen. De 27 notities gaan nog byte voor byte heen en terug.
+  - `gebieden/agents/dashboard.md` staat in `.gitignore`.
+  - Voor stap 3: `Stil` en de grens van 7 dagen hangen van de tijd af, dus de watcher maakt het
+    dashboard ook elke minuut opnieuw, en kijkt ook naar de notities per agent (staat bij stap 3).

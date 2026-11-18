@@ -55,6 +55,8 @@ Eigen velden van een agent mogen erbij, zoals `prs` en `session_id` bij Debbie. 
 - `runs`: de map met de run-notities, vanaf de vault, zoals `gebieden/werk/dependabot-runs`
 - `lijsten`: optioneel, eigen velden die een lijst zijn (naast `aandacht`), zodat een lege lijst
   bij het opnieuw schrijven een lijst blijft
+- `interval`: optioneel, de langste tijd tussen twee runs, zoals `8d`, `12h` of `30m`. Is er
+  langer dan dat geen run begonnen en loopt er geen, dan zet het dashboard de agent onder `Stil`.
 
 En in de tekst: wat de agent doet, waar zijn plan staat en hoe je een run hervat. De watcher
 vindt de runmappen via deze notities, en het dashboard linkt ernaar.

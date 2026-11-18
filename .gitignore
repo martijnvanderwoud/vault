@@ -29,3 +29,5 @@ __pycache__/
 
 # IDE
 .idea/
+# Gegenereerd dashboard van de agents (wijzigt bij elke run)
+gebieden/agents/dashboard.md

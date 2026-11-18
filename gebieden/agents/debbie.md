@@ -3,6 +3,7 @@ description: Debbie, de autonome Dependabot-routine - handelt elke week de Depen
 tags: [agents, dependabot]
 runs: gebieden/werk/dependabot-runs
 lijsten: [prs]
+interval: 8d
 ---
 
 # Debbie
@@ -11,6 +12,9 @@ Debbie handelt de Dependabot- en Scala Steward-PR's af in de projecten met `auto
 `.claude/skills/dependabot-routine/projecten/`. De runner (`scripts/dependabot_runner.py`, onder
 launchd elk half uur) start per project met open PR's waarvan de checks klaar zijn een run met de
 skill [[dependabot-routine]]. Per project (het `onderwerp`) loopt hooguit één run tegelijk.
+
+Dependabot opent elke week PR's, dus Debbie draait minstens één keer per week. Is er langer dan acht
+dagen geen run begonnen (`interval: 8d`), dan staat ze op het dashboard onder `Stil`.
 
 - Run-notities: `gebieden/werk/dependabot-runs/`, één per run (`<jaar>-w<week>-<project>.md`).
 - Logs: `~/dependabot-runs/.logs/`.

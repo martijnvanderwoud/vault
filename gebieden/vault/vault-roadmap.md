@@ -17,7 +17,7 @@ Bijgewerkt op 18-11-2026.
 |---|---|---|
 | [[dependabot-routine-autonoom-plan]] (Debbie) | Stap 1 t/m 9 klaar; alle 21 repo's staan sinds 11-11 op autonoom | Stap 10: controlepunt na donderdag 19-11, alle runs van week 47 nakijken in het dashboard |
 | [[release-candidates-staging]] | Alle stappen gescript, eerste uitrol op 13-11 (infra-PR #999), skill `staging-release-candidates` | Testen bij de volgende uitrol, met de skill |
-| [[agents-dashboard-plan]] | Stap 1 klaar (18-11): statusvorm en `scripts/agentruns.py` | Stap 2: dashboard genereren |
+| [[agents-dashboard-plan]] | Stap 2 klaar (18-11): `scripts/agent_dashboard.py` schrijft `gebieden/agents/dashboard.md` | Stap 3: watcher die altijd draait |
 | [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema loopt via [[weekplanning-plan]]; daarna de kennisnotities in de volgorde uit de interviewnotitie |
 | [[weekplanning-plan]] | Stap 1 klaar op 15-11: `trainingsduur.py`, aannames nog te bevestigen | Stap 2: soorten dagen en regels als data |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |

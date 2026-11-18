@@ -28,22 +28,27 @@ def yaml_waarde(value):
     return ' ' + json.dumps(str(value), ensure_ascii=False)
 
 
-def notitie_schrijven(path, fm, tekst, volgorde=()):
-    """Schrijft de notitie atomair: een tijdelijk bestand in dezelfde map en dan `rename`. Zo leest
-    een ander proces (runner, watcher, Obsidian) nooit een half geschreven notitie. Eerst de velden
-    uit `volgorde`, dan de rest in de volgorde van `fm`: een gelezen notitie houdt zo zijn volgorde."""
+def atomair_schrijven(path, inhoud):
+    """Een tijdelijk bestand in dezelfde map en dan `rename`. Zo leest een ander proces (runner,
+    watcher, Obsidian) nooit een half geschreven bestand. De punt ervoor verbergt het voor Obsidian."""
     path = Path(path)
-    sleutels = [k for k in volgorde if k in fm] + [k for k in fm if k not in volgorde]
-    regels = ['---'] + ['%s:%s' % (k, yaml_waarde(fm[k])) for k in sleutels] + ['---', '']
     fd, tmp = tempfile.mkstemp(dir=path.parent, prefix='.' + path.name + '.', suffix='.tmp')
     try:
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(regels) + tekst.rstrip() + '\n')
+            f.write(inhoud)
         os.chmod(tmp, 0o644)
         os.replace(tmp, path)
     except BaseException:
         os.unlink(tmp)
         raise
+
+
+def notitie_schrijven(path, fm, tekst, volgorde=()):
+    """Schrijft de notitie atomair. Eerst de velden uit `volgorde`, dan de rest in de volgorde van
+    `fm`: een gelezen notitie houdt zo zijn volgorde."""
+    sleutels = [k for k in volgorde if k in fm] + [k for k in fm if k not in volgorde]
+    regels = ['---'] + ['%s:%s' % (k, yaml_waarde(fm[k])) for k in sleutels] + ['---', '']
+    atomair_schrijven(path, '\n'.join(regels) + tekst.rstrip() + '\n')
 
 
 def yaml_lezen(value):
@@ -92,11 +97,11 @@ def notitie_lezen(path, lijsten=LIJSTEN):
     return fm, tekst.lstrip('\n')
 
 
-def agents():
+def agents(map=AGENTS):
     """De agents uit gebieden/agents/<agent>.md met een veld `runs`: {naam: frontmatter}, met `runs`
     als Path. Andere notities in die map, zoals agent-runs.md, tellen niet mee."""
     result = {}
-    for path in sorted(AGENTS.glob('*.md')):
+    for path in sorted(Path(map).glob('*.md')):
         fm, _ = notitie_lezen(path)
         if fm.get('runs'):
             result[path.stem] = dict(fm, runs=VAULT / fm['runs'], lijsten=LIJSTEN + tuple(fm.get('lijsten') or ()))
