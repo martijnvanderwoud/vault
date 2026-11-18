@@ -21,7 +21,7 @@ Bijgewerkt op 18-11-2026.
 | [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema loopt via [[weekplanning-plan]]; daarna de kennisnotities in de volgorde uit de interviewnotitie |
 | [[weekplanning-plan]] | Stap 1 klaar op 15-11: `trainingsduur.py`, aannames nog te bevestigen | Stap 2: soorten dagen en regels als data |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
-| [[ward-plan]] (Ward) | Stap 1 t/m 3 klaar (18-11): de runner start Ward headless bij een `warn` of `alarm`; notitie, mail en mailhook getest | Stap 4: schedule met launchd en status vastleggen |
+| [[ward-plan]] (Ward) | Stap 1 t/m 4 klaar (18-11): launchd draait de runner elke dag om 9:00; Ward start alleen bij een verandering, herstel geeft een notitie en een melding | Stap 5: aansluiten op het agents-dashboard |
 
 ## Afgerond
 

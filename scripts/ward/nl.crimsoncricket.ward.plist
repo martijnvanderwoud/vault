@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>nl.crimsoncricket.ward</string>
+    <key>ProgramArguments</key>
+    <array>
+        <!-- launchd breidt ~ en $HOME niet uit, de shell wel: zo staan er geen absolute paden in -->
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>mkdir -p "$HOME/.ward/logs" &amp;&amp; exec /usr/bin/python3 -I "$HOME/vault/scripts/ward/ward_runner.py" &gt;&gt; "$HOME/.ward/logs/runner.log" 2&gt;&amp;1</string>
+    </array>
+    <!-- Elke dag om 9:00. Na slaapstand haalt launchd een gemiste run in, niet als de laptop uit stond. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+</dict>
+</plist>

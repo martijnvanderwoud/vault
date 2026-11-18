@@ -26,7 +26,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 1. SSH onder launchd
 - [x] 2. Runner en CPU-check
 - [x] 3. Ward headless
-- [ ] 4. Schedule met launchd en status vastleggen
+- [x] 4. Schedule met launchd en status vastleggen
 - [ ] 5. Aansluiten op het agents-dashboard
 - [ ] 6. PKI-1132 bijwerken
 
@@ -166,6 +166,38 @@ Doel: in PKI-1132 en PKI-1133 staat dat de check draait en wat er bij een alarm 
 Klaar als: beide issues bijgewerkt zijn en PKI-1133 op `Done` kan.
 
 ## Bevindingen
+
+- **Stap 4, 2026-11-18 (klaar).** De runner vergelijkt met de status van de laatste geslaagde run in
+  `~/.ward/status.json` (`laatste_run` en de uitkomsten per check en host), buiten de vault zodat
+  er niet elke dag een bestand in git wijzigt. Een verandering is een andere uitkomst, of bij een
+  `warn` of `alarm` een andere reden. Bij onbereikbaar telt de foutmelding van ssh niet, want die
+  verschilt van dag tot dag. Een host die er vorige keer niet was, telt als vorige `ok`.
+- **Herstel naar `ok` gaat zonder agent:** de runner schrijft zelf een korte notitie in `inbox/`
+  ("weer ok") en geeft een macOS-melding. Geen mail: mailen kan alleen via de claude.ai-koppeling,
+  dus via een sessie, en daar is herstel de kosten niet waard. Is er tegelijk een host slechter
+  geworden, dan start Ward en staat het herstel in zijn prompt bij de veranderingen.
+- **Ward krijgt de veranderingen in de prompt** (`[vorige, nu]` per host), naast alle hosts die
+  niet `ok` zijn. Notitie en mail gaan over de verandering.
+- **Mislukt Ward, dan blijft de oude status staan.** Zo probeert de volgende run het opnieuw, in
+  plaats van dat een alarm alleen in een gemiste macOS-melding staat. De status (met
+  `laatste_run`) schrijft alleen een geslaagde run; `laatste_run` is dus de laatste geslaagde run
+  voor het dashboard (stap 5).
+- **Lock** met `flock` op `~/.ward/runner.lock`; een tweede runner stopt meteen met exitcode 0.
+  `--dry-run` neemt de lock niet, want Ward draait die zelf binnen de sessie van de runner.
+- **Tests:** met `--uitkomsten` of een andere `--referentie` geldt de status alleen met
+  `--status PAD`. Zonder vergelijkt de runner met niets en schrijft hij niets, zodat een test de
+  echte status nooit raakt. Getest met een testscript dat de checks, de sessie en de meldingen
+  vervangt: nieuw alarm, zelfde alarm (niets), andere ssh-fout (niets), andere warn-reden, herstel,
+  mislukte sessie (status blijft, volgende run opnieuw), dry-run en een bezette lock.
+- **LaunchAgent** `nl.crimsoncricket.ward`: `scripts/ward/nl.crimsoncricket.ward.plist`, gekopieerd
+  naar `~/Library/LaunchAgents/` en geladen met `launchctl bootstrap`. Log in
+  `~/.ward/logs/runner.log` (een `---`-regel met de tijd per run, de uitkomsten en `veranderd:`).
+  Na een wijziging van de plist: `launchctl bootout gui/$(id -u)/nl.crimsoncricket.ward`, opnieuw
+  kopiëren en `bootstrap`.
+- **Echte run onder launchd** (`launchctl kickstart`, door Martijn, 16:05): 20 keer `ok` voor
+  `hosts` en `cpu`, `veranderd: niets`, exitcode 0, `status.json` geschreven, geen sessie of
+  notitie. De run duurde ruim een minuut. Het log toont elke dag de hele tabel (ruim 40 regels);
+  maak dat korter als het log te groot wordt.
 
 - **Stap 3, 2026-11-18 (klaar).** Bij een `warn` of `alarm` start `ward_runner.py` (zonder
   `--dry-run`) een sessie met Ward: `claude -p` in `~/.ward/` (buiten de vault, dus geen

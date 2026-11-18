@@ -7,18 +7,27 @@ de checks uit scripts/ward/checks/ vergelijkt de runner de hostlijst met de refe
 erbij komt of uit de config verdwijnt, is een `warn` van de check `hosts`.
 Plan: gebieden/werk/ward-plan.md.
 
-    ward_runner.py [--dry-run] [--referentie PAD] [--uitkomsten PAD] [--model MODEL]
+    ward_runner.py [--dry-run] [--referentie PAD] [--uitkomsten PAD] [--status PAD] [--model MODEL]
 
-Toont per check en host de uitkomst (`ok`, `warn` of `alarm`) met details. Exitcode 0 als alles
-`ok` is, 1 bij een `warn`, 2 bij een `alarm`. Is er iets niet `ok`, dan start een gewone run een
-headless sessie met Ward (`claude -p`), die de bevinding nagaat, een notitie in inbox/ schrijft en
-mij mailt. Nu nog bij elke `warn` of `alarm`; dat het alleen bij een verandering gebeurt, komt in
-stap 4. Mislukt de sessie, dan volgt een macOS-melding. Log in ~/.ward/logs/.
-`--dry-run` toont alleen de uitkomsten. `--referentie` neemt een andere referentie, om `warn` te
-testen. `--uitkomsten` leest de uitkomsten uit een JSON-bestand ({check: {host: [uitkomst,
-details]}}) in plaats van de checks te draaien: een test, die Ward als test meekrijgt.
+Toont per check en host de uitkomst (`ok`, `warn` of `alarm`) met details, en wat er veranderd is
+sinds de vorige run (de status in ~/.ward/status.json). Exitcode 0 als alles `ok` is, 1 bij een
+`warn`, 2 bij een `alarm`. Alleen een verandering levert iets op, een bekend probleem niet elke dag
+opnieuw. Wordt een host slechter of anders niet `ok`, dan start een headless sessie met Ward
+(`claude -p`), die de bevinding nagaat, een notitie in inbox/ schrijft en mij mailt. Is er alleen
+herstel naar `ok`, dan schrijft de runner zelf een korte notitie en volgt een macOS-melding, zonder
+model en zonder mail (mailen kan alleen via de claude.ai-koppeling, dus via een sessie). Mislukt de
+sessie, dan volgt een macOS-melding en blijft de oude status staan, zodat de volgende run het
+opnieuw probeert. De status, met de tijd van de laatste geslaagde run, schrijft alleen een geslaagde
+run. Een tweede runner stopt meteen (lock). launchd start de runner elke dag om 9:00
+(scripts/ward/nl.crimsoncricket.ward.plist). Log in ~/.ward/logs/.
+`--dry-run` toont alleen de uitkomsten en veranderingen, zonder lock, sessie of status. `--referentie`
+neemt een andere referentie, om `warn` te testen. `--uitkomsten` leest de uitkomsten uit een
+JSON-bestand ({check: {host: [uitkomst, details]}}) in plaats van de checks te draaien: een test, die
+Ward als test meekrijgt. Bij een test geldt de status alleen met `--status`; zonder vergelijkt de
+runner met niets en schrijft hij niets.
 """
 import argparse
+import fcntl
 import json
 import os
 import subprocess
@@ -44,6 +53,8 @@ INBOX = VAULT / 'inbox'
 HOME = Path.home()
 WARD = HOME / '.ward'  # werkmap van de sessie, buiten de vault: geen projectinstellingen of hooks
 LOGS = WARD / 'logs'
+STATUS = WARD / 'status.json'
+LOCK = WARD / 'runner.lock'
 # PATH zonder mijn shellprofiel, zoals onder launchd: ~/.local/bin voor claude.
 BASIS_PATH = [str(HOME / '.local/bin'), '/opt/homebrew/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin']
 DEFAULT_MODEL = 'claude-opus-5-5'
@@ -81,6 +92,53 @@ def aantallen(per_host):
     return {u: sum(1 for v, _ in per_host.values() if v == u) for u in UITKOMSTEN}
 
 
+def kern(uitkomst, details):
+    """Wat telt als verandering. Bij `ok` alleen de uitkomst; bij onbereikbaar niet de foutmelding
+    van ssh, die van dag tot dag kan verschillen."""
+    if uitkomst == 'ok':
+        return uitkomst, ''
+    return uitkomst, 'onbereikbaar' if details.startswith('onbereikbaar') else details
+
+
+def veranderingen(vorige, uitkomsten):
+    """{check: {host: [vorige, nu]}} voor elke host waarvan de kern veranderd is. Een host die er
+    vorige keer niet was, telt als vorige `ok`; een host die nu ontbreekt, als nu `ok`."""
+    result = {}
+    for naam in set(vorige) | set(uitkomsten):
+        oud, nieuw = vorige.get(naam, {}), uitkomsten.get(naam, {})
+        for host in list(nieuw) + [h for h in oud if h not in nieuw]:
+            was, is_ = tuple(oud.get(host, ('ok', ''))), tuple(nieuw.get(host, ('ok', '')))
+            if kern(*was) != kern(*is_):
+                result.setdefault(naam, {})[host] = [list(was), list(is_)]
+    return result
+
+
+def status_lezen(path):
+    """De uitkomsten van de laatste geslaagde run, of {} als er nog geen is."""
+    try:
+        return json.loads(path.read_text())['uitkomsten']
+    except (OSError, ValueError, KeyError):
+        return {}
+
+
+def status_schrijven(path, uitkomsten, moment):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    agentruns.atomair_schrijven(path, json.dumps(
+        {'laatste_run': moment.isoformat(), 'uitkomsten': uitkomsten}, indent=2, ensure_ascii=False) + '\n')
+
+
+def lock_nemen():
+    """Exclusieve lock voor dit runner-proces, of None als er al een draait."""
+    WARD.mkdir(exist_ok=True)
+    f = open(LOCK, 'a+')
+    try:
+        fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        f.close()
+        return None
+    return f
+
+
 def tonen(uitkomsten):
     breedte = max(len(h) for per_host in uitkomsten.values() for h in per_host)
     for naam, per_host in uitkomsten.items():
@@ -108,13 +166,28 @@ def nieuwe_notitie(datum):
     return INBOX / (stem + '.md'), stem
 
 
-def prompt(uitkomsten, notitie, moment, test):
+def herstel_noteren(veranderd, moment):
+    """Alleen herstel naar `ok`: een korte notitie in inbox/, zonder model. Geeft het pad."""
+    notitie, _ = nieuwe_notitie(moment.date().isoformat())
+    hosts = ['- `%s` (%s): was %s, %s' % (host, naam, was[0], was[1])
+             for naam, per_host in veranderd.items() for host, (was, _) in per_host.items()]
+    agentruns.notitie_schrijven(notitie, {
+        'description': 'Ward %s - herstel: %d host(s) weer ok' % (moment.date().isoformat(), len(hosts)),
+        'tags': ['ward']}, '# Ward %s: weer ok\n\nDe runner (%s) ziet deze hosts weer `ok`:\n\n%s\n\n'
+        'Er is geen sessie met Ward gestart en geen mail gestuurd.\n' % (
+            moment.date().isoformat(), moment.isoformat(), '\n'.join(hosts)))
+    subprocess.run([sys.executable, str(VAULT / 'scripts/build_index.py')], check=False, capture_output=True)
+    return notitie
+
+
+def prompt(uitkomsten, veranderd, notitie, moment, test):
     niet_ok = {naam: {h: list(v) for h, v in per_host.items() if v[0] != 'ok'}
                for naam, per_host in uitkomsten.items()}
     datum = moment.date().isoformat()
     return Template((HEADLESS / 'prompt.md').read_text()).substitute(
         moment=moment.isoformat(), datum=datum, notitie=tilde(notitie), ergste=ergste(uitkomsten),
         uitkomsten=json.dumps({k: v for k, v in niet_ok.items() if v}, indent=2, ensure_ascii=False),
+        veranderd=json.dumps(veranderd, indent=2, ensure_ascii=False),
         aantallen='; '.join('%s: %s' % (naam, ', '.join('%d %s' % (n, u) for u, n in aantallen(ph).items() if n))
                             for naam, ph in uitkomsten.items()),
         test=('**Dit is een test met nagemaakte uitkomsten.** Ga ze toch na, zet `TEST` in de titel van '
@@ -165,14 +238,14 @@ def log_uitlezen(log):
     return result, mails
 
 
-def ward_starten(uitkomsten, model, test):
+def ward_starten(uitkomsten, veranderd, model, test):
     """Eén sessie met Ward. Geeft (gelukt, reden)."""
     LOGS.mkdir(parents=True, exist_ok=True)
     moment = nu_lokaal()
     notitie, stem = nieuwe_notitie(moment.date().isoformat())
     log = LOGS / (stem + '.jsonl')
     sessie = str(uuid.uuid4())
-    args = (['claude', '-p', prompt(uitkomsten, notitie, moment, test), '--session-id', sessie,
+    args = (['claude', '-p', prompt(uitkomsten, veranderd, notitie, moment, test), '--session-id', sessie,
              '-n', stem, '--model', model, '--output-format', 'stream-json', '--verbose'] + claude_args(notitie))
     print('Ward gestart: sessie %s, log %s' % (sessie, tilde(log)))
     with open(log, 'w') as uit:
@@ -206,10 +279,19 @@ def main():
     parser.add_argument('--dry-run', action='store_true', help='alleen de uitkomsten tonen')
     parser.add_argument('--referentie', type=Path, default=REFERENTIE, help='andere baseline.json')
     parser.add_argument('--uitkomsten', type=Path, help='nagemaakte uitkomsten uit JSON, om Ward te testen')
+    parser.add_argument('--status', type=Path, help='ander status.json (standaard %s, bij een test geen)' % tilde(STATUS))
     parser.add_argument('--model', default=DEFAULT_MODEL, help='model voor Ward (standaard %(default)s)')
     args = parser.parse_args()
     sys.stdout.reconfigure(line_buffering=True)
+    test = bool(args.uitkomsten)
+    status = args.status or (None if test or args.referentie != REFERENTIE else STATUS)
 
+    lock = None if args.dry_run else lock_nemen()
+    if not args.dry_run and lock is None:
+        print('%s: er draait al een runner, gestopt' % nu_lokaal().isoformat())
+        sys.exit(0)
+    moment = nu_lokaal()
+    print('--- %s' % moment.isoformat())
     if args.uitkomsten:
         uitkomsten = {naam: {h: tuple(v) for h, v in per_host.items()}
                       for naam, per_host in json.loads(args.uitkomsten.read_text()).items()}
@@ -217,11 +299,29 @@ def main():
         uitkomsten = draaien(json.loads(args.referentie.read_text()))
     tonen(uitkomsten)
     slechtste = ergste(uitkomsten)
-    if not args.dry_run and slechtste != 'ok':
-        gelukt, reden = ward_starten(uitkomsten, args.model, test=bool(args.uitkomsten))
+    # Zonder status (een test) telt alles wat niet ok is als verandering.
+    veranderd = veranderingen(status_lezen(status) if status else {}, uitkomsten)
+    slechter = any(nu[0] != 'ok' for per_host in veranderd.values() for _, nu in per_host.values())
+    print('veranderd: %s' % ('; '.join('%s %s: %s -> %s' % (naam, host, was[0], nu[0])
+                                       for naam, ph in veranderd.items() for host, (was, nu) in ph.items())
+                             or 'niets'))
+    if args.dry_run:
+        sys.exit(UITKOMSTEN.index(slechtste))
+
+    gelukt = True
+    if slechter:
+        gelukt, reden = ward_starten(uitkomsten, veranderd, args.model, test)
         print('Ward: %s' % ('klaar, %s' % reden if gelukt else 'mislukt, %s' % reden))
         if not gelukt:
             agentruns.melden('Ward-run mislukt', 'Bij een %s: %s' % (slechtste, reden))
+    elif veranderd:
+        notitie = herstel_noteren(veranderd, moment)
+        print('herstel: %s' % tilde(notitie))
+        agentruns.melden('Ward: weer ok', '%d host(s) hersteld, zie %s' % (
+            sum(len(ph) for ph in veranderd.values()), notitie.name))
+    if gelukt and status:
+        status_schrijven(status, {naam: {h: list(v) for h, v in ph.items()} for naam, ph in uitkomsten.items()},
+                         moment)
     sys.exit(UITKOMSTEN.index(slechtste))
 
 
