@@ -10,6 +10,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[gebieden/werk/dependabot-runs/index|dependabot-runs]]
 - [[gebieden/werk/release-candidates-staging/index|release-candidates-staging]]
 - [[gebieden/werk/ward-meldingen/index|ward-meldingen]]
+- [[gebieden/werk/ward-runs/index|ward-runs]]
 
 ## Notities
 

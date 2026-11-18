@@ -32,9 +32,11 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 Nog nakijken uit stap 5:
 
-- [ ] De eerste echte run op de nieuwe code (`launchctl kickstart gui/$(id -u)/nl.crimsoncricket.ward`,
+- [x] De eerste echte run op de nieuwe code (`launchctl kickstart gui/$(id -u)/nl.crimsoncricket.ward`,
   of morgen om 9:00): Ward staat op het dashboard met `hosts` en `cpu` op ✅ klaar, niet meer onder
-  `Stil`, en `~/.agent-watcher/watcher.log` toont geen melding of `failed` voor Ward.
+  `Stil`, en `~/.agent-watcher/watcher.log` toont geen melding of `failed` voor Ward. Gecontroleerd
+  op 18-11 (kickstart 16:12): 20 keer `ok` voor beide checks, `veranderd: niets`, geen sessie, de
+  run-notities gingen van `running` naar `done` (15 s), op het dashboard ✅, en de watcher meldde niets.
 
 ## Beslissingen
 
@@ -175,7 +177,7 @@ Klaar als: beide issues bijgewerkt zijn en PKI-1133 op `Done` kan.
 
 ## Bevindingen
 
-- **Stap 5, 2026-11-18 (klaar, op de echte run na).** Stap 1 van [[agents-dashboard-plan]] was al
+- **Stap 5, 2026-11-18 (klaar).** Stap 1 van [[agents-dashboard-plan]] was al
   klaar. Watcher en dashboard zijn niet aangepast; Ward sluit aan met [[ward]]
   (`runs: gebieden/werk/ward-runs`, `interval: 2d`, `proces: Python`).
 - **Eén run-notitie per check** (`ward-runs/ward-hosts.md`, `ward-cpu.md`, `onderwerp` is de check),
