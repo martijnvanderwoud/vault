@@ -283,6 +283,9 @@ Klaar als: een run zonder mijn tussenkomst is gestart en goed is afgelopen.
 
 Doel: één overzicht van alle runs.
 
+Vervangen op 2026-11-18 door het agents-dashboard (`gebieden/agents/dashboard.md`) uit
+[[agents-dashboard-plan]]. `dashboard.base` en `debbie-dashboard.md` zijn weg.
+
 - `gebieden/werk/dependabot-runs/dashboard.base`, een tabel per status met links naar het
   issue en een kolom `aandacht`, plus een aparte weergave van runs met aandachtspunten.
   De kernplugin Bases staat al aan, dus geen community-plugin nodig. Controleer of
@@ -304,12 +307,12 @@ De allowlist is de frontmatter `autonoom: true` in `projecten/*.md`. Die blijft 
 uitknop per repo: regel weg, en de runner slaat de repo over.
 
 - [x] Alle 21 repo's op `autonoom: true`, clones klaargezet met `--prepare` in `env -i HOME=$HOME`.
-- [ ] Een hele ronde (maandag tot en met donderdag) gedraaid en in het dashboard nagekeken:
+- [ ] Een hele ronde (maandag tot en met donderdag) gedraaid en nagekeken op het agents-dashboard
+  en in de run-notities:
   verslagen, `geweigerd` en `aandacht`. Let vooral op de eigen stappen die nog nooit autonoom
   liepen: de release-PR's van `react-notifications` en `profile-presentation-design`, de codegen
   van `rostering-api` en sbt met Scala Steward in `notifications`.
-- [ ] Controlepunt na donderdag 2026-11-19: alle runs van week 47 nagekeken in het dashboard
-  (verslagen, `geweigerd` en `aandacht`). Week 46 telt niet als hele ronde: alles stond pas aan
+- [ ] Controlepunt na donderdag 2026-11-19: alle runs van week 47 nagekeken (verslagen, `geweigerd` en `aandacht`). Week 46 telt niet als hele ronde: alles stond pas aan
   op woensdag 2026-11-11 om 16:51, en de repo's van maandag en dinsdag hebben nog geen autonome
   run gehad. Loop daarbij na:
   - de release-PR's van `react-notifications` en `profile-presentation-design`
@@ -731,3 +734,8 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   `onderwerp`, zoals in de gedeelde statusvorm ([[agent-runs]]). Alle bestaande notities en
   `dashboard.base` zijn omgezet. Lezen en schrijven van run-notities zit nu in
   `scripts/agentruns.py`; de runner gebruikt die module.
+- 2026-11-18, stap 5 van [[agents-dashboard-plan]]: `dashboard.base` en `debbie-dashboard.md` zijn
+  weg, de runs staan op het agents-dashboard (`gebieden/agents/dashboard.md`). De runner zet geen
+  `laatste` meer, en het veld is uit de notities gehaald. Dat dashboard toont alleen de laatste run
+  per repo van de afgelopen 7 dagen, zonder `geweigerd` en `beurten`. Voor het nakijken van stap 10
+  en een vergelijking tussen Opus en Sonnet: de run-notities zelf (`kosten`, `beurten`, `geweigerd`).

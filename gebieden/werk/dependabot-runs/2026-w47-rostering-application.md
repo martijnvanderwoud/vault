@@ -17,7 +17,6 @@ beurten: 36
 geweigerd: 2
 log: "~/dependabot-runs/.logs/2026-w47-rostering-application.jsonl"
 issue_state: "Done"
-laatste: true
 ---
 # Debbie-run rostering-application
 

@@ -16,7 +16,6 @@ beurten: 32
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w46-portal-worker-ui.jsonl"
 issue_state: "Done"
-laatste: true
 ---
 # Debbie-run portal-worker-ui
 

@@ -8,6 +8,8 @@ taken, lijsten en kennis. Claude Code werkt hier als assistent.
 - `inbox/` ongesorteerde input
 - `dagboek/` daily notes: `dagboek/JJJJ/JJJJ-MM-DD.md`
 - `gebieden/` werk, klanten, privé-domeinen
+- `gebieden/agents/` autonome agents: één notitie per agent, de afspraak voor run-notities
+  (`agent-runs.md`) en het gegenereerde `dashboard.md`
 - `lijsten/` boeken, bewaarplekken, ideeën
 - `data/` gestructureerde data (CSV, JSON)
 - `scripts/` deterministische helpers
@@ -31,6 +33,8 @@ je van afblijft: `gebieden/vault/werkafspraken.md` (lees die bij vragen over wat
 
 - `index.md` in elke map is gegenereerd door `scripts/build_index.py`.
   Nooit met de hand bewerken: het script overschrijft ze.
+- `gebieden/agents/dashboard.md` is gegenereerd door `scripts/agent_dashboard.py` (de watcher
+  draait het). Niet met de hand bewerken, en het staat niet in git.
 - Hooks (`.claude/settings.json`): na elke Write/Edit wordt `build_index.py`
   gedraaid; bij SessionEnd worden de indexen herbouwd en wordt automatisch
   gecommit (geen push).

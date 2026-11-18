@@ -15,7 +15,8 @@ de notitie volgt alleen mijn stappen en beslissingen.
 
 De actuele stappen staan in `.claude/skills/dependabot-routine/SKILL.md`. Het plan om de
 routine autonoom te laten draaien staat in [[dependabot-routine-autonoom-plan]].
-De runs van Debbie staan in [[debbie-dashboard|het dashboard]].
+De runs van Debbie staan op het agents-dashboard (`gebieden/agents/dashboard.md`), met de andere
+autonome agents; zie [[debbie]] en [[agents-dashboard-plan]].
 
 ### Beslissingen van mij
 

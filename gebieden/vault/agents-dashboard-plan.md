@@ -30,7 +30,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 2. Dashboard genereren (18-11)
 - [x] 3. Watcher die altijd draait (18-11)
 - [x] 4. Taken uit de runner naar de watcher (18-11)
-- [ ] 5. Opruimen
+- [x] 5. Opruimen (18-11)
 
 Nog nakijken uit stap 1. Dit blokkeert stap 2 niet: het dashboard leest alleen notities via de
 module, en dat is getest. Het gaat om de runner van Debbie zelf.
@@ -335,3 +335,14 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
     pid na 17 s `failed` met melding, `paused` op een Done-issue (PA-1105) na 3 minuten `done`,
     beide op het dashboard. De testnotities zijn weg.
   - Voor stap 5: de runner-docstring noemt `dashboard.base` nog als overzicht.
+- 2026-11-18, stap 5:
+  - Gekozen: `dashboard.base` en `debbie-dashboard.md` helemaal weg, niet gehouden als geschiedenis.
+    Kosten, beurten en `geweigerd` per run staan in de run-notities zelf. Voor een vergelijking
+    tussen Opus en Sonnet moet je die dus uit de notities halen (met een script, niet uit het hoofd).
+  - `laatste_markeren()` en het veld `laatste` zijn uit de runner, en `laatste: true` is uit de 21
+    notities gehaald waar het stond (alleen die regel). De runner-docstring noemt alleen nog
+    `gebieden/agents/dashboard.md`.
+  - Verwijzingen bijgewerkt: [[dependabot-routine]], stap 9, 10 en de bevindingen van
+    [[dependabot-routine-autonoom-plan]], de skill (`de watcher haalt de run uit Aandacht nodig`),
+    [[vault-roadmap]] en `CLAUDE.md` (mapstructuur en gegenereerde bestanden).
+

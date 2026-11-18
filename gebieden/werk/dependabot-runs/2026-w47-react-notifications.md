@@ -16,7 +16,6 @@ beurten: 75
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w47-react-notifications.jsonl"
 issue_state: "Done"
-laatste: true
 ---
 # Debbie-run react-notifications
 

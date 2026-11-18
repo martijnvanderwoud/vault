@@ -35,4 +35,3 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w47-rostering-engine]] — Debbie-run rostering-engine, gestart 2026-11-18 10:39: done (RPAAS-529)
 - [[2026-w47-rostering-ui-2]] — Debbie-run rostering-ui, gestart 2026-11-16 10:14: done (RPAAS-522)
 - [[2026-w47-rostering-ui]] — Debbie-run rostering-ui, gestart 2026-11-16 09:37: done (RPAAS-522)
-- [[debbie-dashboard]] — Dashboard van Debbie, de autonome Dependabot-routine, met de runs uit dashboard.base

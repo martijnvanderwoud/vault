@@ -10,7 +10,7 @@ repo. Na een hervatting zet de runner hem op `done` zodra er een verslag van Deb
 Anders geef ik hem met de hand vrij met `status: resolved`, of zet ik het issue op Done.
 De watcher (scripts/agent_watcher.py) doet wat voor alle agents geldt: de melding bij `paused` en
 `failed`, `issue_state` bijhouden, en een afgebroken run op `failed` zetten.
-Overzicht: gebieden/agents/dashboard.md (en nog dependabot-runs/dashboard.base).
+Overzicht: gebieden/agents/dashboard.md.
 
 Gebruik: dependabot_runner.py --dry-run [--repo NAAM ...]
 Toont per project uit de skill welke repo's nu een run zouden krijgen, zonder iets te wijzigen.
@@ -66,7 +66,7 @@ DEFAULT_TIMEOUT = 120  # minuten; stap 8 van de skill wacht op de build van de b
 VERSLAG_KOP = 'Debbie (Dependabot routine) report'
 # De volgorde in de run-notities. `onderwerp` is bij Debbie de naam van het project (de repo).
 VELDEN = ['description', 'agent', 'status', 'onderwerp', 'issue', 'step', 'reason', 'session_id', 'started',
-          'ended', 'resume', 'aandacht', 'prs', 'model', 'pid', 'kosten', 'beurten', 'geweigerd', 'log', 'issue_state', 'laatste']
+          'ended', 'resume', 'aandacht', 'prs', 'model', 'pid', 'kosten', 'beurten', 'geweigerd', 'log', 'issue_state']
 LIJSTEN = ('aandacht', 'prs')
 
 
@@ -271,8 +271,8 @@ def notitie_lezen(path):
 
 
 def notities():
-    """De run-notities: alleen die met `agent: debbie`, zoals in dashboard.base. Andere notities in
-    de map, zoals debbie-dashboard.md, schrijft de runner zo nooit opnieuw."""
+    """De run-notities: alleen die met `agent: debbie`. Andere notities in de map schrijft de runner
+    zo nooit opnieuw."""
     return agentruns.notities(RUNS, 'debbie')
 
 
@@ -285,27 +285,7 @@ def nieuwe_notitie(name, moment):
     return RUNS / (stem + '.md'), stem
 
 
-def laatste_markeren():
-    """Zet `laatste: true` op de laatste run van elk project en haalt het weg bij de andere. Het
-    dashboard toont per project alleen die run, en Bases kan dat niet zelf. Geeft True bij een wijziging."""
-    paden = notities()
-    laatste = agentruns.laatste_per_onderwerp(paden, LIJSTEN)
-    gewijzigd = False
-    for path in paden:
-        fm, tekst = notitie_lezen(path)
-        if bool(fm.get('laatste')) == (laatste[fm.get('onderwerp')][0] == path):
-            continue
-        if fm.get('laatste'):
-            fm.pop('laatste')
-        else:
-            fm['laatste'] = True
-        notitie_schrijven(path, fm, tekst)
-        gewijzigd = True
-    return gewijzigd
-
-
 def index_bijwerken():
-    laatste_markeren()
     subprocess.run([sys.executable, str(VAULT / 'scripts/build_index.py')], check=False, capture_output=True)
 
 
@@ -367,7 +347,7 @@ def opruimen(dry_run):
         fm['status'] = 'done'
         fm['description'] = agentruns.beschrijving(fm)
         notitie_schrijven(path, fm, tekst)
-    if not dry_run and (regels or laatste_markeren()):
+    if not dry_run and regels:
         index_bijwerken()
     return regels
 

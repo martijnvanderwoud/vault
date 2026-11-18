@@ -17,7 +17,6 @@ beurten: 55
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w46-portal-enrollment-ui.jsonl"
 issue_state: "Done"
-laatste: true
 ---
 # Debbie-run portal-enrollment-ui
 

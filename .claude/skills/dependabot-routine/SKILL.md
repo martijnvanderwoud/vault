@@ -676,6 +676,6 @@ In autonome modus begint het comment met de regel `Debbie (Dependabot routine) r
 is het comment het verslag: geen verslag in de chat, alleen de statusregels uit
 `Statusregels`. Is er geen enkel aandachtspunt (geen `RUN_ATTENTION`-regel), zet de subtask
 dan na het verslag op `Done` met `update_issue`. Met aandachtspunten blijft hij op
-`In Progress`: ik zet hem op `Done` als ik ze heb afgehandeld, en de runner haalt de run dan
-uit het dashboard. Mislukt het op `Done` zetten, neem dat dan alleen op in de statusregels als
+`In Progress`: ik zet hem op `Done` als ik ze heb afgehandeld, en de watcher haalt de run dan
+uit `Aandacht nodig` op het dashboard. Mislukt het op `Done` zetten, neem dat dan alleen op in de statusregels als
 `RUN_ATTENTION`, want het verslag staat er al.

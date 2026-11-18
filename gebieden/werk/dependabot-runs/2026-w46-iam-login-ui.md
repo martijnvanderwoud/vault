@@ -16,7 +16,6 @@ beurten: 29
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w46-iam-login-ui.jsonl"
 issue_state: "Done"
-laatste: true
 ---
 # Debbie-run iam-login-ui
 

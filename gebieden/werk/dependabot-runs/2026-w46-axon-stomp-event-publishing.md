@@ -18,7 +18,6 @@ beurten: 46
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w46-axon-stomp-event-publishing.jsonl"
 issue_state: "Done"
-laatste: true
 ---
 # Debbie-run axon-stomp-event-publishing
 
