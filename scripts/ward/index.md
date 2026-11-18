@@ -8,3 +8,4 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 ## Submappen
 
 - [[scripts/ward/checks/index|checks]]
+- [[scripts/ward/headless/index|headless]]

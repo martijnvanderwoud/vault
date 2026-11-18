@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Gmail__send_message",
+      "Bash(/usr/bin/python3 -I ~/vault/scripts/ward/nagaan.py *)",
+      "Bash(/usr/bin/python3 -I ~/vault/scripts/ward/ward_runner.py --dry-run)",
+      "Bash(date *)",
+      "Bash(date)"
+    ]
+  }
+}

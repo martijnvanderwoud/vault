@@ -25,7 +25,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 - [x] 1. SSH onder launchd
 - [x] 2. Runner en CPU-check
-- [ ] 3. Ward headless
+- [x] 3. Ward headless
 - [ ] 4. Schedule met launchd en status vastleggen
 - [ ] 5. Aansluiten op het agents-dashboard
 - [ ] 6. PKI-1132 bijwerken
@@ -166,6 +166,38 @@ Doel: in PKI-1132 en PKI-1133 staat dat de check draait en wat er bij een alarm 
 Klaar als: beide issues bijgewerkt zijn en PKI-1133 op `Done` kan.
 
 ## Bevindingen
+
+- **Stap 3, 2026-11-18 (klaar).** Bij een `warn` of `alarm` start `ward_runner.py` (zonder
+  `--dry-run`) een sessie met Ward: `claude -p` in `~/.ward/` (buiten de vault, dus geen
+  projectinstellingen, hooks of auto-commit van de vault), met `--add-dir ~/vault/inbox`. De prompt
+  staat in `scripts/ward/headless/prompt.md`, de allowlist in `scripts/ward/headless/settings.json`.
+  De runner voegt toe: `Edit` alleen op het pad van de notitie van die run
+  (`inbox/ward-<datum>[-n].md`), `claudeMdExcludes` en de hook. Log in `~/.ward/logs/<notitie>.jsonl`.
+  De runner keurt de sessie goed als die exitcode 0 heeft, geen fout geeft, de notitie bestaat,
+  een `send_message` gelukt is en `WARD_STATUS: done` in het resultaat staat. Anders volgt een
+  macOS-melding (`Ward-run mislukt`).
+- **Geen vrije SSH voor Ward.** Een allowlist op `ssh host *` laat elk commando op de host toe.
+  Ward krijgt `scripts/ward/nagaan.py HOST ONDERWERP`: een vast read-only commando per onderwerp
+  (`cpu`, `lscpu`, `uname`, `uptime`, `dmi`), alleen voor hosts uit `~/.ssh/config`. Daarnaast mag
+  hij `ward_runner.py --dry-run` draaien.
+- **SSH werkt headless.** De sessie (`dontAsk`, geen auto mode) kwam via `nagaan.py` gewoon op de
+  hosts. De runner geeft `SSH_AUTH_SOCK` door aan de sessie.
+- **De claude.ai-koppelingen laden headless,** maar staan niet in `mcp_servers` van het init-event
+  (die lijst was leeg). Ward laadt `send_message` uitgesteld via `ToolSearch`, en de mail kwam aan.
+  Een check op `connected` in het init-event werkt hier dus niet; de runner kijkt naar het
+  resultaat van `send_message`.
+- **De hook** (`scripts/ward/mail_hook.py`, `PreToolUse` op `mcp__claude_ai_Gmail__.*`) laat alleen
+  `send_message` door met `martijn@crimsoncricket.nl` in `to`, `cc` en `bcc`. Hij weigert ook een
+  `draftId` (een concept gaat met zijn eigen ontvangers de deur uit), een reply in een thread en
+  onleesbare invoer. In een echte sessie getest: een mail aan `ward-hooktest@example.com` (met
+  mij in cc) werd geweigerd, met de reden in `permission_denials`.
+- **Test met `--uitkomsten PAD`**: nagemaakte uitkomsten uit JSON in plaats van de checks. Ward
+  krijgt dan in de prompt dat het een test is, en `TEST` komt in het onderwerp. De testrun met
+  een nagemaakte `alarm` (prd-k3s-4) en `warn` (dev-k3s-2) kostte $0,22 in 7 beurten. Ward ging
+  het na op de echte hosts, zag geen `avx512vbmi`, schreef `inbox/ward-2026-11-18.md` en mailde
+  "Ward TEST: CPU-alarm niet bevestigd".
+- Gevolg voor stap 4: nu start Ward bij elke `warn` of `alarm`. Het vergelijken met de vorige
+  status hoort vóór `ward_starten` in `main()`. Model: `claude-opus-5-5` (`--model` om te wisselen).
 
 - **Stap 2, 2026-11-18 (klaar).** `scripts/ward/ward_runner.py`
   met `scripts/ward/ssh.py` (hostlijst en parallelle SSH) en `scripts/ward/checks/cpu.py`; de
