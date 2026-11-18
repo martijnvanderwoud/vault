@@ -201,6 +201,8 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
 
 - Waar komt de tweede agent vandaan? Een tweede agent die zich aansluit zonder wijzigingen aan
   watcher of dashboard, is de echte toets van de statusvorm.
+  Antwoord (18-11): Ward ([[ward-plan]], stap 5) sloot aan zonder wijzigingen aan watcher of
+  dashboard, met een run-notitie per check die elke run opnieuw geschreven wordt en `proces: Python`.
 - Een rijkere weergave (eigen plugin, Datacore) kan later op dezelfde run-notities, mocht de
   gegenereerde notitie te sober blijken.
 - Een HTML-interface naast Obsidian, in deze repo (bijvoorbeeld `scripts/agents-ui/`). Obsidian

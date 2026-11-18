@@ -31,3 +31,5 @@ __pycache__/
 .idea/
 # Gegenereerd dashboard van de agents (wijzigt bij elke run)
 gebieden/agents/dashboard.md
+# Run-notities van Ward: elke dag opnieuw geschreven, de geschiedenis staat in ward-meldingen/
+gebieden/werk/ward-runs/

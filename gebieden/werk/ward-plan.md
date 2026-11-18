@@ -27,8 +27,14 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 2. Runner en CPU-check
 - [x] 3. Ward headless
 - [x] 4. Schedule met launchd en status vastleggen
-- [ ] 5. Aansluiten op het agents-dashboard
+- [x] 5. Aansluiten op het agents-dashboard (18-11)
 - [ ] 6. PKI-1132 bijwerken
+
+Nog nakijken uit stap 5:
+
+- [ ] De eerste echte run op de nieuwe code (`launchctl kickstart gui/$(id -u)/nl.crimsoncricket.ward`,
+  of morgen om 9:00): Ward staat op het dashboard met `hosts` en `cpu` op ✅ klaar, niet meer onder
+  `Stil`, en `~/.agent-watcher/watcher.log` toont geen melding of `failed` voor Ward.
 
 ## Beslissingen
 
@@ -59,6 +65,8 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
   die ([[agents-dashboard-plan]]).
 - **Geen eigen dashboard.** Ward sluit aan op de gedeelde statusvorm en het dashboard uit
   [[agents-dashboard-plan]], zoals dat plan vraagt van elke agent na Debbie.
+- **De geschiedenis staat in `gebieden/werk/ward-meldingen/`, niet in `inbox/`** (besloten in
+  stap 5). Een notitie per bevinding of herstel is geschiedenis, en die vervuilt de inbox.
 - **De agent heet Ward,** van *ward* (bewaken, vergelijk *warden*) en omdat het een Nederlandse
   naam is. De naam staat in de sessienaam, in de notities en in de onderwerpregel van de mails.
 
@@ -166,6 +174,40 @@ Doel: in PKI-1132 en PKI-1133 staat dat de check draait en wat er bij een alarm 
 Klaar als: beide issues bijgewerkt zijn en PKI-1133 op `Done` kan.
 
 ## Bevindingen
+
+- **Stap 5, 2026-11-18 (klaar, op de echte run na).** Stap 1 van [[agents-dashboard-plan]] was al
+  klaar. Watcher en dashboard zijn niet aangepast; Ward sluit aan met [[ward]]
+  (`runs: gebieden/werk/ward-runs`, `interval: 2d`, `proces: Python`).
+- **Eén run-notitie per check** (`ward-runs/ward-hosts.md`, `ward-cpu.md`, `onderwerp` is de check),
+  die de runner bij elke run opnieuw schrijft. Zo staat de status per check op het dashboard, en
+  houdt de watcher in `gemeld.json` dezelfde sleutel bij, waardoor een bekende bevinding niet elke
+  dag een nieuwe melding geeft. Bij de start `running` met het pid van de runner en `resume`
+  (`launchctl kickstart`), aan het eind `done` met de hosts die niet `ok` zijn als `aandacht`.
+  Tijdens `running` blijft de `aandacht` van de vorige run staan: anders legt de watcher een lege
+  lijst vast en meldt hij dezelfde punten aan het eind opnieuw. De tekst van een punt gebruikt
+  `kern()`, dus een andere ssh-fout is geen nieuw punt.
+- **`failed` alleen voor de checks waarvoor Ward nodig was**, als de sessie mislukt, met `reason`,
+  `step: ward` en `resume`. De runner meldt dat niet meer zelf (alleen nog bij een test zonder
+  run-notities); de watcher meldt de `failed`-run. Kosten, beurten, model, log en de naam van de
+  notitie van Ward staan bij elke check die de sessie nodig had (het is één sessie voor alle
+  checks, dus tel ze niet op).
+- **Proces:** `/usr/bin/python3` heet in `ps` `.../Python.app/Contents/MacOS/Python`, daarom
+  `proces: Python`. Crasht de runner, dan zet de watcher de run na 15 s op `failed`.
+- **Een verouderde run valt op via `interval: 2d`** (blok `Stil`), zonder aanpassing aan de
+  statusvorm. `Stil` kijkt naar de laatste `started`, niet naar de laatste geslaagde run, maar een
+  mislukte run staat al onder `Aandacht nodig`.
+- **De run-notities staan niet in git** (`.gitignore`): ze wijzigen elke dag, net als
+  `~/.ward/status.json` buiten de vault. De geschiedenis staat in `gebieden/werk/ward-meldingen/`.
+  Daarheen gaan nu ook de notities van Ward en van herstel (eerst `inbox/`), en de testnotitie van
+  stap 3 is verplaatst. Een bekende bevinding blijft onder `Aandacht nodig` tot de host weer `ok`
+  is of ik de referentie aanpas; `resolved` zetten helpt niet, want de volgende run schrijft de
+  notitie opnieuw.
+- **Getest** met een testscript in een tijdelijke map (checks, sessie en meldingen vervangen, de
+  echte `meldingen()` van de watcher en het echte dashboard): eerste run, ok, nieuw alarm (één
+  melding), zelfde alarm (geen), mislukte sessie (`failed`, één melding, geen van de runner),
+  daarna gelukt (geen melding), andere ssh-fout (geen), herstel (melding van de runner, `aandacht`
+  leeg), dry-run schrijft niets, het dashboard toont de checks en `Stil` na twee dagen. Tijdens de
+  test kwam een herstelnotitie in de echte `inbox/` terecht; die is weggehaald.
 
 - **Stap 4, 2026-11-18 (klaar).** De runner vergelijkt met de status van de laatste geslaagde run in
   `~/.ward/status.json` (`laatste_run` en de uitkomsten per check en host), buiten de vault zodat
