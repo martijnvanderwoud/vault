@@ -21,7 +21,7 @@ Bijgewerkt op 18-11-2026.
 | [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema loopt via [[weekplanning-plan]]; daarna de kennisnotities in de volgorde uit de interviewnotitie |
 | [[weekplanning-plan]] | Stap 1 klaar op 15-11: `trainingsduur.py`, aannames nog te bevestigen | Stap 2: soorten dagen en regels als data |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
-| [[ward-plan]] (Ward) | Vastgelegd 18-11, nog niet begonnen; eerste check: AVX-512 VBMI voor Java4Shell (PKI-1133) | Stap 1: SSH onder launchd met `UseKeychain` |
+| [[ward-plan]] (Ward) | Vastgelegd 18-11; stap 1 bijna af: launchd haalt alle 20 hosts via de keychain | Stap 1 afmaken: test na een herstart, daarna test-agent opruimen |
 
 ## Afgerond
 

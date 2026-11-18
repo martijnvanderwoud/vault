@@ -166,3 +166,28 @@ Doel: in PKI-1132 en PKI-1133 staat dat de check draait en wat er bij een alarm 
 Klaar als: beide issues bijgewerkt zijn en PKI-1133 op `Done` kan.
 
 ## Bevindingen
+
+- **Stap 1, 2026-11-18 (half af).** In een Claude-sessie in auto mode blokkeert de classifier
+  SSH naar de hosts ("Unauthorized Access"). De test draait dus Martijn zelf. Voor stap 3 telt
+  dat niet direct (Ward draait met `--permission-mode dontAsk` en een allowlist, niet in auto
+  mode), maar test daar of SSH headless wel doorkomt.
+- De eerste run van de test-LaunchAgent (15:38) bevestigde dat launchd `SSH_AUTH_SOCK`
+  meegeeft en dat de agent bereikbaar is, maar alle 20 hosts weigerden `~/.ssh/id_rsa`
+  (`Permission denied (publickey)` op de HAProxy-hosts). De config noemde geen `IdentityFile`;
+  de clustersleutels zaten op 17-11 vermoedelijk met de hand in de agent. Daarom staat er nu
+  onderaan `~/.ssh/config` per cluster een `IdentityFile` (`Host pompkracht-prd-*` naar
+  `~/.ssh/pompkracht-prd`, enzovoort), buiten de blokken van `infra/Justfile` zodat de Justfile
+  ze niet overschrijft. Vorige versie: `~/.ssh/config.before-ward-identity`.
+- Na `ssh-add --apple-use-keychain` van de drie clustersleutels (in een gewone Terminal; `!` in
+  Claude Code kan geen passphrase ontvangen) haalde de test-LaunchAgent om 15:40 alle 20 hosts,
+  ook die achter `ProxyJump`. Daarmee is de koppeling sleutel–cluster bevestigd. Nog te doen
+  voor stap 1: dezelfde test na een herstart (de agent staat in `~/Library/LaunchAgents` met
+  `RunAtLoad`, dus hij draait vanzelf bij het inloggen), daarna de test-agent opruimen.
+- `UseKeychain yes` en `AddKeysToAgent yes` staan onder `Host *` onderaan `~/.ssh/config`, buiten
+  de blokken van `infra/Justfile`. De vorige versie staat in `~/.ssh/config.before-ward`.
+- In een interactieve shell wijst `SSH_AUTH_SOCK` naar de socket van launchd
+  (`/var/run/com.apple.launchd.*/Listeners`), en `launchctl getenv SSH_AUTH_SOCK` geeft hem ook.
+  Of een LaunchAgent hem meekrijgt, laat de test zien.
+- De test-LaunchAgent staat klaar in `~/Library/Application Support/ward-ssh-test/`
+  (`ssh_test.sh` en `nl.crimsoncricket.ward-ssh-test.plist`) en logt naar
+  `~/Library/Logs/ward-ssh-test.log`: `SSH_AUTH_SOCK`, `ssh-add -l` en per host `OK` of `FAIL`.
