@@ -26,7 +26,9 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w47-insights-2]] — Debbie-run insights, gestart 2026-11-18 11:46: done (PI-205)
 - [[2026-w47-insights-3]] — Debbie-run insights, gestart 2026-11-18 12:25: done (PI-205)
 - [[2026-w47-insights]] — Debbie-run insights, gestart 2026-11-17 22:34: paused bij stap 0
+- [[2026-w47-more]] — Debbie-run more, gestart 2026-11-18 21:53: done (PM-370)
 - [[2026-w47-notifications]] — Debbie-run notifications, gestart 2026-11-16 15:46: done (PN-66)
+- [[2026-w47-portal-enrollment-ui]] — Debbie-run portal-enrollment-ui, gestart 2026-11-19 08:02: done (PKP-935)
 - [[2026-w47-portal]] — Debbie-run portal, gestart 2026-11-18 14:33: done (PKP-934)
 - [[2026-w47-profile-presentation-design]] — Debbie-run profile-presentation-design, gestart 2026-11-17 15:42: done (PRC-64)
 - [[2026-w47-react-notifications]] — Debbie-run react-notifications, gestart 2026-11-16 07:30: done (PRC-63)
