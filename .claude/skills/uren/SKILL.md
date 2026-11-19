@@ -54,6 +54,6 @@ zeg dat dan, maar trek zelf geen conclusie over de oorzaak.
 
 ## Onderhoud
 
-Is een gereserveerde vrije dag voorbij, dan zet ik `nog_gereserveerd_uren` in
-`data/vrije-dagen-2026.csv` op 0. Wijs me erop als de output een reservering laat zien
-waarvan de omschrijving naar een datum in het verleden verwijst.
+Vrije dagen staan met datum in `data/vrije-dagen.csv` (`omschrijving`, `datum`, `tot`,
+`half`). Een voorbije vrije dag telt vanzelf niet meer mee als gereserveerd; daar hoeft niets
+aan te gebeuren. Een nieuwe vrije dag zet ik er met datum bij.

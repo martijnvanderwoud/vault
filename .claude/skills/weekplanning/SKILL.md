@@ -70,8 +70,10 @@ Zet alle gevonden agenda-items in één lijst (dag, tijd, titel, agenda, locatie
 - **Neem mee:** afspraken met een tijd op ma t/m vr, en avondafspraken in de hele week.
 - **Laat weg en noem:** wat al vastligt in `data/weekplanning/weekdagen.json` (Week(end) bespreken,
   Ellie bellen), hele-dag-items die geen tijd kosten, en wat duidelijk niet van mij is.
-- **Feestdag of vrije dag op een werkdag:** meld het; het script kent nog geen vrije werkdag, dus
-  vraag wat er met de werkuren van die dag moet gebeuren.
+- **Feestdag of vrije dag op een werkdag:** meld het, en kijk of hij in `data/vrije-dagen.csv`
+  staat (`python3 scripts/vrije_dagen.py`); zo niet, vraag of hij erbij moet. Het script kent nog
+  geen vrije werkdag (komt in stap 9 van [[weekplanning-plan]]), dus vraag wat er met de werkuren
+  van die dag moet gebeuren.
 - **Afspraak op za of zo:** meenemen mag, het script meldt hem alleen (geen tijdsindeling).
 
 Leg de lijst aan mij voor en vraag per afspraak wat ontbreekt:

@@ -6,47 +6,33 @@ tags: [werk, uren]
 # Urenoverzicht 2026
 
 > Gegenereerd door `scripts/uren.py --schrijf` (skill `/uren`) uit LogMyTime. Niet met de hand bewerken.
-> Peildatum **18-11-2026**. Achtergrond en logica: [[urenregistratie]].
+> Peildatum **19-11-2026**. Achtergrond en logica: [[urenregistratie]].
 
 ## Stand
 
 | Stand | Uren | | Declarabel per klant | Uren |
 |---|---:|---|---|---:|
-| Declarabel | 1127,30 | | Pompkracht | 1126,75 |
-| Target (werkuren) | 1288,50 | | Construct | 0,55 |
-| Vrij opgenomen | 161,20 | | **Totaal declarabel** | **1127,30** |
+| Declarabel | 1132,50 | | Pompkracht | 1131,95 |
+| Target (werkuren) | 1294,50 | | Construct | 0,55 |
+| Vrij opgenomen | 162,00 | | **Totaal declarabel** | **1132,50** |
 | Vrij-budget | 196,00 | | Niet declarabel | 8,75 |
-| Vrij over | 34,80 | |  |  |
+| Vrij over | 34,00 | |  |  |
 | Nog gereserveerd | 34,00 | |  |  |
-| **Vrij na reservering** | **0,80** | |  |  |
+| **Vrij na reservering** | **-0,00** | |  |  |
 
-## Vrije uren: gepland en gereserveerd
+## Vrije dagen
 
-| Omschrijving | Gepland | Nog gereserveerd |
-|---|---:|---:|
-| Nieuwjaarsdag | 6,50 | 0,00 |
-| Louis Hartlooper met Matthies | 2,00 | 0,00 |
-| Inpakken voor Ardennen | 2,00 | 0,00 |
-| Teamtrip Loopwijzer Ardennen | 3,50 | 0,00 |
-| Hardlopen met Michiel | 4,00 | 0,00 |
-| Broodlokaal met Franca | 3,00 | 0,00 |
-| Verjaardagslunch met Franca en Afke | 2,50 | 0,00 |
-| 2e Paasdag | 6,25 | 0,00 |
-| Koningsdag | 6,00 | 0,00 |
-| Kamperen met Paul, Michiel en Stan | 4,25 | 0,00 |
-| Hemelvaartsdag | 6,25 | 0,00 |
-| 2e Pinksterdag | 6,00 | 0,00 |
-| Zomervakantie | 84,00 | 0,00 |
-| Verhuizing Ellie en Wim | 6,50 | 0,00 |
-| Weekendje weg sept | 5,00 | 0,00 |
-| Loopwijzer Vogezen | 10,75 | 0,00 |
-| Bijkomen en uitpakken na Vogezen | 4,50 | 0,00 |
-| Dag voor kerst | 6,00 | 6,00 |
-| Kerstvakantie | 28,00 | 28,00 |
-| Overig | 0,00 | 0,00 |
-| **Totaal** | **197,00** | **34,00** |
+| Datum | Omschrijving | Dag |
+|---|---|---:|
+| do 24-12-2026 | Dag voor kerst | 1 |
+| vr 25-12-2026 | Kerstvakantie | 1 |
+| ma 28-12-2026 | Kerstvakantie | 1 |
+| di 29-12-2026 | Kerstvakantie | 1 |
+| wo 30-12-2026 | Kerstvakantie | 1 |
+| do 31-12-2026 | Kerstvakantie | 1 |
+| vr 01-01-2027 | Nieuwjaarsdag | 1 |
 
-Bron: `data/vrije-dagen-2026.csv`. Is een geplande dag voorbij, zet dan `nog_gereserveerd_uren` op 0.
+Bron: `data/vrije-dagen.csv`. Voorbije vrije dagen tellen niet meer mee. Nog gereserveerd tellen tot stap 8 van [[weekplanning-plan]] de werkuren van die dag, tot en met 31-12.
 
 ## Declarabel per maand
 
@@ -62,4 +48,4 @@ Bron: `data/vrije-dagen-2026.csv`. Is een geplande dag voorbij, zet dan `nog_ger
 | aug | 115,30 | 0,00 | 115,30 |
 | sep | 99,80 | 0,00 | 99,80 |
 | okt | 128,15 | 0,00 | 128,15 |
-| nov | 71,15 | 0,55 | 71,70 |
+| nov | 76,35 | 0,55 | 76,90 |

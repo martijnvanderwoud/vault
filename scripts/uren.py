@@ -16,6 +16,7 @@ from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from logmytime import get_all, lokale_datum, odata_datum  # noqa: E402
+import vrije_dagen  # noqa: E402
 
 # Werkuren per weekdag (ma t/m vr), 28 u per week, per ingangsdatum (oplopend).
 WEEKSCHEMAS = [
@@ -25,7 +26,6 @@ WEEKSCHEMAS = [
 # Target per dag uit de weekplanning (scripts/weekplanning.py --schrijf), in minuten; gaat voor WEEKSCHEMAS.
 WERKUREN = os.path.expanduser('~/vault/data/weekplanning/werkuren.csv')
 VRIJ_BUDGET = 196
-VRIJE_DAGEN = os.path.expanduser('~/vault/data/vrije-dagen-2026.csv')
 OVERZICHT = os.path.expanduser('~/vault/gebieden/werk/uren-overzicht.md')
 MAANDEN = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
 
@@ -54,16 +54,13 @@ def target_uren(vanaf, tot):
     return totaal
 
 
-def vrije_dagen():
-    """Regels uit data/vrije-dagen-2026.csv als (omschrijving, gepland, nog gereserveerd)."""
-    with open(VRIJE_DAGEN, newline='') as f:
-        return [(r['omschrijving'], float(r['gepland_uren']), float(r['nog_gereserveerd_uren']))
-                for r in csv.DictReader(f)]
+def gereserveerd_uren(tot):
+    """Nog gereserveerde vrije uren na tot, tot en met 31-12 van dat jaar (data/vrije-dagen.csv).
 
-
-def gereserveerd_uren():
-    """Som van de nog gereserveerde vrije uren uit data/vrije-dagen-2026.csv."""
-    return sum(nog for _, _, nog in vrije_dagen())
+    Overgang tot stap 8 van het weekplanning-plan: een vrije dag telt nog de werkuren van die weekdag
+    (WEEKSCHEMAS), niet 5,6 u, zodat vrij na reservering gelijk blijft aan het oude model."""
+    dagen = vrije_dagen.vrije_dagen(tot + timedelta(days=1), date(tot.year, 12, 31))
+    return sum(deel * target_uren(dag, dag) for dag, deel in dagen.items())
 
 
 def haal_stand(vanaf, tot):
@@ -97,7 +94,7 @@ def haal_stand(vanaf, tot):
     stand['declarabel'] = sum(stand['per_klant'].values())
     stand['target'] = target_uren(vanaf, tot)
     stand['vrij'] = stand['target'] - stand['declarabel']
-    stand['gereserveerd'] = gereserveerd_uren()
+    stand['gereserveerd'] = gereserveerd_uren(tot)
     return stand
 
 
@@ -141,15 +138,16 @@ def schrijf_overzicht(vanaf, tot, stand):
     regels += ['| %s | %s | | %s | %s |' % (sl, su, kl, ku)
                for (sl, su), (kl, ku) in zip(stand_rijen, klant_rijen)]
     regels += ['',
-               '## Vrije uren: gepland en gereserveerd',
+               '## Vrije dagen',
                '',
-               '| Omschrijving | Gepland | Nog gereserveerd |',
-               '|---|---:|---:|']
-    dagen = vrije_dagen()
-    regels += ['| %s | %s | %s |' % (o, nl(g), nl(n)) for o, g, n in dagen]
-    regels += ['| **Totaal** | **%s** | **%s** |' % (nl(sum(g for _, g, _ in dagen)), nl(stand['gereserveerd'])),
-               '',
-               'Bron: `data/vrije-dagen-2026.csv`. Is een geplande dag voorbij, zet dan `nog_gereserveerd_uren` op 0.']
+               '| Datum | Omschrijving | Dag |',
+               '|---|---|---:|']
+    regels += ['| %s %s | %s | %s |' % (vrije_dagen.WEEKDAGEN[d.weekday()], d.strftime('%d-%m-%Y'), o,
+                                         '1' if deel == 1 else '½')
+               for d, deel, o in vrije_dagen.lees() if d > tot]
+    regels += ['',
+               'Bron: `data/vrije-dagen.csv`. Voorbije vrije dagen tellen niet meer mee. Nog gereserveerd tellen'
+               ' tot stap 8 van [[weekplanning-plan]] de werkuren van die dag, tot en met 31-12.']
     regels += ['',
                '## Declarabel per maand',
                '',

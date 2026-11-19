@@ -34,7 +34,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 4. Skill `/weekplanning` voor zondag (15-11 gebouwd en proefgedraaid; de eerste echte run op zo 22-11 komt onder Bevindingen)
 - [x] 5. Herplannen tijdens de week (15-11, getest op proefweken)
 - [x] 6. Target per dag uit de weekplanning in `uren.py` (15-11; vervalt met stap 8 en 9)
-- [ ] 7. Vrije dagen met datum (herzien 19-11; klaar voor zo 20-12)
+- [x] 7. Vrije dagen met datum (19-11; `uren.py` rekent tot stap 8 nog op de oude manier)
 - [ ] 8. Weektarget uit het weekgebaseerde jaar in `uren.py` (na stap 7)
 - [ ] 9. Weektarget en ruimte in de weekplanning (na stap 8)
 
@@ -210,6 +210,9 @@ weektarget (zie Beslissingen).
 
 - **Stand:** declarabel vanaf het begin van het jaar (2026: ma 5-1), jaardoel (aantal weken × 28 −
   196), nog te gaan, nog gereserveerd (stap 7), hele weken over en het weektarget dat daaruit volgt.
+- **Overgang uit stap 7 opruimen:** `gereserveerd_uren` in `uren.py` (werkuren per weekdag, tot en met
+  31-12) vervangen door `vrije_dagen.nog_gereserveerd_uren(peildatum)` (5,6 u per dag, ook na 31-12).
+  De tabel Vrije dagen in het overzicht staat er al (stap 7); de zin over de overgang eronder gaat eruit.
 - **Weektarget opslaan:** `data/weekplanning/weektargets.csv`, één regel per week: `maandag`,
   `weektarget`, `vrije_dagen`, `declarabel_doel` (weektarget − 5,6 × vrije dagen). Geschreven op
   zondag (met `--zet-week` of iets dergelijks, met de stand tot en met die zondag), daarna niet meer
@@ -367,7 +370,7 @@ van de rest van de week gelijk verlaagt.
   `weekplanning.py --schrijf`. Proefgedraaid op `weken/2026-11-23.json`; week 1 vervangen door
   `wind-90-week-02.json` gebeurt op 22-11 in de skill zelf (stap 2 daarvan: geen trainingsweek met
   `start` 2026-11-23).
-- **Nog niet in het script (wordt stap 7):** een feestdag of vrije dag op een werkdag. De skill meldt die en vraagt
+- **Nog niet in het script (wordt stap 9):** een feestdag of vrije dag op een werkdag. De skill meldt die en vraagt
   wat er met de werkuren moet; de eerstvolgende is 25-12 (vr).
 - **Voor stap 5 (opgelost in stap 5):** herplannen midden in de week met `--schrijf` overschrijft ook het
   target van de dagen die al voorbij zijn. Dat moet dan blijven staan (of uit de gelopen dagen komen),
@@ -453,3 +456,14 @@ van de rest van de week gelijk verlaagt.
   oude versie van stap 7 (vrije dagen in uren) zijn hierdoor vervangen. Op 19-11 ook de stappen
   opnieuw genummerd in de volgorde van uitvoeren (oud 8 → 6, 9 → 7; 10 en 11 nieuw als 8 en 9); de oude
   stappen 6 en 7 (gelopen trainingen, workouts voor TrainingPeaks) gingen naar [[hardlopen-plan]].
+- **Stap 7 (19-11):** `data/vrije-dagen.csv` (`omschrijving`, `datum`, `tot`, `half`) met do 24-12,
+  vr 25-12 t/m do 31-12 en vr 1-1-2027; de oude `vrije-dagen-2026.csv` is weg (git bewaart hem).
+  `scripts/vrije_dagen.py` heeft `lees()`, `vrije_dagen(vanaf, tot)` (datum → 1 of 0,5) en
+  `nog_gereserveerd_uren(peildatum)`: 39,2 u per 19-11, 33,6 u per 24-12, de peildatum zelf telt niet
+  mee. Zonder argument toont het de vrije dagen. **Afwijking:** `uren.py` gebruikt de nieuwe CSV al,
+  maar rekent tot stap 8 een vrije dag als de werkuren van die weekdag (`WEEKSCHEMAS`) en alleen tot en
+  met 31-12. Met 5,6 u en Nieuwjaarsdag 2027 erbij zou "vrij na reservering" 5,2 u zakken, terwijl de
+  weekplanning (tot stap 9) en de skill `/uren` daar nog op sturen. Per 19-11 blijft het zo 34,0 u en
+  vrij na reservering 0,00, zoals voor de wijziging. Het overzicht toont de vrije dagen nu met datum in
+  plaats van gepland en gereserveerd per regel. Skill `/uren`: het onderhoud is vervallen; skill
+  `/weekplanning`: kijkt bij een feestdag of vrije dag in de CSV.

@@ -59,7 +59,7 @@ Pompkracht 1079,65 u en Construct 0,55 u.
 - Klant volgt uit project; projecten zonder klant ("Niet declarabel", 8,75 u per 10-11) tellen niet als declarabel.
 - Entries met een `AbsenceID` worden overgeslagen. Alle 2026-entries hebben `TypeID` 2 en geen afwezigheid.
 - Lokale datum (Europe/Amsterdam) bepaalt bij welke dag een entry hoort.
-- Gereserveerde vrije uren staan in `data/vrije-dagen-2026.csv` (kolommen `omschrijving`, `gepland_uren`, `nog_gereserveerd_uren`, in uren; oorspronkelijk uit Excel kolom J, K, L ×24; nu de bron). Het script telt `nog_gereserveerd_uren` op en toont ook vrij over min gereserveerd. Gepland totaal 197,0 u (budget 196 u), nog gereserveerd 34,0 u (Dag voor kerst 6,0 u, Kerstvakantie 28,0 u). Bij een geplande dag die voorbij is: `nog_gereserveerd_uren` op 0 zetten.
+- Vrije dagen staan met datum in `data/vrije-dagen.csv` (kolommen `omschrijving`, `datum`, `tot` voor meer dagen, `half` voor een halve dag; sinds 19-11 niet meer per kalenderjaar, want week 53 van 2026 loopt door tot 3-1-2027). `scripts/vrije_dagen.py` geeft de vrije dagen in een periode en de nog gereserveerde uren na een peildatum (5,6 u per dag): per 19-11 39,2 u (do 24-12, vr 25-12, ma 28 t/m do 31-12 en vr 1-1-2027). Voorbije dagen tellen vanzelf niet meer mee. Tot stap 8 van [[weekplanning-plan]] telt `uren.py` als nog gereserveerd de werkuren van die weekdag uit `WEEKSCHEMAS`, tot en met 31-12: per 19-11 34,0 u, gelijk aan de oude `vrije-dagen-2026.csv` (Dag voor kerst 6,0 u, Kerstvakantie 28,0 u).
 
 ## Skill
 
