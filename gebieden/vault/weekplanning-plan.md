@@ -40,6 +40,11 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 
 Alle stappen zijn klaar. De eerste zondag met het nieuwe model (zo 22-11) komt onder Bevindingen.
 
+**Afronden (besloten 19-11):** pas na de zondagrun van 22-11, volgens Onderhoud in [[vault-roadmap]]. De
+map wordt `gebieden/weekplanning/`, met `weekplanning.md`, `weekplanning-beslissingen.md` en
+`weekplanning-logboek.md`. De weeknotities verhuizen naar `gebieden/weekplanning/weken/`; `NOTITIES` in
+`scripts/weekplanning.py`, de skill `/weekplanning` en de verwijzingen naar [[weekplanning-plan]] gaan mee.
+
 Gelopen trainingen importeren en workouts voor TrainingPeaks genereren (eerst stap 10 en 11) staan
 sinds 19-11 in [[hardlopen-plan]].
 
