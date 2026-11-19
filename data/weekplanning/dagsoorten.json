@@ -1,5 +1,5 @@
 {
-  "toelichting": "Blokken per soort dag, in volgorde vanaf het opstaan. duur_min is vast; werk is 'vul' (tot het volgende blok met een vaste tijd), een vast aantal uren, of 'rest' (wat er van het werkdoel van de weekdag over is). Een vaste tijd is 'om' (kloktijd) of 'minstens_na' (minuten na het einde van een eerder blok). Hardlopen heeft soort 'training': duur_min is de tijd uit de Excel; met een trainingsweek rekent weekplanning.py de duur uit de tempo's.",
+  "toelichting": "Blokken per soort dag, in volgorde vanaf het opstaan. duur_min is vast; werk is 'vul' (tot het volgende blok met een vaste tijd), een vast aantal uren, of 'rest' (wat er van het werk van die dag over is; hoeveel werk een dag krijgt, volgt uit de verdeling met gelijke ruimte in weekplanning.py). Een vaste tijd is 'om' (kloktijd) of 'minstens_na' (minuten na het einde van een eerder blok). Hardlopen heeft soort 'training': duur_min is de tijd uit de Excel; met een trainingsweek rekent weekplanning.py de duur uit de tempo's.",
   "easy": {
     "naam": "Easy run",
     "omschrijving": "Easy run, vroeg op een snack, daarna stabiliteitsroutines, ontbijt en werken",
@@ -14,8 +14,7 @@
       {"activiteit": "Tanden poetsen", "duur_min": 15},
       {"activiteit": "Werken", "werk": "vul"},
       {"activiteit": "Lunch", "om": "12:00", "duur_min": 30},
-      {"activiteit": "Werken", "werk": "rest"},
-      {"activiteit": "Lucht", "soort": "lucht", "duur_min": 30}
+      {"activiteit": "Werken", "werk": "rest"}
     ]
   },
   "zwaar": {
@@ -39,8 +38,7 @@
       {"activiteit": "Kracht", "soort": "kracht", "duur_min": 30},
       {"activiteit": "Omkleden", "soort": "kracht", "duur_min": 15},
       {"activiteit": "Naar huis, snack", "soort": "kracht", "duur_min": 30},
-      {"activiteit": "Werken", "werk": "rest"},
-      {"activiteit": "Lucht", "soort": "lucht", "duur_min": 30}
+      {"activiteit": "Werken", "werk": "rest"}
     ]
   },
   "lang_heuvels": {
@@ -57,8 +55,7 @@
       {"activiteit": "Vertrek naar huis", "duur_min": 45},
       {"activiteit": "Douchen, aankleden, hardloopspullen opruimen", "duur_min": 30},
       {"activiteit": "Tweede lunch", "duur_min": 30},
-      {"activiteit": "Werken", "werk": "rest"},
-      {"activiteit": "Lucht", "soort": "lucht", "duur_min": 30}
+      {"activiteit": "Werken", "werk": "rest"}
     ]
   },
   "lang": {
@@ -74,8 +71,7 @@
       {"activiteit": "Hardlopen", "soort": "training", "duur_min": 150},
       {"activiteit": "Douchen, aankleden, hardloopspullen opruimen", "duur_min": 30},
       {"activiteit": "Lunch", "duur_min": 30},
-      {"activiteit": "Werken", "werk": "rest"},
-      {"activiteit": "Lucht", "soort": "lucht", "duur_min": 30}
+      {"activiteit": "Werken", "werk": "rest"}
     ]
   },
   "rust": {

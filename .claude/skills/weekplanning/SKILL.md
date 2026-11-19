@@ -14,10 +14,10 @@ verzamelt alleen de invoer.
 
 ## Regels
 
-- Reken nooit zelf: geen duur, werkuren, lucht of opstaantijd uit het hoofd. Alles komt uit
+- Reken nooit zelf: geen duur, werkuren, ruimte of opstaantijd uit het hoofd. Alles komt uit
   `weekplanning.py` en `trainingsduur.py`. Klopt iets niet, pas dan de invoer aan, niet de uitkomst.
-- `gebieden/weekplanning/*.md` en `data/weekplanning/werkuren.csv` zijn gegenereerd: niet met de
-  hand bewerken.
+- `gebieden/weekplanning/*.md` is gegenereerd: niet met de hand bewerken. `data/weekplanning/weektargets.csv`
+  schrijft alleen `uren.py --zet-week`.
 - Reistijd zoek je niet zelf op (9292 en Google Maps laden het reisadvies via JavaScript). Vraag om
   een screenshot van Google Maps met de aankomsttijd ingesteld. Heen telt vanaf het vertrek van huis
   tot het begin van de afspraak, wachten meegerekend.
@@ -35,8 +35,8 @@ Doe deze drie tegelijk:
 - **Urenstand:** op zondag `/usr/bin/python3 -I ~/vault/scripts/uren.py --zet-week` (zonder
   `--schrijf`): dat zet ook het weektarget van de komende week vast in `data/weekplanning/weektargets.csv`.
   Staat het er al, dan meldt het script dat en stopt het; draai het dan zonder `--zet-week`. Plan je op een
-  andere dag dan zondag, dan zonder `--zet-week`. Neem "Vrij na reservering" over als
-  `vrij_na_reservering_uren`, precies zoals het script het toont (tot stap 9 van [[weekplanning-plan]]).
+  andere dag dan zondag, dan zonder `--zet-week`: `weekplanning.py` plant dan voorlopig met 28 u en meldt
+  dat. Het declarabele doel leest `weekplanning.py` zelf uit `weektargets.csv`; je neemt niets over.
 - **Zakelijke agenda** via `mcp__claude_ai_Google_Calendar__list_events`, ma 00:00 t/m zo 23:59:
   `martijn@crimsoncricket.nl` en `nl.dutch#holiday@group.v.calendar.google.com` (feestdagen).
 - **Privé-agenda** via `mcp__google-prive__get_events` met `detailed: true`:
@@ -74,9 +74,9 @@ Zet alle gevonden agenda-items in één lijst (dag, tijd, titel, agenda, locatie
 - **Laat weg en noem:** wat al vastligt in `data/weekplanning/weekdagen.json` (Week(end) bespreken,
   Ellie bellen), hele-dag-items die geen tijd kosten, en wat duidelijk niet van mij is.
 - **Feestdag of vrije dag op een werkdag:** meld het, en kijk of hij in `data/vrije-dagen.csv`
-  staat (`python3 scripts/vrije_dagen.py`); zo niet, vraag of hij erbij moet. Het script kent nog
-  geen vrije werkdag (komt in stap 9 van [[weekplanning-plan]]), dus vraag wat er met de werkuren
-  van die dag moet gebeuren.
+  staat (`python3 scripts/vrije_dagen.py`); zo niet, vraag of hij erbij moet. Een vrije dag in de CSV
+  krijgt vanzelf geen werk, een halve dag 2,8 u vrij aan het eind van de werkdag. Een vrije dag die er
+  pas na het vastzetten bij komt, telt niet mee in het weektarget van die week (dat ligt vast): meld dat.
 - **Afspraak op za of zo:** meenemen mag, het script meldt hem alleen (geen tijdsindeling).
 
 Leg de lijst aan mij voor en vraag per afspraak wat ontbreekt:
@@ -94,7 +94,7 @@ Twijfel je of een item meetelt, vraag het; neem niets aan.
 
 Schrijf `data/weekplanning/weken/<maandag>.json` met de velden zoals in `weken/2026-11-16.json`:
 `toelichting` (bronnen, zoals de reistijd uit Google Maps), `maandag`, `trainingen` (bestandsnaam),
-`vrij_na_reservering_uren`, `afspraken`, en waar nodig `vervalt`, `aanpassen`, `opstaan`. Bestaat
+`afspraken`, en waar nodig `vervalt`, `aanpassen`, `opstaan`. Bestaat
 het bestand al (zoals een voorlopige versie met de trainingen van een andere week), lees het eerst,
 neem over wat nog klopt en vervang de rest.
 
@@ -104,18 +104,18 @@ neem over wat nog klopt en vervang de rest.
 /usr/bin/python3 -I ~/vault/scripts/weekplanning.py ~/vault/data/weekplanning/weken/<maandag>.json --schrijf
 ```
 
-Altijd met `--schrijf`: dat zet de notitie in `gebieden/weekplanning/<maandag>.md` en het target per
-dag in `data/weekplanning/werkuren.csv` voor `uren.py`. Geeft het script een fout, meld die letterlijk
-en zoek de oorzaak in de invoer.
+Altijd met `--schrijf`: dat zet de notitie in `gebieden/weekplanning/<maandag>.md`. Geeft het script een
+fout, meld die letterlijk en zoek de oorzaak in de invoer.
 
 ## Antwoord
 
 Kort, in het Nederlands, met getallen uit de output:
 
-- het overzicht per dag (soort dag, training, opstaan, werk, lucht) en het weektotaal tegen 28 u
-- de urenstand en wat die betekent: voor op target maakt de laatste werkdagen korter, achter op target
-  zet inhalen eerst in de vrije tijd na het werk (doorwerken tot een vast avondblok) en dan in de lucht
-  (en wat niet past schuift door naar volgende week)
+- het overzicht per dag (soort dag, training, opstaan, werk, ruimte) en het weektotaal tegen het
+  declarabele doel (weektarget min 5,6 u per vrije dag)
+- de ruimte per werkdag: het script verdeelt het werk zo dat die gelijk is. Is er geen ruimte meer, of
+  vervallen er stabiliteitsroutines, dan moet ik iets schrappen of aanpassen; niets schuift door naar
+  volgende week
 - alle meldingen en conflicten van het script, en wat ik daarvoor moet beslissen
 - welke agenda-items je hebt weggelaten
 
@@ -128,20 +128,20 @@ Als ik midden in de week iets meld dat de planning raakt: later opgestaan, een r
 korter) duurde, een afspraak erbij of afgezegd, iets dat vervalt. Ook vooraf, voor een latere dag in
 de week (bv. "morgen sta ik later op"). `<maandag>` is de maandag van deze week, `<vanaf>` is altijd
 vandaag, ook als de wijziging pas later in de week valt, `<gisteren>` de dag ervoor. Herplan niet vanaf
-morgen: dan telt het target van vandaag al mee in de urenstand terwijl ik nog niet alles gelogd heb.
+morgen: dan ontbreken de uren van vandaag nog in LogMyTime en telt het script ze niet als gewerkt.
 Uitzondering: is vandaag klaar en staan al mijn uren van vandaag in LogMyTime (bv. 's avonds, omdat ik
 vandaag meer of minder werkte dan gepland), dan is `<vanaf>` morgen en `<gisteren>` vandaag. Vraag het
 na als ik dat niet zeg.
 
-De dagen voor `<vanaf>` zijn voorbij: het script neemt hun werk en target over uit
-`data/weekplanning/werkuren.csv` en rekent vanaf `<vanaf>` opnieuw, zo dat de week op 28 u target blijft
-uitkomen. Vandaag rekent het helemaal opnieuw door, vanaf het opstaan.
+De dagen voor `<vanaf>` zijn voorbij. Nog te gaan = declarabel doel − wat ik t/m `<gisteren>` werkte;
+het script verdeelt dat opnieuw over de dagen vanaf `<vanaf>`, met gelijke ruimte. Vandaag rekent het
+helemaal opnieuw door, vanaf het opstaan.
 
 1. **Lees** `data/weekplanning/weken/<maandag>.json`. Bestaat het niet, maak dan eerst de weekplanning
    zoals hierboven.
-2. **Urenstand** van het begin van `<vanaf>`: `/usr/bin/python3 -I ~/vault/scripts/uren.py --tot <gisteren>`
-   (zonder `--schrijf`). Niet tot vandaag, anders telt het target van vandaag al mee terwijl ik nog niets
-   gelogd heb. Neem "Vrij na reservering" over, precies zoals het script het toont.
+2. **Gewerkt** tot het begin van `<vanaf>`: `/usr/bin/python3 -I ~/vault/scripts/uren.py --tot <gisteren>`
+   (zonder `--schrijf`). Neem "Gewerkt t/m" van deze week over, precies zoals het script het toont. Is
+   `<vanaf>` maandag, dan is het 0.
 3. **Wijziging in het weekbestand:**
    - Later opgestaan: `opstaan` met `{dag, om}`.
    - Run duurde anders: `trainingsduur` met `{dag, duur_min, reden}`, de looptijd zelf (zoals op de
@@ -150,13 +150,12 @@ uitkomen. Vandaag rekent het helemaal opnieuw door, vanaf het opstaan.
      Google Maps). Haal bij twijfel de agenda van die dag op.
    - Afspraak afgezegd: haal hem uit `afspraken`, alleen voor `<vanaf>` of later.
    - Laat de invoer van voorbije dagen staan zoals hij was.
-   - `herplannen`: `{"vanaf": "<vanaf>", "vrij_na_reservering_uren": <stand>, "reden": "<wat er veranderde>"}`.
+   - `herplannen`: `{"vanaf": "<vanaf>", "gewerkt_uren": <gewerkt>, "reden": "<wat er veranderde>"}`.
      Staat er al een `herplannen`, vervang die.
    - Vul `toelichting` aan met wat er veranderde en waarom.
-4. **Doorrekenen** met `--schrijf`, zoals in stap 5 hierboven. Meldt het script dat een voorbije dag
-   niet in `werkuren.csv` staat, noem dat: het target van die dag komt dan uit de planning.
+4. **Doorrekenen** met `--schrijf`, zoals in stap 5 hierboven.
 
-Antwoord kort: wat er vandaag en de rest van de week verandert (opstaan, werk, lucht, wat vervalt of
-schuift), de urenstand, en alle meldingen en conflicten. Liep de dag tot nu toe anders dan gepland op
+Antwoord kort: wat er vandaag en de rest van de week verandert (opstaan, werk, ruimte, wat vervalt of
+schuift), gewerkt en nog te gaan, en alle meldingen en conflicten. Liep de dag tot nu toe anders dan gepland op
 een manier die niet in de invoer zit (bv. later begonnen met werken), zeg dan dat de tijden van vandaag
 voor nu niet kloppen en kijk naar de rest van de dag.

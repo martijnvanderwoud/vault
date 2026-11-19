@@ -45,8 +45,7 @@ Geef de cijfers uit de output kort weer in het Nederlands, in dezelfde volgorde:
 declarabel (per klant), het jaar (declarabel, jaardoel, nog te gaan, nog gereserveerd, weken over,
 weektarget) en deze week (vastgezet weektarget, vrije dagen, declarabel doel, gewerkt, nog te gaan).
 Gebruik een decimale komma. Noem de peildatum en dat het overzicht in `gebieden/werk/uren-overzicht.md`
-is bijgewerkt. "Vrij na reservering" is alleen voor de weekplanning (tot stap 9 van het
-weekplanning-plan); noem die niet.
+is bijgewerkt.
 
 Vraag ik of ik voor of achter loop, kijk dan naar het weektarget van het jaar: onder 28 u is voor,
 boven 28 u is achter. Het verschil wordt over de rest van het jaar verdeeld, niet in één week

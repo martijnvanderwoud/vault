@@ -36,10 +36,9 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 6. Target per dag uit de weekplanning in `uren.py` (15-11; vervalt met stap 8 en 9)
 - [x] 7. Vrije dagen met datum (19-11; `uren.py` rekent tot stap 8 nog op de oude manier)
 - [x] 8. Weektarget uit het weekgebaseerde jaar in `uren.py` (19-11; "vrij na reservering" blijft als overgang tot stap 9)
-- [ ] 9. Weektarget en ruimte in de weekplanning (na stap 8)
+- [x] 9. Weektarget en ruimte in de weekplanning (19-11; eerste echte run op zo 22-11)
 
-Tot stap 9 klaar is, werkt de weekplanning nog op de oude manier (28 u per week, lucht, voor of achter
-uit "vrij na reservering").
+Alle stappen zijn klaar. De eerste zondag met het nieuwe model (zo 22-11) komt onder Bevindingen.
 
 Gelopen trainingen importeren en workouts voor TrainingPeaks genereren (eerst stap 10 en 11) staan
 sinds 19-11 in [[hardlopen-plan]].
@@ -485,3 +484,40 @@ van de rest van de week gelijk verlaagt.
   zondag al `uren.py --zet-week`, zodat week 48 (23-11) op zo 22-11 een weektarget krijgt. **Voor 2027:**
   zonder reserveringen is het weektarget in week 1 1260 / 52 = 24,23 u (niet gereserveerd budget telt als
   voorsprong); de vrije dagen van 2027 moeten er dus vóór zo 3-1-2027 in staan.
+- **Stap 9 (19-11):** `weekplanning.py` plant met het declarabele doel uit `weektargets.csv` en gelijke
+  ruimte; 1052 → 886 regels. Weg: de lucht (blokken en `lucht_min_per_werkdag`), `werkdoel_uren` per weekdag,
+  `werkdoel_week_uren`, `minder` en de voorsprong, `achterstand_ingehaald`, `vrij_inzetten`, `lucht_inzetten`,
+  `wijken`, de prognose, `werkuren.csv` (verwijderd; git bewaart hem) en in `uren.py` de regel "Vrij na
+  reservering". **Ook weg, buiten het plan:** de Excel-modus (`--controleer`, `excel_week` in `regels.json`):
+  die rekende met `werkdoel_uren` per weekdag en met de lucht-blokken uit de Excel, en kan dus niet meer
+  kloppen. `data/weekschema-excel-2026-11.csv` blijft staan als bron.
+- **Ruimte** = de vrije gaten tot het anker: het eerste blok met een vaste tijd na het werk (eten, Ellie
+  bellen, of het vertrek naar een afspraak die over het eten heen loopt). Losse avondblokken ervoor (wo: inbox)
+  gaan er eerst af. Klusjes met een vaste tijd en afspraken die voor het anker af zijn (vr 15:30 was
+  aanzetten, een afspraak thuis om 14:00) staan in de ruimte; ze tellen niet mee als ruimte. In de notitie
+  heet het gat "Ruimte"; na het anker "Vrij". Loopt de dag over het anker heen, dan is de ruimte negatief.
+- **Verdelen:** elke werkdag begint met het werk dat hij uit zichzelf heeft ('rest' 0). Een dag met negatieve
+  ruimte geeft eerst werk af; dan gaat er steeds 5 min werk bij op de dag met de meeste ruimte (bij gelijke
+  ruimte de vroegste dag), zolang die niet onder 0 komt. Is de week vol, dan vervalt de stabiliteit op de dag
+  waar dat de meeste ruimte geeft, en daarna is het een conflict. Is het doel kleiner dan wat de dagen uit
+  zichzelf hebben, dan gaat er werk af op de dag met de minste ruimte. Het doel wordt naar boven afgerond op
+  5 min, dus de week komt tot 4 min boven het doel uit (27:02 bij 27 u).
+- **Vrije dag** = een dag zonder tijdsindeling, zoals de zondag ("Vrije dag: geen werk en geen
+  tijdsindeling"); de training staat erbij. **Halve vrije dag:** een blok "Vrij (halve vrije dag)" van
+  2:50 u (2,8 u, afgerond op 5 min) aan het eind van de werkdag, zodat die dag zoveel minder werk krijgt dan
+  een dag met dezelfde ruimte. Nog niet echt gebruikt; anders invullen (de ochtend of de middag vrij) kan
+  later.
+- **Weektarget nog niet vastgezet** (plannen voor zondag): voorlopig 28 u (`voorlopig_weektarget_uren` in
+  `regels.json`) min 5,6 u per vrije dag, met een melding.
+- **Herplannen:** `herplannen: {vanaf, gewerkt_uren, reden}`, met `gewerkt_uren` = "Gewerkt t/m" uit
+  `uren.py --tot <dag voor vanaf>`. In het weekbestand, zodat opnieuw doorrekenen hetzelfde geeft. Gewerkt per
+  voorbije dag komt voor de notitie nog live uit LogMyTime (alleen met `/usr/bin/python3`; de `python3` van
+  Homebrew heeft geen https).
+- **Proeven:** week van 21-12 (Wind week 1, geen afspraken, voorlopig 28 u): do 24-12 en vr 25-12 vrij,
+  declarabel doel 16,80 u, ma 6:05 / di 5:00 / wo 5:45, ruimte 1:10 / 1:15 / 1:15. Herpland vanaf di na
+  4,5 u op ma: di 5:50 / wo 6:30, ruimte 0:25 / 0:30, beide ongeveer 50 min lager. Week van 23-11 met de
+  ortho: ma t/m vr ruimte 0:45 tot 0:50. Een afspraak van 16:30 tot 19:00 op ma: ruimte tot het vertrek,
+  en een conflict met het eten (zoals voorheen; dat beslist Martijn). 33 u in de week: stabiliteit vervalt op
+  ma, ruimte overal 0; 37 u: conflict van 2:30 u.
+- **Lopende week 16-11 omgezet:** herpland vanaf do 19-11 met 17,70 u gewerkt t/m wo (doel 27 u): do 4:55,
+  vr 4:25, ruimte 0:45 / 0:50. De notitie `gebieden/weekplanning/2026-11-16.md` is opnieuw geschreven.

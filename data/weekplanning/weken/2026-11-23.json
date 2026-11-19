@@ -1,9 +1,15 @@
 {
-  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda en de urenstand (vrij na reservering uit uren.py). Reistijd en omschakelen staan voor en na de afspraak. Voorlopig met de trainingen van Wind week 1, tot week 2 in de vault staat.",
+  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/) en de afspraken uit de agenda; het declarabele doel komt uit data/weekplanning/weektargets.csv. Reistijd en omschakelen staan voor en na de afspraak. Voorlopig met de trainingen van Wind week 1, tot week 2 in de vault staat.",
   "maandag": "2026-11-23",
   "trainingen": "wind-90-week-01.json",
-  "vrij_na_reservering_uren": null,
   "afspraken": [
-    {"dag": "ma", "activiteit": "Ortho-nacontrole", "van": "09:45", "tot": "10:15", "reistijd_min": 10, "omschakelen_min": 10}
+    {
+      "dag": "ma",
+      "activiteit": "Ortho-nacontrole",
+      "van": "09:45",
+      "tot": "10:15",
+      "reistijd_min": 10,
+      "omschakelen_min": 10
+    }
   ]
 }

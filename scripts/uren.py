@@ -24,8 +24,6 @@ import vrije_dagen  # noqa: E402
 UREN_PER_WEEK = 28
 VRIJ_BUDGET = 196
 WEEKTARGETS = os.path.expanduser('~/vault/data/weekplanning/weektargets.csv')
-# Alleen voor vrij_na_reservering_overgang (tot stap 9 van het weekplanning-plan).
-WERKUREN = os.path.expanduser('~/vault/data/weekplanning/werkuren.csv')
 OVERZICHT = os.path.expanduser('~/vault/gebieden/werk/uren-overzicht.md')
 
 
@@ -90,24 +88,6 @@ def jaarstand(per_dag, peildatum, iso_jaar=None):
     s['nog_te_gaan'] = s['jaardoel'] - s['declarabel']
     s['weektarget'] = (s['nog_te_gaan'] + s['gereserveerd']) / s['weken_over'] if s['weken_over'] else None
     return s
-
-
-def vrij_na_reservering_overgang(per_dag, peildatum, s):
-    """Vrij na reservering zoals de weekplanning het tot stap 9 gebruikt: vrij-budget − (target − declarabel)
-    − nog gereserveerd. Target = 28 u per voorbije week, plus deze week het target per dag uit
-    data/weekplanning/werkuren.csv (anders 5,6 u per werkdag). Op zondag gelijk aan (28 − weektarget) × weken
-    over. Vervalt met stap 9 van het weekplanning-plan."""
-    gepland = {}
-    if os.path.exists(WERKUREN):
-        with open(WERKUREN, newline='') as f:
-            gepland = {date.fromisoformat(r['datum']): int(r['target_min']) / 60 for r in csv.DictReader(f)}
-    maandag = peildatum - timedelta(days=peildatum.weekday())
-    target = UREN_PER_WEEK * max((maandag - s['begin']).days // 7, 0)
-    dag = max(maandag, s['begin'])
-    while dag <= peildatum:
-        target += gepland.get(dag, vrije_dagen.UREN_PER_DAG if dag.weekday() < 5 else 0)
-        dag += timedelta(days=1)
-    return VRIJ_BUDGET - (target - s['declarabel']) - s['gereserveerd']
 
 
 def lees_weektargets():
@@ -291,8 +271,6 @@ def main():
         print('  Nog te gaan          %9.2f u' % w['nog_te_gaan'])
     else:
         print('  Weektarget niet vastgezet; gewerkt t/m %s %.2f u' % (args.tot.strftime('%d-%m'), w['gewerkt']))
-    print('Vrij na reservering  %9.2f u (voor de weekplanning tot stap 9)' % vrij_na_reservering_overgang(
-        per_dag, args.tot, s))
     print('Niet declarabel      %9.2f u' % stand['niet_declarabel'])
     if args.details:
         print('Per TypeID (afwezigheid ja/nee):')

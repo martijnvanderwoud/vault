@@ -46,11 +46,9 @@ een weektarget, niet meer met het kalenderjaar en een target per dag (zie Beslis
   reservering (ziek, spontaan vrij) als minder declarabel.
 - **Validatiepunt (19-11-2026):** declarabel sinds 5-1 1127,70 u, nog te gaan 132,30 u, nog gereserveerd
   39,20 u, weken over 6,2, weektarget 27,66 u. Per zondag 15-11: 1104,80 u, 7 weken over, 27,77 u.
-- **Overgang tot stap 9:** de weekplanning stuurt nog op "Vrij na reservering". `uren.py` toont die als
-  vrij-budget − (target − declarabel) − nog gereserveerd, met 28 u per voorbije week en deze week het target
-  per dag uit `data/weekplanning/werkuren.csv`; op zondag gelijk aan (28 − weektarget) × weken over. Door
-  het nieuwe jaar (vanaf 5-1), 5,6 u per vrije dag en Nieuwjaarsdag 2027 is die per 19-11 0,50 u (in het
-  oude model −0,00 u).
+- **Weekplanning (sinds stap 9, 19-11-2026):** `weekplanning.py` leest het declarabele doel uit
+  `weektargets.csv` en verdeelt het met gelijke ruimte over de werkdagen. "Vrij na reservering" en
+  `data/weekplanning/werkuren.csv` (target per dag) bestaan niet meer.
 
 ## LogMyTime API
 

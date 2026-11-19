@@ -1,7 +1,6 @@
 {
-  "toelichting": "Wat aan de weekdag vastzit, los van de soort dag: het werkdoel, vaste klusjes overdag en de avond. Een klusje staat 'na' een activiteit, 'om' een tijd (splitst zo nodig een werkblok) of 'samen_met' een activiteit (zelfde blok, naam erbij). Avondblokken met 'om' liggen vast (agenda, of eten tussen 18:00 en 18:30: 'speling_min'); een gat ervoor is vrij.",
+  "toelichting": "Wat aan de weekdag vastzit, los van de soort dag: vaste klusjes overdag en de avond. Het werk per dag volgt uit het declarabele doel van de week, verdeeld met gelijke ruimte (weekplanning.py). Een klusje staat 'na' een activiteit, 'om' een tijd (splitst zo nodig een werkblok) of 'samen_met' een activiteit (zelfde blok, naam erbij). Avondblokken met 'om' liggen vast (agenda, of eten tussen 18:00 en 18:30: 'speling_min'); een gat ervoor is vrij.",
   "ma": {
-    "werkdoel_uren": 6.5,
     "klusjes": [
       {"activiteit": "Bakker brood halen", "na": "Lunch", "duur_min": 15}
     ],
@@ -13,7 +12,6 @@
     ]
   },
   "di": {
-    "werkdoel_uren": 5.5,
     "klusjes": [],
     "avond": [
       {"activiteit": "Eten, afwas, tanden poetsen", "om": "18:00", "speling_min": 30, "duur_min": 60},
@@ -23,7 +21,6 @@
     ]
   },
   "wo": {
-    "werkdoel_uren": 6.0,
     "klusjes": [
       {"activiteit": "40 graden was aanzetten", "samen_met": "Tanden poetsen"},
       {"activiteit": "40 graden was ophangen", "na": "Lunch", "duur_min": 15}
@@ -38,7 +35,6 @@
     ]
   },
   "do": {
-    "werkdoel_uren": 6.0,
     "klusjes": [
       {"activiteit": "40 graden was opruimen", "na": "Lunch", "duur_min": 15}
     ],
@@ -50,7 +46,6 @@
     ]
   },
   "vr": {
-    "werkdoel_uren": 4.0,
     "klusjes": [
       {"activiteit": "Kledingmand opruimen en 30 graden was aanzetten", "om": "15:30", "duur_min": 30}
     ],
@@ -64,12 +59,10 @@
     ]
   },
   "za": {
-    "werkdoel_uren": 0,
     "klusjes": [],
     "avond": []
   },
   "zo": {
-    "werkdoel_uren": 0,
     "klusjes": [],
     "avond": []
   }
