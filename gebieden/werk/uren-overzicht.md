@@ -27,11 +27,11 @@ Weektarget = (nog te gaan + nog gereserveerd) / weken over. Het weektarget van e
 
 | Week 47 (vanaf ma 16-11-2026) | Uren |
 |---|---:|
-| Weektarget | 28,00 |
+| Weektarget | 27,00 |
 | Vrije dagen | 0 |
-| Declarabel doel | 28,00 |
+| Declarabel doel | 27,00 |
 | Gewerkt t/m do 19-11-2026 | 22,90 |
-| **Nog te gaan** | **5,10** |
+| **Nog te gaan** | **4,10** |
 
 ## Weken tot nu
 
@@ -82,7 +82,7 @@ Weektarget = (nog te gaan + nog gereserveerd) / weken over. Het weektarget van e
 | 44 | 26-10-2026 |  |  |  | 33,10 |
 | 45 | 02-11-2026 |  |  |  | 24,60 |
 | 46 | 09-11-2026 |  |  |  | 29,40 |
-| 47 | 16-11-2026 | 28,00 | 0 | 28,00 | 22,90 |
+| 47 | 16-11-2026 | 27,00 | 0 | 27,00 | 22,90 |
 
 Weken zonder weektarget liggen voor het weektarget (sinds week 47). Bron: `data/weekplanning/weektargets.csv`.
 

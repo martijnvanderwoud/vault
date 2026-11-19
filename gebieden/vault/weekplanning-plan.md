@@ -476,7 +476,7 @@ van de rest van de week gelijk verlaagt.
   `vrije_dagen.nog_gereserveerd_uren` kreeg een optionele grens `tot` (eind van het jaar), anders telde
   Nieuwjaarsdag 2027 ook mee in 2027. `--zet-week` (peildatum een zondag) schrijft
   `data/weekplanning/weektargets.csv` en weigert een week die er al staat; het jaar is dat van de maandag,
-  zodat zo 3-1-2027 het weektarget van 2027 zet. Week 47 staat er met 28 u in. `--vanaf` geldt nu alleen
+  zodat zo 3-1-2027 het weektarget van 2027 zet. Week 47 staat er met 27 u in: eerst 28 u, op 19-11 op verzoek van Martijn met de hand verlaagd, omdat hij de week anders niet haalde. Het verschil gaat vanzelf naar de weektargets van de weken erna. `--vanaf` geldt nu alleen
   voor declarabel per klant en werkt ook vóór 2026. Het overzicht heeft de nieuwe indeling (jaar, deze week,
   weken tot nu, vrije dagen). **Afwijking:** de weekplanning stuurt tot stap 9 nog op "vrij na reservering",
   dus `uren.py` toont die als overgang (`vrij_na_reservering_overgang`): 28 u per voorbije week plus deze

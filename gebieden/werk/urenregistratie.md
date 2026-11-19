@@ -39,7 +39,7 @@ een weektarget, niet meer met het kalenderjaar en een target per dag (zie Beslis
 - **Weektarget** = (jaardoel − declarabel + nog gereserveerd) / weken over. Weken over = werkdagen na de
   peildatum / 5, op zondag dus hele weken. Op zondag wordt het weektarget van de week erna vastgezet in
   `data/weekplanning/weektargets.csv` (`--zet-week`) en daarna niet meer opnieuw berekend. Week 47
-  (16-11-2026) staat er achteraf met 28 u in; de weken daarvoor hebben geen weektarget.
+  (16-11-2026) staat er achteraf met 27 u in (op 19-11 met de hand verlaagd van 28 u, op verzoek van Martijn); de weken daarvoor hebben geen weektarget.
 - **Declarabel doel** van een week = weektarget − 5,6 u per vrije dag in die week.
 - **Voor of achter:** een weektarget onder 28 u is voor, boven 28 u achter. Het verschil wordt over de
   rest van het jaar verdeeld. Niet gereserveerd vrij-budget telt vanzelf als voorsprong, vrij zonder
