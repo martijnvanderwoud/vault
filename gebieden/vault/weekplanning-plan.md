@@ -5,8 +5,8 @@ tags: [weekplanning, hardlopen, uren, plan]
 
 # Plan: weekplanning
 
-Doel: elke week 28 uur declarabel, alle hardlooptrainingen gedaan en een beetje lucht over, met
-afspraken en klusjes tussendoor. Op zondag, tijdens de weekly review, maakt `/weekplanning` de
+Doel: elke week het weektarget declarabel (gemiddeld 28 uur), alle hardlooptrainingen gedaan en
+wat ruimte over, met afspraken en klusjes tussendoor. Op zondag, tijdens de weekly review, maakt `/weekplanning` de
 planning voor de komende week. Mijn handwerk is alleen nakijken en zeggen wat er moet schuiven.
 Tijdens de week reken ik een wijziging ("later opgestaan", "run duurde 20 min langer") snel door.
 
@@ -14,14 +14,15 @@ Vervangt het vaste weekschema in de Excel (`weekschema-Two-Rivers-general-phase.
 vault; inhoud in `data/weekschema-excel-2026-11.csv`), dat per weekdag vastligt en niet meeschuift als de trainingsdagen wisselen. Komt uit het interview,
 zie [[interview-voortgang]].
 
-Vastgelegd op 2026-11-15.
+Vastgelegd op 2026-11-15. Herzien op 2026-11-19: een weektarget dat op zondag wordt vastgezet uit
+een weekgebaseerd jaar, en ruimte in plaats van lucht (zie Beslissingen en stap 7 t/m 9).
 
 ## Zo werken we dit af
 
 Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open stap uit
 [[weekplanning-plan]]". Aan het eind van de sessie:
 
-- vink je de stap af in de voortgang hieronder
+- vink je de stap af in de voortgang hieronder (de stappen staan in de volgorde van uitvoeren)
 - zet je onder `Bevindingen` wat afweek van het plan of wat een latere stap verandert
 - pas je latere stappen aan als dat nodig is
 
@@ -30,25 +31,32 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 1. Tempo's en trainingsduur (15-11, aannames nog te bevestigen)
 - [x] 2. Soorten dagen en regels als data (15-11, aannames bevestigd)
 - [x] 3. Weekplanning doorrekenen (15-11, met de trainingen van week 1; week 2 nog invoeren)
-- [ ] 4. Skill `/weekplanning` voor zondag (15-11 gebouwd; afvinken na de eerste echte run op zo 22-11)
+- [x] 4. Skill `/weekplanning` voor zondag (15-11 gebouwd en proefgedraaid; de eerste echte run op zo 22-11 komt onder Bevindingen)
 - [x] 5. Herplannen tijdens de week (15-11, getest op proefweken)
-- [ ] 6. Gelopen trainingen importeren
-- [ ] 7. Workouts voor TrainingPeaks genereren
-- [x] 8. Target per dag uit de weekplanning in `uren.py` (15-11)
-- [ ] 9. Gereserveerde vrije dagen met datum (klaar voor zo 20-12)
+- [x] 6. Target per dag uit de weekplanning in `uren.py` (15-11; vervalt met stap 8 en 9)
+- [ ] 7. Vrije dagen met datum (herzien 19-11; klaar voor zo 20-12)
+- [ ] 8. Weektarget uit het weekgebaseerde jaar in `uren.py` (na stap 7)
+- [ ] 9. Weektarget en ruimte in de weekplanning (na stap 8)
+
+Tot stap 9 klaar is, werkt de weekplanning nog op de oude manier (28 u per week, lucht, voor of achter
+uit "vrij na reservering").
+
+Gelopen trainingen importeren en workouts voor TrainingPeaks genereren (eerst stap 10 en 11) staan
+sinds 19-11 in [[hardlopen-plan]].
 
 ## Uitgangspunten
 
-- **Doel per week:** 28 u declarabel (ma 6,5 / di 5,5 / wo 6 / do 6 / vr 4 als startpunt, zie
-  [[urenregistratie]]). Uren mogen binnen de week schuiven tussen dagen.
+- **Doel per week:** het weektarget, op zondag vastgezet (zie Beslissingen), min 5,6 u per vrije dag
+  in die week. Uren mogen binnen de week schuiven tussen dagen.
 - **Hardlopen gaat altijd door.** Nooit opofferen.
-- **Lucht: 30 min per werkdag blijft in het schema.** Loop ik achter, dan haal ik er werk mee in;
-  zo niet, dan stop ik met werken en begin ik aan inbox en kleine taken. Het is de buffer voor
-  dingen als de auto naar de garage.
-- **Wat als eerste wijkt** bij een afspraak of tekort: lucht, dan de stabiliteitsroutines
-  (pedestal & hip stability). Later opstaan op advies van de Garmin sleepcoach hangt af van voor of
-  achter op target.
-- **Voor of achter op target** = "vrij na reservering" uit `uren.py`, zie [[urenregistratie]].
+- **Ruimte:** wat er op een werkdag overblijft tot het eten, nadat het werk is ingepland. Het werk
+  wordt zo over de week verdeeld dat de ruimte per werkdag gelijk is (minimaal 0). Geen vaste
+  ondergrens: zie ik geen ruimte meer in de week, dan weet ik dat ik iets moet schrappen of aanpassen.
+  Vervangt de vaste 30 min lucht per werkdag.
+- **Wat als eerste wijkt** bij een afspraak, een dag die uitloopt of later opstaan (bv. op advies van
+  de Garmin sleepcoach): de ruimte, tot 0, dan de stabiliteitsroutines (pedestal & hip stability).
+  Werk schuift in de planning nooit door naar volgende week. Past het dan nog niet, dan is het een
+  conflict en pas ik het plan zelf aan.
 - **Easy run:** vroeg lopen, een banaan is genoeg, daarna stabiliteitsroutines, ontbijt en werken.
 - **Zware of lange training:** eerst ontbijten, 2 tot 3 uur later lopen.
 - **Kracht:** twee keer per week, op de workout-dagen (nu di en zo), niet direct na de training.
@@ -75,6 +83,32 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - **Planning per soort dag, niet per weekdag.** Een week is een toewijzing van soorten dagen aan
   weekdagen, met de afspraken uit de agenda erbovenop. Zo schuift alles mee als het schema de
   zware training naar een andere dag zet.
+- **Weekgebaseerd jaar (19-11).** Het jaar volgt de ISO-weken, niet de kalender. Jaardoel = aantal
+  weken × 28 − 196 (vrij-budget). 2026 begint als overgang bij week 2 (ma 5-1) en loopt tot en met
+  week 53 (zo 3-1-2027): 52 weken, jaardoel 1260 u. Wat ik op 1 en 2 januari 2026 werkte, telt niet
+  mee. Vanaf 2027 gewoon week 1 tot en met de laatste week. Elk jaar begint met een schone lei.
+- **Weektarget, vast op zondag (19-11).** Weektarget = (jaardoel − declarabel tot en met zondag +
+  nog gereserveerde vrije uren) / hele weken die nog over zijn. Het blijft de hele week staan en wordt
+  opgeslagen; midden in de week opnieuw rekenen zou het met elk gewerkt uur laten verschuiven. Een
+  achterstand of voorsprong wordt zo gelijk verdeeld over de rest van het jaar, in plaats van meteen
+  ingehaald of opgemaakt. Het mag boven of onder 28 u uitkomen. Wat ik in werkelijkheid meer of minder
+  werk (ziek, een dag die anders liep), komt vanzelf in het target van de weken erna; de planning
+  schuift het nooit zelf door.
+- **Vrije dag = 5,6 u (19-11).** Vaste waarde (28 / 5; halve dag 2,8 u), los van het target en de
+  planning, zodat een reservering het target bepaalt en niet andersom. 196 u = 35 dagen. Declarabel
+  doel van een week = weektarget − 5,6 u per vrije dag in die week. Niet gereserveerd budget telt
+  vanzelf als voorsprong, vrij zonder reservering als minder declarabel; "vrij opgenomen" en "vrij na
+  reservering" hoeven niet meer berekend te worden.
+- **Ruimte in plaats van lucht (19-11).** Zie Uitgangspunten. Het rollende weektarget is de buffer
+  over de weken heen; een vaste buffer per dag is niet meer nodig.
+- **Herplannen binnen de week (19-11).** Wat nog over is van het declarabele doel van de week (doel −
+  wat ik deze week al werkte), opnieuw verdeeld over de resterende werkdagen, met weer gelijke ruimte
+  per dag. Uitloop van één dag wordt zo over de rest van de week uitgesmeerd.
+- **Urenoverzicht (19-11).** Bevat: het jaar (declarabel, jaardoel, nog te gaan, nog gereserveerd,
+  weken over, weektarget), deze week (weektarget, vrije dagen, declarabel doel, gewerkt, nog te gaan),
+  de weken tot nu (target tegenover gewerkt, om te zien of het target week na week oploopt) en de
+  vrije dagen met datum. Weg: per klant, per maand, target per dag, vrij opgenomen en vrij na
+  reservering. Geen "nog vrij te plannen in dagen": het weektarget zegt genoeg.
 
 ## Stappen
 
@@ -127,45 +161,7 @@ over de lucht heen) geven alleen een conflict, en later opstaan bij voor op targ
 
 Klaar als: een wijziging midden in de week een bijgewerkte planning geeft.
 
-### 6. Gelopen trainingen importeren
-
-Ik exporteer mijn activiteitenlijst met de hand uit Garmin Connect (CSV) naar `inbox/`; een script
-zet de gelopen trainingen in `data/hardlopen/gelopen.csv`, zonder dubbele regels bij opnieuw
-importeren. Daarmee: gepland tegenover gelopen per training en per week, km tegenover het weekdoel,
-en de werkelijke duur van trainingen op gevoel (Kenyan-style progression) om de planning bij te
-stellen. Geen automatische login bij Garmin of TrainingPeaks via een onofficiële bibliotheek,
-alleen exports die ik zelf maak. Eén keer per week, in de weekly review, is genoeg; dagelijks mag.
-
-Eerst: een export van week 47 bekijken om te zien welke kolommen erin zitten.
-
-Klaar als: de gelopen trainingen van week 47 in de vault staan en `/weekplanning` ze naast de
-planning zet.
-
-### 7. Workouts voor TrainingPeaks genereren
-
-Als mijn geschatte 5K-tempo verandert, moet ik nu alle workouts in TrainingPeaks met de hand
-omzetten. Twee routes:
-
-- **Importeren (voorkeur):** tijdens de weekplanning maakt een script `.zwo`-bestanden met de tempo's
-  uit `tempos.json`. TrainingPeaks importeert `.zwo` (en alleen dat) in de Workout Library, ook
-  meerdere tegelijk; daarna sleep ik ze naar de dag. FIT op de kalender slepen werkt volgens
-  gebruikers niet. Officiële importfunctie, dus binnen de Terms of Use.
-- **Alternatief, eerst met Nils bespreken:** workouts als percentage van drempeltempo, dan schalen
-  ze mee als ik de drempel aanpas. Valkuil: TrainingPeaks rekent percentages om naar snelheid,
-  Davis gebruikt percentages van tempo (80% tempo ≈ 83% snelheid); het script kan dat per zone
-  omrekenen. Nadeel: mijn 5K-tempo als drempel verstoort TSS, fitness en fatigue.
-
-Eerst: één workout als `.zwo` genereren en importeren, kijken of de tempo's van een hardloopworkout
-goed overkomen.
-
-Klaar als: ik na een nieuwe 5K-schatting de workouts van een week importeer in plaats van ze met de
-hand om te zetten.
-
-Bronnen: https://help.trainingpeaks.com/hc/en-us/articles/115000325647 (import),
-https://forum.intervals.icu/t/training-peaks-does-not-import-exported-workout-fit/47143 (FIT),
-https://help.trainingpeaks.com/hc/en-us/articles/231472468-TrainingPeaks-Athlete-User-Guide (drempel).
-
-### 8. Target per dag uit de weekplanning in `uren.py`
+### 6. Target per dag uit de weekplanning in `uren.py`
 
 Nu rekent `uren.py` het target met vaste werkuren per weekdag (`WEEKSCHEMAS`: ma 6,5 / di 5,5 /
 wo 6 / do 6 / vr 4). Met de weekplanning schuiven uren binnen de week, dus klopt de stand halverwege
@@ -182,28 +178,83 @@ tot 28 u: werk dat van de voorsprong afging (`minder`), telt op die dag wel mee 
 
 Klaar als: `uren.py` voor de week van 16-11 het target per dag uit de planning haalt.
 
-### 9. Gereserveerde vrije dagen met datum
+### 7. Vrije dagen met datum
 
-De reserveringen in `data/vrije-dagen-2026.csv` hebben geen datum, dus de weekplanning weet niet
-dat een werkdag vrij is, en voorbije reserveringen moet Martijn met de hand op 0 zetten. Vrij
-opgenomen = target − declarabel (zie [[urenregistratie]]): op een vrije dag blijft het target staan
-en werkt Martijn die uren niet.
+Herzien op 19-11. De reserveringen in `data/vrije-dagen-2026.csv` hebben geen datum en tellen in
+uren, dus de weekplanning weet niet dat een werkdag vrij is, en voorbije reserveringen moet Martijn
+met de hand op 0 zetten. In het nieuwe model telt een vrije dag vast 5,6 u (zie Beslissingen), en
+tellen alleen de reserveringen die nog komen; voorbije vrije dagen zitten al in het declarabele totaal.
 
-- **`data/vrije-dagen-2026.csv`:** kolommen `datum` en `tot` (voor een reservering van meer dagen).
-  Een deel van een dag: `gepland_uren` op die datum. Voorbije reserveringen mogen leeg blijven.
-  Datums, bevestigd op 15-11: Dag voor kerst (6 u) = do 24-12; Kerstvakantie (28 u) = vr 25-12
-  (4 u) en ma 28 t/m do 31-12 (6,5 + 5,5 + 6 + 6).
-- **`weekplanning.py`:** valt een gereserveerde datum in de week, dan krijgt die dag minder of geen
-  werkuren en vervalt de lucht van die dag; het werkdoel van de week zakt met de gereserveerde uren.
-  In `werkuren.csv` houdt de dag zijn gewone target, want die uren komen uit het vrij-budget.
-- **`uren.py`:** "nog gereserveerd" volgt uit de datum: wat na de peildatum valt, telt mee.
-  Reserveringen zonder datum houden `nog_gereserveerd_uren` zoals nu. Het onderhoud in de skill
-  `/uren` (voorbije reservering op 0 zetten) vervalt dan voor gedateerde regels.
-- **Skill `/weekplanning`:** legt de reserveringen van de week naast de agenda en meldt een feestdag
-  of vrije dag zonder reservering; dan vraagt hij wat ermee moet.
+- **`data/vrije-dagen.csv`** (niet meer per kalenderjaar, want week 53 van 2026 loopt door tot
+  3-1-2027): `omschrijving`, `datum`, `tot` (optioneel, voor meer dagen) en `half` (optioneel, voor
+  een halve dag). Elke werkdag (ma t/m vr) van `datum` t/m `tot` telt als 1 dag = 5,6 u, een halve
+  dag als 2,8 u. Voorbije regels zonder datum mogen weg: ze tellen nergens meer mee, en git bewaart
+  ze. Datums, bevestigd op 15-11: Dag voor kerst = do 24-12; Kerstvakantie = vr 25-12 en ma 28 t/m
+  do 31-12. Dat zijn 6 dagen = 33,6 u (was 34 u: 6 + 28).
+- **Nieuwjaarsdag vr 1-1-2027** valt in week 53 van 2026 en komt erbij als gereserveerde vrije dag
+  (bevestigd op 19-11; stond er nog niet in, omdat het kalenderjaar op 31-12 ophield). Samen 7 dagen
+  = 39,2 u nog gereserveerd.
+- **Een functie voor de andere scripts:** vrije dagen in een periode (datum → 1 of 0,5) en de nog
+  gereserveerde uren na een peildatum. Stap 8 en 9 gebruiken die.
+- **Skill `/uren`:** het onderhoud (voorbije reservering op 0 zetten) vervalt; de verwijzing naar de
+  oude CSV gaat eruit.
 
-Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en een werkdoel van
-18 u, en `uren.py --tot 2026-12-24` de Dag voor kerst niet meer als gereserveerd telt.
+Klaar als: `data/vrije-dagen.csv` de reserveringen voor de rest van het jaar met datum bevat, en
+de functie voor peildatum 2026-11-19 39,2 u en voor peildatum 2026-12-24 (na die dag) 33,6 u nog
+gereserveerd geeft.
+
+### 8. Weektarget uit het weekgebaseerde jaar in `uren.py`
+
+`uren.py` gaat over van het kalenderjaar en een target per dag naar het weekgebaseerde jaar en een
+weektarget (zie Beslissingen).
+
+- **Stand:** declarabel vanaf het begin van het jaar (2026: ma 5-1), jaardoel (aantal weken × 28 −
+  196), nog te gaan, nog gereserveerd (stap 7), hele weken over en het weektarget dat daaruit volgt.
+- **Weektarget opslaan:** `data/weekplanning/weektargets.csv`, één regel per week: `maandag`,
+  `weektarget`, `vrije_dagen`, `declarabel_doel` (weektarget − 5,6 × vrije dagen). Geschreven op
+  zondag (met `--zet-week` of iets dergelijks, met de stand tot en met die zondag), daarna niet meer
+  opnieuw berekend. Week 47 (16-11) achteraf met 28 u, de weken daarvoor leeg.
+- **Deze week:** het opgeslagen weektarget, de vrije dagen, het declarabele doel, wat ik deze week tot
+  en met de peildatum werkte en wat er nog te gaan is. Dit gebruikt het herplannen in stap 9.
+- **Urenoverzicht** (`gebieden/werk/uren-overzicht.md`): het jaar, deze week, de weken tot nu
+  (target tegenover gewerkt) en de vrije dagen met datum. Per klant, per maand, target per dag, vrij
+  opgenomen en vrij na reservering gaan eruit.
+- **Weg uit de code:** `WEEKSCHEMAS`, het lezen van `werkuren.csv`, `target_uren`, de berekening
+  van vrij opgenomen en de tabel per maand. `--vanaf` moet ook voor datums vóór 2026 werken (liep
+  vast op 29-12-2025).
+- **Notities en skill:** [[urenregistratie]] (logica en validatiepunten) en de skill `/uren`
+  (wat hij meldt) bijwerken.
+
+Klaar als: `uren.py` per peildatum 2026-11-19 een weektarget geeft dat gelijk is aan (1260 −
+declarabel sinds 5-1 + nog gereserveerd) / weken over, het weektarget van een week na het opslaan
+niet meer verandert, en het overzicht de nieuwe indeling heeft.
+
+### 9. Weektarget en ruimte in de weekplanning
+
+`weekplanning.py` en de skill `/weekplanning` gaan over op het weektarget en de ruimte (zie
+Uitgangspunten en Beslissingen). Verwacht: het script wordt flink kleiner.
+
+- **Weekbestand:** het declarabele doel van de week (uit `weektargets.csv`, stap 8) in plaats van
+  `vrij_na_reservering_uren`. De skill zet op zondag eerst het weektarget vast en plant daarna.
+- **Vrije dagen** (stap 7) in de week krijgen geen werk; een halve dag de helft van de dag.
+- **Ruimte gelijk verdelen:** het declarabele doel over de werkdagen zo verdelen dat de ruimte tot het
+  eten (of tot het eerste vaste avondblok, zoals Ellie bellen om 17:30) per werkdag gelijk is,
+  minimaal 0. Een dag met minder ruimte dan de rest krijgt geen extra werk; het schuift naar de
+  ruimere dagen. `werkdoel_uren` per weekdag in `weekdagen.json` vervalt.
+- **Wijkregels:** `wijkt_eerst` wordt ruimte, dan stabiliteit. Wat niet past, is een conflict met een
+  melding; niets schuift door naar volgende week.
+- **Weg:** de lucht (`lucht_min_per_werkdag`, de lucht-blokken in `dagsoorten.json`), `minder` en de
+  voorsprong-logica, `achterstand_ingehaald`, `vrij_inzetten`, `lucht_inzetten`, en waarschijnlijk
+  `werkuren.csv` (stap 6).
+- **Herplannen:** `herplannen: {vanaf, reden}`. Nog te gaan = declarabel doel − wat ik deze week
+  werkte tot en met de dag voor `vanaf` (uit `uren.py`, stap 8), opnieuw verdeeld over de resterende
+  werkdagen met gelijke ruimte. Voorbije dagen staan in de notitie kort als "voorbij".
+- **Notitie per week:** kolom lucht wordt ruimte. Uitgangspunten, skill `/weekplanning` en
+  [[urenregistratie]] bijwerken waar ze nog over lucht, voor of achter, of 28 u spreken.
+
+Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij, een declarabel doel
+van weektarget − 11,2 u en gelijke ruimte op ma t/m wo, en herplannen na een uitgelopen dag de ruimte
+van de rest van de week gelijk verlaagt.
 
 ## Bevindingen
 
@@ -299,7 +350,7 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
   uitloopt eerst van het werk af, tot de voorsprong op is; lucht en stabiliteitsroutines blijven dan
   staan. Daarna gelden de gewone wijkregels. Wo 18-11: 45 min minder werk, week 27:15 bij 1:06
   voorsprong.
-- **Stap 8 (15-11):** `weekplanning.py <weekbestand> --schrijf` zet per datum `gepland_min` en
+- **Stap 6 (15-11):** `weekplanning.py <weekbestand> --schrijf` zet per datum `gepland_min` en
   `target_min` in `data/weekplanning/werkuren.csv` (regels van andere weken blijven staan). Target =
   gepland + `minder` (van de voorsprong) + werk dat nergens in de lucht paste, dus de week telt altijd
   op tot 28 u; een dag zonder tijdsindeling houdt het werkdoel van de weekdag. `uren.py` neemt het
@@ -316,7 +367,7 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
   `weekplanning.py --schrijf`. Proefgedraaid op `weken/2026-11-23.json`; week 1 vervangen door
   `wind-90-week-02.json` gebeurt op 22-11 in de skill zelf (stap 2 daarvan: geen trainingsweek met
   `start` 2026-11-23).
-- **Nog niet in het script (wordt stap 9):** een feestdag of vrije dag op een werkdag. De skill meldt die en vraagt
+- **Nog niet in het script (wordt stap 7):** een feestdag of vrije dag op een werkdag. De skill meldt die en vraagt
   wat er met de werkuren moet; de eerstvolgende is 25-12 (vr).
 - **Voor stap 5 (opgelost in stap 5):** herplannen midden in de week met `--schrijf` overschrijft ook het
   target van de dagen die al voorbij zijn. Dat moet dan blijven staan (of uit de gelopen dagen komen),
@@ -378,7 +429,7 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
   later), 15 min van de vrije tijd voor het eten en 5 min minder werk van de voorsprong; vr 15 min korter.
 - **Herplannen na meer of minder werken:** dat zit in de urenstand. 's Avonds, als de uren van vandaag
   in LogMyTime staan, mag herplannen vanaf morgen met de stand tot en met vandaag; anders vanaf vandaag.
-- **Voor stap 9:** een gereserveerde vrije dag verlaagt het werkdoel van de week; bij herplannen moet de
+- **Voor stap 7:** een gereserveerde vrije dag verlaagt het werkdoel van de week; bij herplannen moet de
   berekening van wat de rest van de week nog moet doen (`over` in `week_plannen`) dat werkdoel gebruiken,
   niet vast 28 u.
 - **Inhalen eerst in de vrije tijd (16-11, op verzoek van Martijn):** een korte dag met een vast
@@ -391,3 +442,14 @@ Klaar als: de week van 21-12 een planning geeft met do 24-12 en vr 25-12 vrij en
   ingehaalde werk loopt door in het gewone werkblok (geen apart "Werken (inhalen)"). Proef op week 16-11
   met -1,50 u: di 30 min en vr 45 min doorwerken (werk tot 16:15 en 17:00), daarna 15 min lucht op ma;
   eerst ging het naar de lucht van ma t/m do en bleven di en vr vrij. Targets ongewijzigd (week 28 u).
+- **Herziening (19-11, gesprek met Martijn):** het urenoverzicht was een kopie van de Excel, met het
+  kalenderjaar en voor of achter tegenover een target per dag. Nu: een weekgebaseerd jaar, een
+  weektarget dat op zondag wordt vastgezet, vrije dagen van 5,6 u en ruimte in plaats van lucht (zie
+  Beslissingen, stap 7 t/m 9). Het weektarget is wiskundig gelijk aan 28 − (vrij na reservering) /
+  weken over: het meet hetzelfde, maar verdeelt het verschil over de rest van het jaar. Met het jaar
+  vanaf 1 januari (53 weken) lag Martijn 16 u achter, omdat 29 t/m 31-12-2025 dan bij 2026 hoorden;
+  daarom begint 2026 bij week 2. Illustratie per 19-11 (niet de echte stand op zondag): declarabel
+  sinds 5-1 1127,7 u, nog 132,3 u + 34 u gereserveerd over 6,2 weken = 26,8 u per week. Stap 6 en de
+  oude versie van stap 7 (vrije dagen in uren) zijn hierdoor vervangen. Op 19-11 ook de stappen
+  opnieuw genummerd in de volgorde van uitvoeren (oud 8 → 6, 9 → 7; 10 en 11 nieuw als 8 en 9); de oude
+  stappen 6 en 7 (gelopen trainingen, workouts voor TrainingPeaks) gingen naar [[hardlopen-plan]].
