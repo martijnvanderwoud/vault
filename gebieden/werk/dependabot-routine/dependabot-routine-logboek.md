@@ -18,7 +18,7 @@ tien stappen hem autonoom draaien als Debbie (deel 2). De beslissingen die eruit
   (Scala Steward en sbt) en `profile-presentation-design`. Plan voor de autonome routine vastgelegd.
 - 2026-11-11: stap 1 tot en met 9; om 16:51 alle 21 repo's op autonoom.
 - 2026-11-16: aanpassingen na de eerste runs van week 47 (sbt, absolute paden).
-- 2026-11-18: de runs gaan naar het gezamenlijke agents-dashboard ([[agents-dashboard-plan]]).
+- 2026-11-18: de runs gaan naar het gezamenlijke agents-dashboard ([[agents-dashboard]]).
 - 2026-11-19: week 47 nagekeken, plan afgerond.
 
 ## Deel 1: de routine als skill
@@ -1183,7 +1183,7 @@ Klaar als: een run zonder mijn tussenkomst is gestart en goed is afgelopen.
 Doel: één overzicht van alle runs.
 
 Vervangen op 2026-11-18 door het agents-dashboard (`gebieden/agents/dashboard.md`) uit
-[[agents-dashboard-plan]]. `dashboard.base` en `debbie-dashboard.md` zijn weg.
+[[agents-dashboard-logboek]]. `dashboard.base` en `debbie-dashboard.md` zijn weg.
 
 - `gebieden/werk/dependabot-runs/dashboard.base`, een tabel per status met links naar het
   issue en een kolom `aandacht`, plus een aparte weergave van runs met aandachtspunten.
@@ -1556,7 +1556,7 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
   stringfunctie zou dan breken.
 - De base is een tussenoplossing. Na het bekijken wil ik iets dat visueel meer opvalt, en een
   dashboard voor al mijn agents, niet alleen Debbie, dat niet een half uur achterloopt. Dat is
-  [[agents-dashboard-plan]]: één statusvorm voor alle agents, een watcher die altijd draait en een
+  [[agents-dashboard-logboek]]: één statusvorm voor alle agents, een watcher die altijd draait en een
   gegenereerde notitie met callouts. Het lezen van `issue_state` en het opruimen van afgebroken
   runs gaan daar van de runner naar de watcher. Stap 10 kan los daarvan verder.
 - Een `:` gevolgd door een spatie in een formule zonder quotes maakt de base kapot
@@ -1629,11 +1629,11 @@ Deze punten staan niet of niet duidelijk in de documentatie. Gecontroleerd in st
     niets anders dan `met/` en `zonder/` bevat. Stap 4 en 5 gebruiken weer `<scratchpad>` zoals
     de skill, met alleen het doel van de redirect uitgeschreven, en noemen een timeout van
     600000: breekt de tool het script af, dan blijft de `set` alsnog hangen.
-- 2026-11-18, stap 1 van [[agents-dashboard-plan]]: het veld `repo` in de run-notities heet nu
+- 2026-11-18, stap 1 van [[agents-dashboard-logboek]]: het veld `repo` in de run-notities heet nu
   `onderwerp`, zoals in de gedeelde statusvorm ([[agent-runs]]). Alle bestaande notities en
   `dashboard.base` zijn omgezet. Lezen en schrijven van run-notities zit nu in
   `scripts/agentruns.py`; de runner gebruikt die module.
-- 2026-11-18, stap 5 van [[agents-dashboard-plan]]: `dashboard.base` en `debbie-dashboard.md` zijn
+- 2026-11-18, stap 5 van [[agents-dashboard-logboek]]: `dashboard.base` en `debbie-dashboard.md` zijn
   weg, de runs staan op het agents-dashboard (`gebieden/agents/dashboard.md`). De runner zet geen
   `laatste` meer, en het veld is uit de notities gehaald. Dat dashboard toont alleen de laatste run
   per repo van de afgelopen 7 dagen, zonder `geweigerd` en `beurten`. Voor het nakijken van stap 10

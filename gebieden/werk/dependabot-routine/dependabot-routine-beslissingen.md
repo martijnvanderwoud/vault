@@ -96,7 +96,7 @@ Waarom [[dependabot-routine]] werkt zoals het werkt. Hoe het zo gekomen is, staa
   weg is een nieuwe sessie die de stand opbouwt uit het pauze-comment (`Report so far`, `State`).
   Comments worden nooit bewerkt; een correctie is een nieuw comment.
 - **De run-notities staan in git,** de logs niet. De notities zijn klein en hun geschiedenis is
-  nuttig. Sinds 18-11 staan ze op het gezamenlijke agents-dashboard ([[agents-dashboard-plan]]); de
+  nuttig. Sinds 18-11 staan ze op het gezamenlijke agents-dashboard ([[agents-dashboard]]); de
   watcher doet wat voor alle agents geldt (melden, `issue_state`, afgebroken runs).
 
 ## Uitrol

@@ -8,7 +8,7 @@ tags: [agents, afspraak]
 Elke run van een autonome agent is één notitie met vaste frontmatter. Het dashboard en de watcher
 kennen alleen deze velden, niet de agents zelf. Een nieuwe agent sluit aan door zich hieraan te
 houden en een notitie `gebieden/agents/<agent>.md` te krijgen (zie onderaan). Plan:
-[[agents-dashboard-plan]].
+[[agents-dashboard]].
 
 ## Velden
 

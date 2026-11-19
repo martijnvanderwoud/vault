@@ -2,7 +2,7 @@
 """Run-notities van de autonome agents lezen en schrijven, volgens gebieden/agents/agent-runs.md.
 
 Gedeeld door de runners (zoals dependabot_runner.py), het dashboard en de watcher.
-Plan: gebieden/vault/agents-dashboard-plan.md.
+Documentatie: gebieden/agents/agents-dashboard/agents-dashboard.md.
 """
 import json
 import os

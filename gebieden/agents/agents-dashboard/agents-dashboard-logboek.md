@@ -1,9 +1,15 @@
 ---
-description: Plan voor één statusvorm voor al mijn autonome agents, een watcher die altijd draait en een dashboard in Obsidian
-tags: [agents, dashboard, plan]
+description: Logboek van het agents-dashboard en de watcher, van het plan op 11-11 tot de afronding op 19-11
+tags: [agents, dashboard]
+cssclasses: [wide-page]
 ---
 
-# Plan: agents-dashboard
+# Agents-dashboard: logboek
+
+Hoe [[agents-dashboard]] tot stand kwam. De beslissingen die eruit volgden, staan in
+[[agents-dashboard-beslissingen]].
+
+## Aanleiding
 
 Doel: in één notitie zie ik meteen wat er nu draait, wat er de afgelopen tijd is gebeurd en wat
 op mij wacht, voor alle autonome agents in deze vault. Wat aandacht nodig heeft, valt op met een
@@ -15,14 +21,8 @@ aansluiten zonder dat de watcher of het dashboard verandert.
 
 Vastgelegd op 2026-11-11, na stap 9 van het plan van Debbie.
 
-## Zo werken we dit af
-
-Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open stap uit
-[[agents-dashboard-plan]]". Aan het eind van de sessie:
-
-- vink je de stap af in de voortgang hieronder
-- zet je onder `Bevindingen` wat afweek van het plan of wat een latere stap verandert
-- pas je latere stappen aan als dat nodig is
+Het plan had vijf stappen, elk een eigen sessie, alle vijf gedaan op 18-11. Hieronder eerst de
+stappen zoals ze in het plan stonden, dan de bevindingen in de volgorde waarin ze kwamen.
 
 ## Voortgang
 
@@ -50,36 +50,13 @@ Nog nakijken uit stap 3:
 
 Nog nakijken uit stap 4:
 
-- [ ] De eerste runner-tik onder launchd op de nieuwe code (vanaf 15:33 op 18-11):
+- [x] De eerste runner-tik onder launchd op de nieuwe code (vanaf 15:33 op 18-11):
   `sed -n '/^-- 2026-11-18T15:3/,$p' ~/dependabot-runs/.logs/runner.log` toont geen traceback.
-- [ ] De eerste echte run van Debbie na stap 4: de notitie heeft `resume` al tijdens `running`, en
+- [x] De eerste echte run van Debbie na stap 4: de notitie heeft `resume` al tijdens `running`, en
   na `done` niet meer; bij `paused` of `failed` komt er één melding (van de watcher, in
   `~/.agent-watcher/watcher.log`), niet twee.
 
-## Beslissingen
-
-- **Eén statusvorm voor alle agents.** Elke run is een notitie met vaste frontmatter (zie stap 1).
-  Watcher en dashboard kennen alleen die velden, niet de agents zelf.
-- **De runner van een agent schrijft de status, niet het model.** Zo blijft een vastgelopen run
-  zichtbaar als `failed`. Dit komt uit het plan van Debbie en geldt voor elke agent.
-- **Een eigen watcher, los van de runners.** De runner van Debbie draait elk half uur. Hangt het
-  dashboard daaraan, dan loopt het tot een half uur achter, bijvoorbeeld als ik een issue op
-  `Done` zet. De watcher draait altijd (launchd `KeepAlive`), en ververst het dashboard zodra een
-  run-notitie wijzigt.
-- **Een gegenereerde notitie, geen plugin.** Kleur via callouts van Obsidian (`[!danger]`,
-  `[!info]`, `[!success]`). Er draait geen JavaScript in de vault, en ik kan het dashboard zelf
-  genereren en nalezen. Dataview en Datacore vielen af: een community-plugin met volledige rechten,
-  in een vault waarin agents tekst uit niet te vertrouwen bronnen zetten (CI-logs, uitvoer van het
-  model), en een API die nog verandert. Bases viel af omdat het een tabel blijft, zonder een
-  opvallend blok voor wat aandacht nodig heeft. Gekeken naar AgentHub: dat is een chat-zijbalk voor
-  interactieve agents, geen statusoverzicht. De vier toestanden per tab (bezig, wacht op jou,
-  mislukt, klaar) en de melding bij "wacht op jou" heb ik overgenomen.
-- **YouTrack pollen, geen webhook.** Een webhook vraagt een server die YouTrack kan bereiken. Elke
-  paar minuten de state van de open issues ophalen via de REST-API kost geen modelbeurten.
-- **Afgehandeld is: het issue staat op `Done`**, of de run staat op `resolved` als hij geen issue
-  heeft. Een run zonder aandachtspunten zet zijn issue zelf op `Done`.
-
-## Stappen
+## Het plan
 
 ### 1. Statusvorm en gedeelde module
 
@@ -197,7 +174,7 @@ afgebroken run binnen een paar seconden als `failed` verschijnt, zonder de runne
 
 Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zijn.
 
-## Open vragen
+## Open vragen uit het plan
 
 - Waar komt de tweede agent vandaan? Een tweede agent die zich aansluit zonder wijzigingen aan
   watcher of dashboard, is de echte toets van de statusvorm.
@@ -348,3 +325,25 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
     [[dependabot-routine-logboek]], de skill (`de watcher haalt de run uit Aandacht nodig`),
     [[vault-roadmap]] en `CLAUDE.md` (mapstructuur en gegenereerde bestanden).
 
+### Afgerond (19-11)
+
+De twee controles na stap 4, nagekeken op 19-11:
+
+- Runner onder launchd: 50 tikken sinds 18-11 15:35 (de laatste om 16:23 op 19-11), geen traceback in
+  `runner.log`.
+- Eerste echte runs na stap 4 (`axon-stomp-event-publishing`, `more`, `portal-enrollment-ui`,
+  `portal-ui-common`, `ats`): alle vijf `done`, zonder `resume` in de notitie. De runner zet `resume`
+  wanneer `claude` start (in dezelfde schrijfactie als `pid`) en haalt het weg bij `done`. De watcher
+  zette binnen 3 minuten na elke run `issue_state` op `Done`.
+- Melding bij `paused` of `failed`: sinds stap 4 is er geen echte pauze geweest. Een dubbele melding
+  kan niet meer: de runner roept `melden()` alleen nog aan voor een stille watcher. De melding van
+  de watcher zelf is op 18-11 om 15:18 onder launchd getest met twee testnotities (één `paused`, één
+  `failed`), elk één melding.
+- Eén fout in `watcher.log`: `fout bij processen: FileNotFoundError` om 16:34:22 op 19-11, op het
+  moment dat de runmap van Debbie verhuisde naar `gebieden/werk/dependabot-routine/runs/` (een
+  notitie verdween tussen het opsommen en het lezen). De watcher liep door; de volgende tik vond de
+  nieuwe map via `runs` in [[debbie]]. Geen aanpassing nodig: een notitie die verdwijnt, gebeurt
+  verder alleen als ik er een weghaal.
+
+Bij het afsluiten is het plan omgezet naar de map `gebieden/agents/agents-dashboard/`. De
+verwijzingen in de scripts en in de waarschuwing op het dashboard wijzen nu naar [[agents-dashboard]].

@@ -80,7 +80,7 @@ Waarom [[ward-bewaking]] werkt zoals het werkt. Hoe het zo gekomen is, staat in
 ## Dashboard en geschiedenis
 
 - **Geen eigen dashboard.** Ward sluit aan op de gedeelde statusvorm en het agents-dashboard
-  ([[agents-dashboard-plan]], [[agent-runs]]), zonder aanpassingen aan watcher of dashboard.
+  ([[agents-dashboard]], [[agent-runs]]), zonder aanpassingen aan watcher of dashboard.
 - **Eén run-notitie per check, bij elke run opnieuw geschreven.** Zo staat de status per check op
   het dashboard, en houdt de watcher per notitie bij wat hij gemeld heeft, waardoor een bekende
   bevinding niet elke dag een nieuwe melding geeft. Tijdens `running` blijven de aandachtspunten

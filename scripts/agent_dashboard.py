@@ -4,8 +4,8 @@
 Bovenaan wat op mij wacht, dan wat nu draait, dan per agent de laatste run per onderwerp van de
 afgelopen 7 dagen. Alles uit een run-notitie komt er als platte tekst in: een agent kan het
 dashboard niet opmaken. Het bestand wordt alleen geschreven als de inhoud verandert (de regel
-`Bijgewerkt` telt niet mee). Afspraak: gebieden/agents/agent-runs.md, plan:
-gebieden/vault/agents-dashboard-plan.md.
+`Bijgewerkt` telt niet mee). Afspraak: gebieden/agents/agent-runs.md, documentatie:
+gebieden/agents/agents-dashboard/agents-dashboard.md.
 
     agent_dashboard.py [--agents MAP] [--uit BESTAND]
 """
@@ -158,7 +158,7 @@ def watcher_blok(nu):
         return []
     sinds = 'nog nooit gedraaid' if stil == 'nooit' else 'laatste teken van leven %s' % wanneer(stil.isoformat())
     return ['> [!danger] De watcher draait niet', '> %s. Dit dashboard ververst niet vanzelf, zie '
-            '[[agents-dashboard-plan]] (stap 3).' % sinds.capitalize(), '']
+            '[[agents-dashboard]] (Beheer).' % sinds.capitalize(), '']
 
 
 def bezig_blok(runs):

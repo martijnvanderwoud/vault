@@ -118,7 +118,7 @@ Doel: Ward draait elke dag om 9:00 en meldt alleen een verandering.
 Doel: Ward staat op het agents-dashboard met zijn laatste run en de status per check, zonder dat
 watcher of dashboard voor Ward veranderen.
 
-- Stap 1 van [[agents-dashboard-plan]] was al klaar. Ward sluit aan met de agentnotitie [[ward]]
+- Stap 1 van [[agents-dashboard-logboek]] was al klaar. Ward sluit aan met de agentnotitie [[ward]]
   (`runs`, `interval: 2d`, `proces: Python`). Watcher en dashboard zijn niet aangepast.
 - Eén run-notitie per check (`ward-hosts.md`, `ward-cpu.md`), bij elke run opnieuw geschreven: bij
   de start `running` met het pid van de runner en `resume` (`launchctl kickstart`), aan het eind

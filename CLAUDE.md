@@ -9,7 +9,8 @@ taken, lijsten en kennis. Claude Code werkt hier als assistent.
 - `dagboek/` daily notes: `dagboek/JJJJ/JJJJ-MM-DD.md`
 - `gebieden/` werk, klanten, privé-domeinen
 - `gebieden/agents/` autonome agents: één notitie per agent, de afspraak voor run-notities
-  (`agent-runs.md`) en het gegenereerde `dashboard.md`
+  (`agent-runs.md`), het gegenereerde `dashboard.md` en de documentatie van dashboard en watcher
+  (`agents-dashboard/`)
 - `lijsten/` boeken, bewaarplekken, ideeën
 - `data/` gestructureerde data (CSV, JSON)
 - `scripts/` deterministische helpers

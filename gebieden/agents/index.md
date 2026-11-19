@@ -5,6 +5,10 @@ description: Gegenereerde index van agents
 
 _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
+## Submappen
+
+- [[gebieden/agents/agents-dashboard/index|agents-dashboard]]
+
 ## Notities
 
 - [[agent-runs]] — De afspraak voor run-notities van alle autonome agents - velden, statussen, wanneer iets op mij wacht en wie schrijft

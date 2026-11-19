@@ -16,7 +16,6 @@ Bijgewerkt op 19-11-2026.
 | Plan | Stand | Volgende stap |
 |---|---|---|
 | [[release-candidates-staging]] | Alle stappen gescript, eerste uitrol op 13-11 (infra-PR #999), skill `staging-release-candidates` | Testen bij de volgende uitrol, met de skill |
-| [[agents-dashboard-plan]] | Stap 1 t/m 5 klaar (18-11): `scripts/agent_watcher.py` draait onder launchd, ververst `gebieden/agents/dashboard.md`, houdt `issue_state` bij en meldt; het oude `dashboard.base` is weg | Nakijken van stap 4 bij de eerste echte run van Debbie (Ward is de tweede agent, sinds 18-11) |
 | [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema loopt via [[weekplanning-plan]]; daarna de kennisnotities in de volgorde uit de interviewnotitie |
 | [[weekplanning-plan]] | Stap 1 klaar op 15-11: `trainingsduur.py`, aannames nog te bevestigen | Stap 2: soorten dagen en regels als data |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
@@ -29,6 +28,7 @@ Bijgewerkt op 19-11-2026.
 | Urenstand uit LogMyTime, skill `/uren`, Excel uitgefaseerd | 12-11-2026 | [[urenregistratie]], [[uren-overzicht]] |
 | Uren naar YouTrack, skill `/uren-naar-youtrack` | 12-11-2026 | [[urenregistratie]] |
 | Dependabot-routine als skill `/dependabot-routine` | 9-11-2026, testruns t/m 10-11 | [[dependabot-routine]] |
+| Agents-dashboard: één statusvorm voor alle agents, een watcher onder launchd die het dashboard ververst, `issue_state` bijhoudt en meldt | 19-11-2026 (stappen op 18-11, Ward sloot aan zonder wijzigingen) | [[agents-dashboard]] |
 | Debbie: de Dependabot-routine autonoom in alle 21 repo's, onder launchd, op het agents-dashboard | 19-11-2026, na een hele ronde (week 47) | [[dependabot-routine]], [[debbie]] |
 | Analyse AI-Brein Bootcamp, context- en grenzenlaag van de vault | 15-11-2026 | [[vault-leren-van-bootcamp]] |
 | Hostingfactuur FLOW via Acumulus-API, skill `/hostingfactuur-flow` (PDF nog met de hand bijvoegen) | 17-11-2026, eerste factuur 20260084 | [[hosting-transip]], [[acumulus]] |
@@ -63,7 +63,7 @@ Werkwijze om een terugkerende taak uit een project om te zetten in een skill:
 
 ## Onderhoud
 
-- Nieuw plan: eigen notitie met voortgang (zoals [[agents-dashboard-plan]]) en een regel onder
+- Nieuw plan: eigen notitie met voortgang (zoals [[weekplanning-plan]]) en een regel onder
   `Lopend`.
 - Plan klaar: regel naar `Afgerond`, en het plan wordt een eigen map met drie notities, zoals
   [[release-candidates-staging]] en [[ward-bewaking]]:

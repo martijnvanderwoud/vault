@@ -13,7 +13,7 @@ Daarnaast, voor alle agents:
   staat het issue van een `paused`- of `failed`-run op Done, dan wordt de run `done`
 - een macOS-melding bij `paused` of `failed` en bij nieuwe aandachtspunten. Wat hij gemeld heeft,
   staat in ~/.agent-watcher/gemeld.json, zodat een herstart niet alles opnieuw meldt.
-Plan: gebieden/vault/agents-dashboard-plan.md.
+Documentatie: gebieden/agents/agents-dashboard/agents-dashboard.md.
 
     agent_watcher.py [--tik SECONDEN] [--eenmalig]
 """

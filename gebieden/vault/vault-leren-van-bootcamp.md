@@ -32,7 +32,7 @@ The Map" van AI Her Way. De bootcamp bouwt niets en eindigt met een advies waar 
 
 - **Breinkaart-techniek:** statische HTML die nooit verandert, met de data in een los
   `gegevens.js` dat via een script-tag laadt. Omzeilt de beperking dat een `file://`-pagina geen
-  lokale bestanden kan lezen. Kandidaat voor de HTML-interface in [[agents-dashboard-plan]];
+  lokale bestanden kan lezen. Kandidaat voor de HTML-interface in [[agents-dashboard-beslissingen]];
   data dan via `json.dumps` schrijven en in de pagina als tekst tonen, nooit als HTML.
 - **Scoren van taken** om te kiezen wat je eerst automatiseert: hoe vaak, tijd per keer, heb
   jij het specifiek nodig, wat staat er op het spel. "Admin is de leerschool, marketing is de
