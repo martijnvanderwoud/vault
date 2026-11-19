@@ -1,7 +1,7 @@
 ---
-description: Gegenereerde index van dependabot-runs
+description: Gegenereerde index van runs
 ---
-# dependabot-runs
+# runs
 
 _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 

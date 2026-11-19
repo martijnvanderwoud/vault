@@ -1,7 +1,7 @@
 ---
 description: Debbie, de autonome Dependabot-routine - handelt elke week de Dependabot-PR's in mijn repo's af
 tags: [agents, dependabot]
-runs: gebieden/werk/dependabot-runs
+runs: gebieden/werk/dependabot-routine/runs
 lijsten: [prs]
 interval: 8d
 ---
@@ -16,9 +16,9 @@ skill [[dependabot-routine]]. Per project (het `onderwerp`) loopt hooguit één 
 Dependabot opent elke week PR's, dus Debbie draait minstens één keer per week. Is er langer dan acht
 dagen geen run begonnen (`interval: 8d`), dan staat ze op het dashboard onder `Stil`.
 
-- Run-notities: `gebieden/werk/dependabot-runs/`, één per run (`<jaar>-w<week>-<project>.md`).
+- Run-notities: `gebieden/werk/dependabot-routine/runs/`, één per run (`<jaar>-w<week>-<project>.md`).
 - Logs: `~/dependabot-runs/.logs/`.
-- Plan en beslissingen: [[dependabot-routine-autonoom-plan]].
+- Hoe het werkt: [[dependabot-routine]]; beslissingen en logboek: [[dependabot-routine-beslissingen]], [[dependabot-routine-logboek]].
 
 ## Hervatten
 

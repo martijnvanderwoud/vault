@@ -8,7 +8,7 @@ tags: [vault, werkafspraken, grenzen]
 Opgetekend in een interview op 15-11-2026 (zie [[interview-voortgang]]). Wie ik ben staat in
 [[over-martijn]]. Deze notitie is de leesbare versie van de grenzen; waar het kan, zijn ze ook
 technisch afgedwongen (zie onderaan en [[vault-beslissingen]]). Geldt voor Claude in een sessie
-én voor agents die zonder mij draaien, zoals Debbie ([[dependabot-routine-autonoom-plan]]).
+én voor agents die zonder mij draaien, zoals Debbie ([[dependabot-routine]]).
 
 ## Drie kleuren
 

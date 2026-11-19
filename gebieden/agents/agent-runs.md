@@ -65,7 +65,7 @@ Eigen velden van een agent mogen erbij, zoals `prs` en `session_id` bij Debbie. 
 
 `gebieden/agents/<agent>.md`, met in de frontmatter:
 
-- `runs`: de map met de run-notities, vanaf de vault, zoals `gebieden/werk/dependabot-runs`
+- `runs`: de map met de run-notities, vanaf de vault, zoals `gebieden/werk/dependabot-routine/runs`
 - `lijsten`: optioneel, eigen velden die een lijst zijn (naast `aandacht`), zodat een lege lijst
   bij het opnieuw schrijven een lijst blijft
 - `interval`: optioneel, de langste tijd tussen twee runs, zoals `8d`, `12h` of `30m`. Is er

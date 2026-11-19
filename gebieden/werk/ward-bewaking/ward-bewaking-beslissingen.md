@@ -61,7 +61,7 @@ Waarom [[ward-bewaking]] werkt zoals het werkt. Hoe het zo gekomen is, staat in
 
 - **Mail via de zakelijke Gmail-koppeling van claude.ai,** niet via `google-prive`, want dit is
   werk. Daarom geen `--strict-mcp-config` (dat zet de claude.ai-koppelingen uit, zie
-  [[dependabot-routine-autonoom-plan]], stap 6).
+  [[dependabot-routine-logboek]], stap 6).
 - **Rechten:** `--permission-mode dontAsk` met een allowlist, plus een `PreToolUse`-hook die alleen
   `send_message` aan martijn@crimsoncricket.nl doorlaat (ook in cc en bcc), en geen concept of
   reply. Een allowlist bepaalt niet aan wie een tool mailt, en Ward leest uitvoer van hosts.

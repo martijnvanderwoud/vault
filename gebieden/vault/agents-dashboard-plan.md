@@ -10,7 +10,7 @@ op mij wacht, voor alle autonome agents in deze vault. Wat aandacht nodig heeft,
 kleur. Het dashboard loopt hooguit een paar seconden achter op de run-notities, en een paar
 minuten op YouTrack.
 
-Debbie ([[dependabot-routine-autonoom-plan]]) is de eerste agent. De volgende moet zich kunnen
+Debbie ([[dependabot-routine]]) is de eerste agent. De volgende moet zich kunnen
 aansluiten zonder dat de watcher of het dashboard verandert.
 
 Vastgelegd op 2026-11-11, na stap 9 van het plan van Debbie.
@@ -345,6 +345,6 @@ Klaar als: er één dashboard is en de oude onderdelen weg of bewust gebleven zi
     notities gehaald waar het stond (alleen die regel). De runner-docstring noemt alleen nog
     `gebieden/agents/dashboard.md`.
   - Verwijzingen bijgewerkt: [[dependabot-routine]], stap 9, 10 en de bevindingen van
-    [[dependabot-routine-autonoom-plan]], de skill (`de watcher haalt de run uit Aandacht nodig`),
+    [[dependabot-routine-logboek]], de skill (`de watcher haalt de run uit Aandacht nodig`),
     [[vault-roadmap]] en `CLAUDE.md` (mapstructuur en gegenereerde bestanden).
 

@@ -9,13 +9,12 @@ Overzicht van alle plannen, niet de plannen zelf. Elk lopend plan heeft een eige
 stappen, voortgang en bevindingen. Hier staat per plan alleen de stand en de volgende stap. Zie [[vault-doel]] voor
 het waarom en [[vault-beslissingen]] voor de gemaakte keuzes.
 
-Bijgewerkt op 18-11-2026.
+Bijgewerkt op 19-11-2026.
 
 ## Lopend
 
 | Plan | Stand | Volgende stap |
 |---|---|---|
-| [[dependabot-routine-autonoom-plan]] (Debbie) | Stap 1 t/m 9 klaar; alle 21 repo's staan sinds 11-11 op autonoom | Stap 10: controlepunt na donderdag 19-11, alle runs van week 47 nakijken op het agents-dashboard en in de run-notities |
 | [[release-candidates-staging]] | Alle stappen gescript, eerste uitrol op 13-11 (infra-PR #999), skill `staging-release-candidates` | Testen bij de volgende uitrol, met de skill |
 | [[agents-dashboard-plan]] | Stap 1 t/m 5 klaar (18-11): `scripts/agent_watcher.py` draait onder launchd, ververst `gebieden/agents/dashboard.md`, houdt `issue_state` bij en meldt; het oude `dashboard.base` is weg | Nakijken van stap 4 bij de eerste echte run van Debbie (Ward is de tweede agent, sinds 18-11) |
 | [[interview-voortgang]] (vault vullen) | Blok 1 t/m 4 klaar op 15-11: [[over-martijn]], [[werkafspraken]], [[schrijfstem]] | Weekschema loopt via [[weekplanning-plan]]; daarna de kennisnotities in de volgorde uit de interviewnotitie |
@@ -30,6 +29,7 @@ Bijgewerkt op 18-11-2026.
 | Urenstand uit LogMyTime, skill `/uren`, Excel uitgefaseerd | 12-11-2026 | [[urenregistratie]], [[uren-overzicht]] |
 | Uren naar YouTrack, skill `/uren-naar-youtrack` | 12-11-2026 | [[urenregistratie]] |
 | Dependabot-routine als skill `/dependabot-routine` | 9-11-2026, testruns t/m 10-11 | [[dependabot-routine]] |
+| Debbie: de Dependabot-routine autonoom in alle 21 repo's, onder launchd, op het agents-dashboard | 19-11-2026, na een hele ronde (week 47) | [[dependabot-routine]], [[debbie]] |
 | Analyse AI-Brein Bootcamp, context- en grenzenlaag van de vault | 15-11-2026 | [[vault-leren-van-bootcamp]] |
 | Hostingfactuur FLOW via Acumulus-API, skill `/hostingfactuur-flow` (PDF nog met de hand bijvoegen) | 17-11-2026, eerste factuur 20260084 | [[hosting-transip]], [[acumulus]] |
 | Ward: elke ochtend de hosts van Pompkracht controleren (eerst AVX-512 VBMI voor Java4Shell), melden bij een verandering, op het agents-dashboard | 18-11-2026 (PKI-1133) | [[ward-bewaking]] |
@@ -55,6 +55,9 @@ Werkwijze om een terugkerende taak uit een project om te zetten in een skill:
 - **Kennisnotities en plannen uit het interview** (Pompkracht, hardlopen, privéfinanciën, Nirvana,
   vloerverwarming, berichtenkanalen, website): volgorde in [[interview-voortgang]].
 - **HTML-dashboard:** data in een los JS-bestand naast statische HTML, zie [[vault-leren-van-bootcamp]].
+- **Debbie op Sonnet:** Sonnet proberen op de npm-repo's (`--model` van de runner) en de verslagen
+  en kosten vergelijken met Opus (`kosten`, `beurten` en `geweigerd` in de run-notities). Zie
+  [[dependabot-routine-beslissingen]].
 - **Semantisch zoeken** zodra grep tekortschiet.
 - **Push** automatiseren (cron of hook) als ik vertrouwd ben met de flow.
 

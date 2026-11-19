@@ -3,7 +3,7 @@
 
 Gebruik: dependabot_runner.py [--repo NAAM ...] [--model MODEL] [--timeout MINUTEN]
 Zonder --repo alleen de projecten met `autonoom: true` in de frontmatter. Werkt eerst de run-notities bij (zie `opruimen`) en start dan per repo die in aanmerking komt een
-run, één tegelijk. Per run een notitie in gebieden/werk/dependabot-runs/<jaar>-w<week>-<repo>.md
+run, één tegelijk. Per run een notitie in gebieden/werk/dependabot-routine/runs/<jaar>-w<week>-<repo>.md
 en een log in ~/dependabot-runs/.logs/. Een macOS-melding als de watcher van het agents-dashboard
 niet draait. Een tweede runner-proces stopt meteen (lock). Een `paused`- of `failed`-run blokkeert de
 repo. Na een hervatting zet de runner hem op `done` zodra er een verslag van Debbie in het issue staat.
@@ -22,7 +22,7 @@ Gebruik: dependabot_runner.py --prepare --repo NAAM [--repo NAAM ...]
 Zet de clone in ~/dependabot-runs/NAAM klaar (clonen of fetchen, moet schoon zijn) en toont de
 tools die een run daar krijgt. Werkt ook zonder mijn shellprofiel, zoals onder launchd.
 Run-notities volgens gebieden/agents/agent-runs.md, via scripts/agentruns.py.
-Plan: gebieden/werk/dependabot-routine-autonoom-plan.md.
+Documentatie: gebieden/werk/dependabot-routine/dependabot-routine.md.
 """
 import argparse
 import fcntl
@@ -42,7 +42,7 @@ import agentruns  # noqa: E402
 
 VAULT = Path(__file__).resolve().parent.parent
 PROJECTEN = VAULT / '.claude/skills/dependabot-routine/projecten'
-RUNS = VAULT / 'gebieden/werk/dependabot-runs'
+RUNS = VAULT / 'gebieden/werk/dependabot-routine/runs'
 DEFAULT_AUTHORS = ['app/dependabot']
 # Zo lang na het openen van een PR zonder checks wachten we nog tot de checks verschijnen.
 GEEN_CHECKS_WACHTTIJD = timedelta(minutes=30)
