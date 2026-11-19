@@ -35,7 +35,7 @@ Elke stap is één losse sessie. Start in `~/vault` en zeg: "Doe de eerste open 
 - [x] 5. Herplannen tijdens de week (15-11, getest op proefweken)
 - [x] 6. Target per dag uit de weekplanning in `uren.py` (15-11; vervalt met stap 8 en 9)
 - [x] 7. Vrije dagen met datum (19-11; `uren.py` rekent tot stap 8 nog op de oude manier)
-- [ ] 8. Weektarget uit het weekgebaseerde jaar in `uren.py` (na stap 7)
+- [x] 8. Weektarget uit het weekgebaseerde jaar in `uren.py` (19-11; "vrij na reservering" blijft als overgang tot stap 9)
 - [ ] 9. Weektarget en ruimte in de weekplanning (na stap 8)
 
 Tot stap 9 klaar is, werkt de weekplanning nog op de oude manier (28 u per week, lucht, voor of achter
@@ -238,7 +238,8 @@ niet meer verandert, en het overzicht de nieuwe indeling heeft.
 Uitgangspunten en Beslissingen). Verwacht: het script wordt flink kleiner.
 
 - **Weekbestand:** het declarabele doel van de week (uit `weektargets.csv`, stap 8) in plaats van
-  `vrij_na_reservering_uren`. De skill zet op zondag eerst het weektarget vast en plant daarna.
+  `vrij_na_reservering_uren`. De skill zet op zondag al het weektarget vast (`uren.py --zet-week`, sinds
+  stap 8) en plant daarna.
 - **Vrije dagen** (stap 7) in de week krijgen geen werk; een halve dag de helft van de dag.
 - **Ruimte gelijk verdelen:** het declarabele doel over de werkdagen zo verdelen dat de ruimte tot het
   eten (of tot het eerste vaste avondblok, zoals Ellie bellen om 17:30) per werkdag gelijk is,
@@ -248,7 +249,8 @@ Uitgangspunten en Beslissingen). Verwacht: het script wordt flink kleiner.
   melding; niets schuift door naar volgende week.
 - **Weg:** de lucht (`lucht_min_per_werkdag`, de lucht-blokken in `dagsoorten.json`), `minder` en de
   voorsprong-logica, `achterstand_ingehaald`, `vrij_inzetten`, `lucht_inzetten`, en waarschijnlijk
-  `werkuren.csv` (stap 6).
+  `werkuren.csv` (stap 6). In `uren.py`: `vrij_na_reservering_overgang`, `WERKUREN` en de regel "Vrij na
+  reservering" in de output (de enige plek die `werkuren.csv` nog leest).
 - **Herplannen:** `herplannen: {vanaf, reden}`. Nog te gaan = declarabel doel − wat ik deze week
   werkte tot en met de dag voor `vanaf` (uit `uren.py`, stap 8), opnieuw verdeeld over de resterende
   werkdagen met gelijke ruimte. Voorbije dagen staan in de notitie kort als "voorbij".
@@ -467,3 +469,19 @@ van de rest van de week gelijk verlaagt.
   vrij na reservering 0,00, zoals voor de wijziging. Het overzicht toont de vrije dagen nu met datum in
   plaats van gepland en gereserveerd per regel. Skill `/uren`: het onderhoud is vervallen; skill
   `/weekplanning`: kijkt bij een feestdag of vrije dag in de CSV.
+- **Stap 8 (19-11):** `uren.py` rekent met het weekgebaseerde jaar (`jaar`, `jaarstand`): per 19-11
+  declarabel sinds 5-1 1127,70 u, nog te gaan 132,30 u, nog gereserveerd 39,20 u, weken over 6,2,
+  weektarget 27,66 u. **Weken over** = werkdagen na de peildatum / 5, zodat midden in de week ook een zinnig
+  getal uitkomt (zoals de 6,2 in de illustratie van de herziening); op zondag zijn het hele weken.
+  `vrije_dagen.nog_gereserveerd_uren` kreeg een optionele grens `tot` (eind van het jaar), anders telde
+  Nieuwjaarsdag 2027 ook mee in 2027. `--zet-week` (peildatum een zondag) schrijft
+  `data/weekplanning/weektargets.csv` en weigert een week die er al staat; het jaar is dat van de maandag,
+  zodat zo 3-1-2027 het weektarget van 2027 zet. Week 47 staat er met 28 u in. `--vanaf` geldt nu alleen
+  voor declarabel per klant en werkt ook vóór 2026. Het overzicht heeft de nieuwe indeling (jaar, deze week,
+  weken tot nu, vrije dagen). **Afwijking:** de weekplanning stuurt tot stap 9 nog op "vrij na reservering",
+  dus `uren.py` toont die als overgang (`vrij_na_reservering_overgang`): 28 u per voorbije week plus deze
+  week het target per dag uit `werkuren.csv`, op zondag gelijk aan (28 − weektarget) × weken over. Door het
+  nieuwe model per 19-11 0,50 u (was −0,00), per 15-11 1,60 u (was 1,10). De skill `/weekplanning` draait op
+  zondag al `uren.py --zet-week`, zodat week 48 (23-11) op zo 22-11 een weektarget krijgt. **Voor 2027:**
+  zonder reserveringen is het weektarget in week 1 1260 / 52 = 24,23 u (niet gereserveerd budget telt als
+  voorsprong); de vrije dagen van 2027 moeten er dus vóór zo 3-1-2027 in staan.

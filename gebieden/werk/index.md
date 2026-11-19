@@ -18,6 +18,6 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[hosting-transip]] — Welke TransIP-producten ik gebruik, aan welke klant ik ze doorbelast en waar de facturen staan
 - [[hostingklanten]] — Klanten met een vaste maandelijkse hostingfactuur (Construct, Afke Hennus), hun tarieven, prijsgeschiedenis en hoe ik een prijsverhoging doorreken
 - [[schrijfstem]] — Hoe Martijn schrijft in mail, pull requests en YouTrack - aanhef, groet en toon per relatie, met voorbeeldzinnen uit zijn eigen mails
-- [[uren-overzicht]] — Urenoverzicht 2026 met declarabel per klant, target, vrij-budget en gereserveerde vrije uren
+- [[uren-overzicht]] — Urenoverzicht 2026 (weekgebaseerd jaar) met jaardoel, weektarget, deze week, de weken tot nu en de vrije dagen
 - [[urenregistratie]] — Urenregistratie in LogMyTime, de logica van de urenstand (voorheen Excel) en de LogMyTime API
 - [[youtrack-bord-pompkracht]] — Het Pompkracht Kanban Board in YouTrack - swimlanes, welke issue types hoofdissue en subtaak zijn, en hoe je een issue op het bord zet

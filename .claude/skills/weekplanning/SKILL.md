@@ -32,8 +32,11 @@ andere week, neem dan die maandag.
 
 Doe deze drie tegelijk:
 
-- **Urenstand:** `/usr/bin/python3 -I ~/vault/scripts/uren.py` (zonder `--schrijf`). Neem
-  "Vrij na reservering" over als `vrij_na_reservering_uren`, precies zoals het script het toont.
+- **Urenstand:** op zondag `/usr/bin/python3 -I ~/vault/scripts/uren.py --zet-week` (zonder
+  `--schrijf`): dat zet ook het weektarget van de komende week vast in `data/weekplanning/weektargets.csv`.
+  Staat het er al, dan meldt het script dat en stopt het; draai het dan zonder `--zet-week`. Plan je op een
+  andere dag dan zondag, dan zonder `--zet-week`. Neem "Vrij na reservering" over als
+  `vrij_na_reservering_uren`, precies zoals het script het toont (tot stap 9 van [[weekplanning-plan]]).
 - **Zakelijke agenda** via `mcp__claude_ai_Google_Calendar__list_events`, ma 00:00 t/m zo 23:59:
   `martijn@crimsoncricket.nl` en `nl.dutch#holiday@group.v.calendar.google.com` (feestdagen).
 - **Privé-agenda** via `mcp__google-prive__get_events` met `detailed: true`:

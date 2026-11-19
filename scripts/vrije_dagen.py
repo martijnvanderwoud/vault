@@ -39,9 +39,9 @@ def vrije_dagen(vanaf, tot):
     return {dag: deel for dag, deel, _ in lees() if vanaf <= dag <= tot}
 
 
-def nog_gereserveerd_uren(peildatum):
-    """Gereserveerde vrije uren na de peildatum (de peildatum zelf telt niet mee)."""
-    return sum(deel for dag, deel, _ in lees() if dag > peildatum) * UREN_PER_DAG
+def nog_gereserveerd_uren(peildatum, tot=None):
+    """Gereserveerde vrije uren na de peildatum (de peildatum zelf telt niet mee), desgewenst t/m tot."""
+    return sum(deel for dag, deel, _ in lees() if dag > peildatum and (tot is None or dag <= tot)) * UREN_PER_DAG
 
 
 def main():
