@@ -1,4 +1,6 @@
-"""Gedeelde toegang tot de LogMyTime API (alleen lezen), voor uren.py en uren_naar_youtrack.py.
+"""Gedeelde toegang tot de LogMyTime API, voor uren.py, uren_naar_youtrack.py en logmytime_taken_archiveren.py.
+
+Lezen met get_all(), schrijven met merge().
 
 De sleutel komt uit LOGMYTIME_API_KEY in ~/vault/.env en wordt nooit getoond.
 Limiet: 500 requests per 24 uur per account, geen parallelle requests.
@@ -42,6 +44,20 @@ def get_all(resource, params):
             resultaten += data['results']
             url = data.get('__next')
     return resultaten
+
+
+def merge(resource, id, velden):
+    """Wijzigt alleen de opgegeven velden van één entity (MERGE, antwoord 204).
+
+    Niet PUT: dat zet weggelaten velden terug op hun standaardwaarde. Telt mee voor de limiet.
+    """
+    url = '%s/%s(%d)' % (BASE, resource, id)
+    headers = {'X-LogMyTimeApiKey': key(), 'Accept': 'application/json', 'Content-Type': 'application/json'}
+    request = urllib.request.Request(url, data=json.dumps(velden).encode(), headers=headers, method='MERGE')
+    try:
+        urllib.request.urlopen(request)
+    except urllib.error.HTTPError as e:
+        raise SystemExit('LogMyTime API gaf HTTP %s %s voor MERGE %s(%d)' % (e.code, e.reason, resource, id))
 
 
 def odata_datum(d):

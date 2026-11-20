@@ -74,7 +74,7 @@ de latere stappen aan als dat nodig is.
   archiveren en controleren in LogMyTime. Dan `uren.py` draaien en kijken of de totalen gelijk
   blijven (de time entries van een gearchiveerde taak moeten blijven meetellen). Mag de sleutel niet
   schrijven, dan eerst de rechten in LogMyTime aanpassen (Martijn).
-- [ ] 2. **Gedeelde code.** `scripts/youtrack.py` maken, `uren_naar_youtrack.py` erop overzetten en
+- [x] 2. **Gedeelde code.** `scripts/youtrack.py` maken, `uren_naar_youtrack.py` erop overzetten en
   controleren dat de uitvoer voor een gevalideerde dag gelijk blijft. `merge()` in `logmytime.py`.
 - [ ] 3. **Script bouwen**, alleen met de plan-modus. De uitvoer naast een handmatige blik op een paar
   taken leggen.
@@ -94,3 +94,10 @@ de latere stappen aan als dat nodig is.
 - `uren_naar_youtrack.py` roept `main()` aan zonder `if __name__ == '__main__'`: wie het importeert,
   draait het plan voor vandaag (alleen lezen, maar wel LogMyTime- en YouTrack-requests). Lost zichzelf
   op in stap 2, als `token()` en `yt()` naar `youtrack.py` verhuizen; zet de guard er dan wel bij.
+- **Stap 2 (20-11-2026):** `scripts/youtrack.py` heeft `token()`, `yt()` en ook `ISSUE_ID` (het
+  archiveerscript heeft die regex ook nodig). `uren_naar_youtrack.py` gebruikt de module en heeft nu
+  de `__main__`-guard. De plan-uitvoer voor 19-11 was voor en na byte voor byte gelijk. `merge()` in
+  `logmytime.py` getest door `Active = false` nog eens te zetten op taak 436168 (al gearchiveerd):
+  geen fout, `Active: False`. `youtrack_command.py`, `youtrack_edit_comment.py` en
+  `staging_overzicht.py` hebben nog een eigen `token()`. Bewust zo gelaten: de eerste twee draaien
+  met `python3 -I`, en dan staat de map van het script niet op `sys.path`.

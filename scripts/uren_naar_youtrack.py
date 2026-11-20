@@ -15,36 +15,15 @@ Taken zonder issue-ID en work items in YouTrack zonder uren in LogMyTime worden 
 Het script verwijdert nooit iets. De sleutels komen uit ~/vault/.env en worden nooit getoond.
 """
 import argparse
-import json
 import os
-import re
 import sys
 import urllib.error
-import urllib.request
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from logmytime import get_all, lokale_datum, odata_datum  # noqa: E402
-
-YT = 'https://crimsoncricket.myjetbrains.com/youtrack/api'
-ISSUE_ID = re.compile(r'^([A-Z][A-Z0-9_]*-\d+)\b')
-
-
-def token():
-    path = os.path.expanduser('~/vault/.env')
-    for line in reversed(open(path).read().splitlines()):
-        if line.startswith('YOUTRACK_TOKEN='):
-            return line.split('=', 1)[1].strip()
-    raise SystemExit('YOUTRACK_TOKEN ontbreekt in ' + path)
-
-
-def yt(pad, body=None):
-    headers = {'Authorization': 'Bearer ' + token(), 'Accept': 'application/json',
-               'Content-Type': 'application/json'}
-    data = json.dumps(body).encode() if body is not None else None
-    request = urllib.request.Request(YT + pad, data=data, headers=headers, method='POST' if data else 'GET')
-    return json.load(urllib.request.urlopen(request))
+from youtrack import ISSUE_ID, yt  # noqa: E402
 
 
 def minuten_per_issue(dag):
@@ -135,4 +114,5 @@ def main():
         raise SystemExit('%d actie(s) mislukt' % fouten)
 
 
-main()
+if __name__ == '__main__':
+    main()
