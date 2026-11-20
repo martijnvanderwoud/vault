@@ -58,9 +58,9 @@ de latere stappen aan als dat nodig is.
   op 20-11. `.env` is bijgewerkt.
 - [x] 2. **Toegang testen.** `scripts/nexus.py` leest de gegevens uit `.env`, haalt alle componenten
   van `npm-repo` op en telt per package. Werkt op 20-11, zie `Bevindingen`.
-- [ ] 3. **Script in plan-modus.** `scripts/nexus_opruimen.py`: per package wat blijft en wat weg
-  gaat, met aantallen. Nog niets verwijderen.
-- [ ] 4. **Uitvoeren.** Eerst één package met `--uitvoeren --max 5`, controleren dat `npm view` en de
+- [x] 3. **Script in plan-modus.** `scripts/nexus_opruimen.py`: per package wat blijft en wat weg
+  gaat, met aantallen. Plan gedraaid op 20-11, nog niets verwijderd.
+- [ ] 4. **Uitvoeren.** Eerst één package met `--pakket @pompkracht/portal-worker-ui --uitvoeren --max 5`, controleren dat `npm view` en de
   dist-tags kloppen, daarna de rest.
 - [ ] 5. **Taak voor Fien.** Toevoegen aan de runner van Fien zodra die er is (stap 5 van
   [[logmytime-taken-archiveren-plan]]), met de verwijderde versies in de run-notitie.
@@ -77,3 +77,11 @@ de latere stappen aan als dat nodig is.
   portal-ui-common (33), iam-login-ui (31), portal-enrollment-ui (25). De ontwerp-library heet
   `@pompkracht/pk-react-profile-presentation-design`. `docker-repo` geeft 0 componenten terug, dus de
   rol is beperkt tot npm. Het recht om te verwijderen is nog niet getest; dat gebeurt in stap 4.
+- **Stap 3 (20-11-2026):** de publicatietijden en dist-tags komen uit de npm-metadata van Nexus zelf
+  (`/repository/npm-repo/<package>`, met de servicegebruiker), niet uit `npm view`; `nexus.py` kreeg
+  daarvoor `packument()` en `verwijder()`. Het plan: 169 van de 189 develop-versies weg, 49 versies
+  blijven. `--uitvoeren` verwijdert de oudste eerst, standaard hooguit 20 per run; `--pakket` beperkt
+  tot één package. Opvallend: bij `@pompkracht/pk-react-profile-presentation-design` wijst `latest`
+  naar `2.8.0-develop.af0ee60` in plaats van release `2.7.0`, waarschijnlijk een develop-build die
+  zonder `--tag develop` is gepubliceerd. Die versie blijft staan omdat er een dist-tag op zit; de tag
+  zelf rechtzetten valt buiten dit plan.

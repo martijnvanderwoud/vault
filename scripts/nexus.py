@@ -11,7 +11,8 @@ import os
 import urllib.parse
 import urllib.request
 
-NEXUS = 'https://sonatype.pompkracht.nl/service/rest/v1'
+SONATYPE = 'https://sonatype.pompkracht.nl'
+NEXUS = SONATYPE + '/service/rest/v1'
 REPO = 'npm-repo'
 
 
@@ -28,13 +29,27 @@ def gegevens():
     return waarden['NEXUS_USERNAME'], waarden['NEXUS_PASSWORD']
 
 
-def nexus(pad, params=None):
-    """GET op pad met basic auth. Geeft het JSON-antwoord terug."""
+def verzoek(url, method='GET'):
     gebruiker, wachtwoord = gegevens()
     auth = base64.b64encode(('%s:%s' % (gebruiker, wachtwoord)).encode()).decode()
-    url = NEXUS + pad + ('?' + urllib.parse.urlencode(params) if params else '')
-    request = urllib.request.Request(url, headers={'Authorization': 'Basic ' + auth, 'Accept': 'application/json'})
-    return json.load(urllib.request.urlopen(request))
+    request = urllib.request.Request(url, method=method,
+                                     headers={'Authorization': 'Basic ' + auth, 'Accept': 'application/json'})
+    return urllib.request.urlopen(request)
+
+
+def nexus(pad, params=None):
+    """GET op pad met basic auth. Geeft het JSON-antwoord terug."""
+    return json.load(verzoek(NEXUS + pad + ('?' + urllib.parse.urlencode(params) if params else '')))
+
+
+def packument(pakket, repo=REPO):
+    """De npm-metadata van een package, met onder meer dist-tags en publicatietijden (time)."""
+    return json.load(verzoek('%s/repository/%s/%s' % (SONATYPE, repo, urllib.parse.quote(pakket, safe='@'))))
+
+
+def verwijder(component_id):
+    """Verwijdert een component (een versie van een package) met alle assets."""
+    verzoek(NEXUS + '/components/' + urllib.parse.quote(component_id), method='DELETE')
 
 
 def componenten(repo=REPO):
