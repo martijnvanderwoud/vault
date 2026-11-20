@@ -21,6 +21,10 @@ Een hoofdissue met subtaken krijgt dus een van deze vier types, anders komt het 
 op het bord. De subtaken eronder zijn `Task`, ook als ze in een ander project staan dan het
 hoofdissue.
 
+Een losse issue zonder subtaken krijgt het type `Task`, ook als het inhoudelijk onderhoud is. Een
+swimlane zonder subtaken werkt niet prettig op het bord. Vastgelegd op 20-11-2026, na PKI-1142
+(eerst als `Maintenance` aangemaakt).
+
 ## Op het bord zetten
 
 `create_issue` van de YouTrack-MCP zet een issue niet op het bord. Dat gaat met een command:

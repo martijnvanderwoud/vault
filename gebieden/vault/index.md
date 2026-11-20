@@ -11,6 +11,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[hardlopen-plan]] — Plan voor hardloopdata in de vault - gelopen trainingen uit Garmin importeren en workouts voor TrainingPeaks genereren uit de tempo's
 - [[interview-voortgang]] — Voortgang van het interview om de vault te vullen (geïnspireerd op de AI-Brein Bootcamp), met wat is vastgelegd, wat geparkeerd staat en waar we gebleven zijn
 - [[logmytime-taken-archiveren-plan]] — Plan om taken in LogMyTime automatisch te archiveren zodra hun YouTrack-issue al een tijd is opgelost, als autonome agent onder launchd
+- [[npm-develop-versies-opruimen-plan]] — Plan om oude develop-versies van onze npm-packages in Nexus (sonatype.pompkracht.nl) automatisch op te ruimen, later als taak van agent Fien
 - [[vault-beslissingen]] — Beslissingen over de opzet van de vault (git, hooks, indexen, zoeken) met de reden erachter
 - [[vault-doel]] — Doel en uitgangspunten van deze vault als persoonlijk agentic OS
 - [[vault-google-mcp-prive]] — Opzet en onderhoud van de MCP-server voor mijn privé-Gmail en -agenda (workspace-mcp) naast de zakelijke claude.ai-koppelingen
