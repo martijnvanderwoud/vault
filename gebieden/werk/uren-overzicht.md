@@ -6,7 +6,7 @@ tags: [werk, uren]
 # Urenoverzicht 2026
 
 > Gegenereerd door `scripts/uren.py --schrijf` (skill `/uren`) uit LogMyTime. Niet met de hand bewerken.
-> Peildatum **do 19-11-2026**. Achtergrond en logica: [[urenregistratie]].
+> Peildatum **vr 20-11-2026**. Achtergrond en logica: [[urenregistratie]].
 
 ## Jaar
 
@@ -14,12 +14,12 @@ Week 2 (ma 05-01-2026) t/m week 53 (zo 03-01-2027): 52 weken.
 
 | Jaar | Uren |
 |---|---:|
-| Declarabel | 1127,70 |
+| Declarabel | 1132,05 |
 | Jaardoel (52 × 28 − 196) | 1260,00 |
-| Nog te gaan | 132,30 |
+| Nog te gaan | 127,95 |
 | Nog gereserveerd | 39,20 |
-| Weken over | 6,20 |
-| **Weektarget** | **27,66** |
+| Weken over | 6,00 |
+| **Weektarget** | **27,86** |
 
 Weektarget = (nog te gaan + nog gereserveerd) / weken over. Het weektarget van een week staat vast vanaf de zondag ervoor (`--zet-week`).
 
@@ -30,8 +30,8 @@ Weektarget = (nog te gaan + nog gereserveerd) / weken over. Het weektarget van e
 | Weektarget | 27,00 |
 | Vrije dagen | 0 |
 | Declarabel doel | 27,00 |
-| Gewerkt t/m do 19-11-2026 | 22,90 |
-| **Nog te gaan** | **4,10** |
+| Gewerkt t/m vr 20-11-2026 | 27,25 |
+| **Nog te gaan** | **-0,25** |
 
 ## Weken tot nu
 
@@ -82,7 +82,7 @@ Weektarget = (nog te gaan + nog gereserveerd) / weken over. Het weektarget van e
 | 44 | 26-10-2026 |  |  |  | 33,10 |
 | 45 | 02-11-2026 |  |  |  | 24,60 |
 | 46 | 09-11-2026 |  |  |  | 29,40 |
-| 47 | 16-11-2026 | 27,00 | 0 | 27,00 | 22,90 |
+| 47 | 16-11-2026 | 27,00 | 0 | 27,00 | 27,25 |
 
 Weken zonder weektarget liggen voor het weektarget (sinds week 47). Bron: `data/weekplanning/weektargets.csv`.
 
