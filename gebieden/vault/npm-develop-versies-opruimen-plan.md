@@ -159,3 +159,12 @@ de latere stappen aan als dat nodig is.
     develop-builds over. Beide lock files staan op `2.7.0`.
   - Of een admin-account `latest` wel kan zetten, is niet getest: de 400 komt pas na de
     rechtencontrole (`repo-cleanup` kreeg geen 403), dus waarschijnlijk niet.
+- **Bekende bug in Nexus (20-11-2026):** het verschuiven van `latest` bij verwijderen is
+  [nexus-public #437](https://github.com/sonatype/nexus-public/issues/437) ("Cleanup policy changes
+  latest tag on npm repository", ook bij verwijderen met de hand, nog gemeld op 3.89.1). Gesloten
+  op 7-5-2026 door een medewerker van Sonatype met "I believe this should be fixed in 3.92", dezelfde
+  dag dat 3.92.0 uitkwam. In de release notes van 3.92 t/m 3.98.3 staat het niet: onbevestigd.
+  Verwant: #382 (Nexus maakt zelf een `latest` aan als er een asset verdwijnt). Wij draaien 3.91.0
+  (`appVersion` in `helm/charts/sonatype/Chart.yaml`). Martijn gebruikte `latest` vroeger zelf bij
+  het voorbereiden van een release (portal-ui-common van develop naar de laatste release); de RC-skill
+  doet dat nu met een expliciete versie (`staging_frontends.py`, `prepare_release`).
