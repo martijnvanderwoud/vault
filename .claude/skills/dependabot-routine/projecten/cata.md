@@ -1,5 +1,5 @@
 ---
-description: Aanvullingen op de Dependabot-routine voor cata (YouTrack-gegevens, Maven, webjars negeren, Maven-versie in de workflows)
+description: Aanvullingen op de Dependabot-routine voor cata (YouTrack-gegevens, Maven, Maven-versie in de workflows)
 repo: Flow-Cloud-Systems/cata
 autonoom: true
 ---
@@ -32,10 +32,7 @@ met de nieuwe Maven-versie en de bestanden die ik met de hand moet bijwerken.
 
 ## Stap 5. Kwetsbaarheden patchen zonder breaking changes
 
-Sluit bij de scan uit: `--exclude com.crimsoncricket --exclude nl.pompkracht --exclude org.webjars`.
-
-Kwetsbaarheden in webjars negeren we: die code is sterk verouderd. Noem ze ook niet in het
-verslag. `.github/dependabot.yml` negeert `org.webjars*:*` om dezelfde reden.
+Sluit bij de scan uit: `--exclude com.crimsoncricket --exclude nl.pompkracht`.
 
 ## Stap 8. Build op de base branch
 
