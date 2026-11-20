@@ -70,8 +70,10 @@ de latere stappen aan als dat nodig is.
   `latest` daarbij op `1.2.0-develop.fac2038`, zie `Bevindingen`. Terugzetten met
   `npm dist-tag add` gaf 403 voor Nexus-gebruiker `martijn`; `latest` blijft verkeerd tot stap 6 of
   tot iemand het met een admin-account terugzet.
-- [ ] 5. **Rechten voor dist-tags in infra.** Uitzoeken welk recht Nexus 3.91 vraagt voor
-  `PUT /repository/npm-repo/-/package/<pkg>/dist-tags/<tag>` (verwacht `edit`, anders `add` op
+- [ ] 5. **Rechten voor dist-tags in infra.** Bezig sinds 20-11: Task PKI-1143 op het bord, recht
+  `edit` toegevoegd in infra #1017 (naar develop), zie `Bevindingen`. Nog te doen: mergen,
+  PR's naar staging en master, `helm secrets upgrade` door Martijn. Oorspronkelijke opdracht:
+  uitzoeken welk recht Nexus 3.91 vraagt voor `PUT /repository/npm-repo/-/package/<pkg>/dist-tags/<tag>` (verwacht `edit`, anders `add` op
   `npm-repo`) en dat toevoegen aan de rol `nx-npm-cleanup` in `helm/charts/sonatype/values.yaml`. Als
   Task op het bord, net als PKI-1142, met PR's naar develop, staging en master. Martijn doet de
   `helm secrets upgrade` en kijkt of de configuratie-job slaagt.
@@ -121,3 +123,12 @@ de latere stappen aan als dat nodig is.
   (Nexus-gebruiker `martijn`) gaf `403 Forbidden` op
   `PUT /repository/npm-repo/-/package/@pompkracht%2fportal-worker-ui/dist-tags/latest`: ook die
   gebruiker heeft het recht voor dist-tags niet.
+- **Stap 5 (20-11-2026):** Nexus beeldt de HTTP-methode van een repository-verzoek af op een
+  BREAD-actie in `SecurityFacetSupport.action()` (nexus-public): GET/HEAD read, POST/PATCH add,
+  PUT edit, DELETE delete. Een dist-tag zetten (PUT) vraagt dus
+  `nx-repository-view-npm-npm-repo-edit`. Het npm-formaat zelf staat niet in de publieke broncode;
+  dat het die afbeelding niet overschrijft, is dus niet bevestigd. Bijwerking: `npm publish` is ook
+  een PUT, dus `repo-cleanup` kan daarmee waarschijnlijk ook publiceren. Geaccepteerd: de gegevens
+  staan alleen in `.env`. Nexus-gebruiker `martijn` heeft waarschijnlijk alleen read en browse,
+  zoals de rol `nx-npm-dev` (niet gecontroleerd), wat de 403 uit stap 4 zou verklaren; `npm-ci`
+  heeft `*`.
