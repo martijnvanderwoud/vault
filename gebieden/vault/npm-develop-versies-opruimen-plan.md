@@ -88,7 +88,8 @@ de latere stappen aan als dat nodig is.
   (`latest: 1.1.0 → 1.2.0-develop.fac2038`). Verandert een andere tag dan `latest`, dan stopt het
   script met een foutmelding. Getest op 20-11 met
   `--pakket @pompkracht/portal-worker-ui --uitvoeren --max 2`, zie `Bevindingen`.
-- [ ] 7. **De rest uitvoeren.** Per run hooguit 20 versies, tot het plan leeg is.
+- [x] 7. **De rest uitvoeren.** Per run hooguit 20 versies, tot het plan leeg is. Gedaan op 20-11 in
+  8 runs (159 versies weg), zie `Bevindingen`.
 - [ ] 8. **Taak voor Fien.** Toevoegen aan de runner van Fien zodra die er is (stap 5 van
   [[logmytime-taken-archiveren-plan]]), met de verwijderde versies en verschoven dist-tags in de
   run-notitie.
@@ -177,3 +178,12 @@ de latere stappen aan als dat nodig is.
   getest (`veranderde_tags()`), niet live. portal-worker-ui heeft nu 10 versies, 4 develop-versies
   gaan nog weg. Verwacht in stap 7: bij packages waar `latest` nog op de release staat, verschuift
   het bij de eerste verwijdering naar de hoogste develop-versie.
+- **Stap 7 (20-11-2026):** 8 runs van hooguit 20, samen 159 develop-versies weg. Met de proefrun (5)
+  en de test uit stap 6 (2) zijn dat er 166. Er staan nog 52 versies in `npm-repo`: 29 releases en
+  23 develop-versies. Per package blijven de 3 nieuwste develop-versies staan, plus de versie waar
+  `latest` naar wijst als die ouder is (daardoor hebben sommige packages er 4). Geen enkele andere
+  tag dan `latest` veranderde. `latest` verschoof bij iam-login-ui, portal-ui-common,
+  portal-enrollment-ui, react-notifications (`4.5.0 → 4.6.0-develop.abece4b`) en portal-employee-ui
+  (`2.0.0 → 2.1.0-develop.fc146ae`). Daarmee wijst `latest` nu bij alle zeven packages naar een
+  develop-build, tot de volgende release het rechtzet. Tussen de runs door kwamen er nieuwe
+  develop-builds bij (het totaal schommelde tussen 50 en 52 blijvers).
