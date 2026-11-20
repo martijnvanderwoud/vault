@@ -20,7 +20,7 @@ Bijgewerkt op 20-11-2026.
 | [[weekplanning-plan]] | Alle stappen klaar op 19-11 (skill `/weekplanning`, weektarget en ruimte); wacht op de eerste echte zondagrun | Zo 22-11 de week plannen met de skill, daarna afronden naar `gebieden/weekplanning/` |
 | [[hardlopen-plan]] | Afgesplitst van [[weekplanning-plan]] op 19-11, nog niet begonnen | Stap 1: gelopen trainingen importeren (eerst een Garmin-export van week 47) |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
-| [[logmytime-taken-archiveren-plan]] | Vastgelegd 20-11, nog niet begonnen | Stap 1: testen of de LogMyTime-sleutel taken mag archiveren |
+| [[logmytime-taken-archiveren-plan]] | Stap 1 klaar op 20-11: de sleutel mag archiveren, urenstand blijft gelijk | Stap 2: gedeelde `scripts/youtrack.py` en `merge()` in `logmytime.py` |
 
 ## Afgerond
 

@@ -24,7 +24,7 @@ het issue in YouTrack is afgesloten. Dat is suf handwerk. Elke taak begint met h
 - Wijzigen gaat met `MERGE /V1/Api.svc/Tasks(<id>)` met alleen de gewijzigde velden in de body,
   antwoord `204 No Content`. Niet `PUT`: dat zet weggelaten velden terug op hun standaardwaarde.
   Schrijven mag alleen met een admin-account of met uitgebreide gebruikersrechten waarvoor schrijven
-  aanstaat. Of mijn sleutel mag schrijven, is nog niet getest.
+  aanstaat. Mijn sleutel mag schrijven (getest op 20-11-2026, zie `Bevindingen`).
 - Limiet: 500 requests per 24 uur, dus één `MERGE` per taak telt mee. De eerste keer gaat het om
   ongeveer 200 taken, en de uren-scripts gebruiken dezelfde limiet.
 - Archiveren is terug te draaien (`Active = true`). De time entries blijven bestaan.
@@ -70,7 +70,7 @@ de latere stappen aan als dat nodig is.
 
 ## Voortgang
 
-- [ ] 1. **Schrijfrecht testen.** Eén taak waarvan het issue duidelijk klaar is, met `MERGE`
+- [x] 1. **Schrijfrecht testen.** Eén taak waarvan het issue duidelijk klaar is, met `MERGE`
   archiveren en controleren in LogMyTime. Dan `uren.py` draaien en kijken of de totalen gelijk
   blijven (de time entries van een gearchiveerde taak moeten blijven meetellen). Mag de sleutel niet
   schrijven, dan eerst de rechten in LogMyTime aanpassen (Martijn).
@@ -87,4 +87,10 @@ de latere stappen aan als dat nodig is.
 
 ## Bevindingen
 
-(nog geen)
+- **Stap 1 (20-11-2026):** de sleutel mag schrijven. `MERGE /Tasks(436168)` met `{"Active": false}`
+  gaf `204`, en daarna gaf de API `Active: False` terug voor *PKI-1111 Test data renewal* (opgelost op
+  20-10, 2 time entries, 2,3 u). De uitvoer van `uren.py --details` was voor en na byte voor byte
+  gelijk: de time entries van een gearchiveerde taak tellen dus mee. De taak blijft gearchiveerd.
+- `uren_naar_youtrack.py` roept `main()` aan zonder `if __name__ == '__main__'`: wie het importeert,
+  draait het plan voor vandaag (alleen lezen, maar wel LogMyTime- en YouTrack-requests). Lost zichzelf
+  op in stap 2, als `token()` en `yt()` naar `youtrack.py` verhuizen; zet de guard er dan wel bij.
