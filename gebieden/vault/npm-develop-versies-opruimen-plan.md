@@ -76,8 +76,10 @@ de latere stappen aan als dat nodig is.
   `edit` toegevoegd en gemerged via infra #1017 (develop), #1018 (staging) en #1019 (master),
   `helm secrets upgrade` door Martijn op 20-11, zie `Bevindingen`. Het recht werkt (`develop` zetten
   lukt), maar `latest` weigert Nexus altijd. PKI-1143 is Done; het recht gaat weer weg in PKI-1144
-  (infra #1020 naar develop, nog mergen naar develop, staging en master, dan `helm secrets
-  upgrade`). Oorspronkelijke opdracht:
+  via infra #1020 (develop), #1021 (staging) en #1022 (master), gemerged op 20-11. Nog te doen:
+  `helm secrets upgrade` door Martijn en controleren dat `repo-cleanup` weer 403 krijgt op
+  dist-tags. Hoofdtaak op het bord: PKI-1145 (Maintenance), met PKI-1142 t/m 1144 als subtaken.
+  Oorspronkelijke opdracht:
   uitzoeken welk recht Nexus 3.91 vraagt voor `PUT /repository/npm-repo/-/package/<pkg>/dist-tags/<tag>` (verwacht `edit`, anders `add` op
   `npm-repo`) en dat toevoegen aan de rol `nx-npm-cleanup` in `helm/charts/sonatype/values.yaml`. Als
   Task op het bord, net als PKI-1142, met PR's naar develop, staging en master. Martijn doet de
