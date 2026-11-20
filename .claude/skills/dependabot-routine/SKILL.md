@@ -354,6 +354,24 @@ curl -fsS "https://api.sdkman.io/2/candidates/<sdk>/darwinarm64/versions/list?in
 - Een nieuwere major voer je niet door. Die noem je alleen in het verslag.
 - De wijziging gaat mee in de PR van stap 6.
 
+### Workflows die nog een versie meegeven
+
+De CI-workflows lezen de Java- en Maven-versie uit `.sdkmanrc` (PKI-1140). Geeft een workflow
+toch nog `java_version` of `maven_version` mee aan `jvm-build.yml`, dan wint die input en
+wijkt CI af van `.sdkmanrc`. De routine mag geen workflowbestanden wijzigen, dus meld het
+alleen. Zoek het na de wijziging in `.sdkmanrc`, ook als die deze run niet is veranderd:
+
+```bash
+grep -rnE "^\s+(java|maven)_version:" .github/workflows
+```
+
+- Geen treffers: ga door.
+- Wel treffers: noem per bestand en regel in het verslag van stap 9 dat de workflow een versie
+  vastzet die `.sdkmanrc` negeert, met het voorstel de input te verwijderen. Release- en
+  hotfix-branches die er nog een meegeven blijven werken, dus op een `release/*`- of
+  `hotfix/*`-branch is het geen aandachtspunt. Autonoom: verslag.
+- Is er geen `.sdkmanrc`, dan is een versie in de workflow juist de bron. Geen aandachtspunt.
+
 ## 4. Schone install
 
 Kijk in de root van het project welk buildbestand er staat:

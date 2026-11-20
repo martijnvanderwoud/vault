@@ -25,6 +25,12 @@ Waarom [[dependabot-routine]] werkt zoals het werkt. Hoe het zo gekomen is, staa
   weg kan, maar via een andere override loopt, blijft staan en komt in het verslag. Na het
   weghalen controleert de routine dat de opgeloste versie niet lager is dan de override (bij `ats`
   werd `bcpkix` anders 1.85, onder de fix).
+- **`.sdkmanrc` is de bron voor Java en Maven in CI, de routine meldt afwijkingen.** Sinds PKI-1140
+  lezen de workflows de versies uit `.sdkmanrc`. De routine mag geen workflows wijzigen, dus een
+  workflow die toch nog `java_version` of `maven_version` meegeeft komt als aandachtspunt in het
+  verslag (stap 3 van de skill). Java volgt daarbij de patchversie, niet de respin: setup-java
+  reduceert `25.0.5.1+2` voor een versiebestand tot `25.0.5` en gebruikt de Temurin-build van de
+  runner. Exact vastzetten kost een JDK-download per run, dus dat doen we niet.
 - **Een rode PR: de oorzaak uit de CI-log, niet alleen melden.** Wordt de nieuwe versie nog niet
   ondersteund (zoals graphql 17 door `@apollo/server` in `rostering-api`), dan de PR sluiten en de
   major uitsluiten in `dependabot.yml`, zodat minor- en patch-updates blijven komen.
