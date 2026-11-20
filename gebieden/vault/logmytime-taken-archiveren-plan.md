@@ -80,7 +80,8 @@ de latere stappen aan als dat nodig is.
   taken leggen.
 - [ ] 4. **Eerste run met de hand.** Eerst `--uitvoeren` en `--max N` inbouwen (het script heeft nu
   alleen de plan-modus). Martijn bekijkt het plan, daarna `--uitvoeren`. Met `--max 100` verspreid
-  over twee dagen (op 20-11 stonden er 178 klaar).
+  over twee dagen (op 20-11 stonden er 178 klaar). *Dag 1 klaar (20-11, 100 taken); nog open: de
+  overige 78 op 21-11 of later met `--uitvoeren --max 100`, daarna afvinken.*
 - [ ] 5. **Agent Fien.** Runner, run-notitie, plist, agentnotitie, en controleren
   dat het dashboard hem toont. Een paar weken laten draaien.
 - [ ] 6. **Afronden** volgens het onderhoud in [[vault-roadmap]]: map met documentatie, beslissingen
@@ -115,3 +116,9 @@ de latere stappen aan als dat nodig is.
   issue id field`. Het script haalt die ID's eruit, telt ze als `niet gevonden` en probeert de portie
   opnieuw. Getest met PKI-999999 en XYZQ-1. Let op: dat staat als JSON in de body, dus eerst parsen (een
   regex op de ruwe body vindt de waarden niet door de `\"`).
+- **Stap 4, dag 1 (20-11-2026):** `--uitvoeren` en `--max N` (standaard 100) ingebouwd. Het script
+  archiveert in de volgorde van de lijst (project, dan issuenummer), print elke taak meteen en meldt
+  hoeveel er overblijven. Martijn keurde het plan goed (178 archiveren, 44 wacht, 20 open), daarna
+  `--uitvoeren --max 100`: 100 keer `204`, PA-1102 t/m PKP-870. De plan-modus erna gaf 145 actief en
+  78 te archiveren. Draai het script met `/usr/bin/python3` (of via de shebang): de `python3` van
+  pyenv heeft geen SSL en faalt met `unknown url type: https`.
