@@ -35,7 +35,9 @@ terug te draaien zijn.
   bij zijn en weten wat er is afgesproken.
 - Definitief verwijderen. Niet zonder toestemming, ook al staat veel in git en is het dan niet
   echt weg.
-- Pushen naar een remote.
+- Pushen van de vault zelf, force-pushes en pushes naar `develop` of `master`. Een
+  `feature/*`-branch in een repo van Pompkracht push ik wel zelf (besluit 2026-11-20, zie
+  [[vault-beslissingen]]).
 
 ## Bij twijfel
 
@@ -95,7 +97,8 @@ niet storen. Voor de planning gelden vaste ankers:
 ## Technisch afgedwongen
 
 Wat hierboven staat, is zoveel mogelijk ook in `.claude/settings.json` en in de skills vastgelegd:
-`git push` en het lezen van `.env` zijn geweigerd, skills voeren alleen uit wat als regel in de
+force-pushes, pushes naar `develop`/`master` en het lezen van `.env` zijn geweigerd (alleen
+`git -C <repo> push [-u] origin feature/*` is toegestaan), skills voeren alleen uit wat als regel in de
 skill staat en hebben hun eigen `allowed-tools`, en cijfers komen altijd uit scripts op data in
 `data/`. Een zin in deze notitie is zwakker dan zo'n regel; staat iets hier maar nog niet
 technisch vast, dan is dat een kandidaat.

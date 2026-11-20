@@ -15,6 +15,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
 - [[acumulus]] — Acumulus (SIEL), mijn boekhoud- en factuurprogramma - de API, de API-gebruiker en het script waarmee Claude verkoopfacturen als concept aanmaakt en de PDF ophaalt
 - [[facturen-archief]] — Waar mijn inkoop- en verkoopfacturen staan en hoe ik ze lees
+- [[git-flow-branchregels-pompkracht]] — De organisatiebrede git-flow-regels van Flow-Cloud-Systems - welke branchnamen een PR naar develop, master, release en hotfix mogen hebben, waar de check vandaan komt en voor welke repo's hij geldt
 - [[hosting-transip]] — Welke TransIP-producten ik gebruik, aan welke klant ik ze doorbelast en waar de facturen staan
 - [[hostingklanten]] — Klanten met een vaste maandelijkse hostingfactuur (Construct, Afke Hennus), hun tarieven, prijsgeschiedenis en hoe ik een prijsverhoging doorreken
 - [[schrijfstem]] — Hoe Martijn schrijft in mail, pull requests en YouTrack - aanhef, groet en toon per relatie, met voorbeeldzinnen uit zijn eigen mails
