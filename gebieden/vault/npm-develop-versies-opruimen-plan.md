@@ -71,8 +71,9 @@ de latere stappen aan als dat nodig is.
   `npm dist-tag add` gaf 403 voor Nexus-gebruiker `martijn`; `latest` blijft verkeerd tot stap 6 of
   tot iemand het met een admin-account terugzet.
 - [ ] 5. **Rechten voor dist-tags in infra.** Bezig sinds 20-11: Task PKI-1143 op het bord, recht
-  `edit` toegevoegd in infra #1017 (naar develop), zie `Bevindingen`. Nog te doen: mergen,
-  PR's naar staging en master, `helm secrets upgrade` door Martijn. Oorspronkelijke opdracht:
+  `edit` toegevoegd en gemerged via infra #1017 (develop), #1018 (staging) en #1019 (master), zie
+  `Bevindingen`. Nog te doen: `helm secrets upgrade` door Martijn, dan als `repo-cleanup` `latest`
+  van portal-worker-ui terugzetten op `1.1.0`. Oorspronkelijke opdracht:
   uitzoeken welk recht Nexus 3.91 vraagt voor `PUT /repository/npm-repo/-/package/<pkg>/dist-tags/<tag>` (verwacht `edit`, anders `add` op
   `npm-repo`) en dat toevoegen aan de rol `nx-npm-cleanup` in `helm/charts/sonatype/values.yaml`. Als
   Task op het bord, net als PKI-1142, met PR's naar develop, staging en master. Martijn doet de
