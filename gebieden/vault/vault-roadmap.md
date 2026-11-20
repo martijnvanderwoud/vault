@@ -9,7 +9,7 @@ Overzicht van alle plannen, niet de plannen zelf. Elk lopend plan heeft een eige
 stappen, voortgang en bevindingen. Hier staat per plan alleen de stand en de volgende stap. Zie [[vault-doel]] voor
 het waarom en [[vault-beslissingen]] voor de gemaakte keuzes.
 
-Bijgewerkt op 19-11-2026.
+Bijgewerkt op 20-11-2026.
 
 ## Lopend
 
@@ -20,6 +20,7 @@ Bijgewerkt op 19-11-2026.
 | [[weekplanning-plan]] | Alle stappen klaar op 19-11 (skill `/weekplanning`, weektarget en ruimte); wacht op de eerste echte zondagrun | Zo 22-11 de week plannen met de skill, daarna afronden naar `gebieden/weekplanning/` |
 | [[hardlopen-plan]] | Afgesplitst van [[weekplanning-plan]] op 19-11, nog niet begonnen | Stap 1: gelopen trainingen importeren (eerst een Garmin-export van week 47) |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
+| [[logmytime-taken-archiveren-plan]] | Vastgelegd 20-11, nog niet begonnen | Stap 1: testen of de LogMyTime-sleutel taken mag archiveren |
 
 ## Afgerond
 
