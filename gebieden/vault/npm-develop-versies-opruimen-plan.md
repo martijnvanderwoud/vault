@@ -41,6 +41,12 @@ ik met de hand op in de Sonatype-UI, en dat is veel klikwerk.
   `npm-repo`) en gebruiker `repo-cleanup` in `helm/charts/sonatype/values.yaml`, issue PKI-1142.
   Eén gebruiker voor alle opruimtaken, met een rol per repository: een latere Docker-opruiming krijgt
   een eigen rol op dezelfde gebruiker (daarvoor komt een apart plan).
+- **Dist-tags herstellen, met meer rechten voor `repo-cleanup`:** Nexus zet `latest` bij het
+  verwijderen van een versie op de hoogste versie volgens semver, dus vaak op een develop-build.
+  Martijn zag dat eerder ook bij opruimen met de hand en houdt het voor een bug in Nexus (20-11).
+  Het script legt daarom per package de dist-tags vóór het verwijderen vast en zet ze daarna terug.
+  De rol `nx-npm-cleanup` krijgt daarvoor via een infra-PR het recht dat Nexus voor dist-tags vraagt,
+  zodat Fien het later zonder het npm-token van Martijn kan.
 - **Uitvoering:** een script `scripts/nexus_opruimen.py` met een plan-modus, `--uitvoeren` en
   `--max`, zoals `logmytime_taken_archiveren.py`. Later draait agent Fien het als tweede taak
   ([[logmytime-taken-archiveren-plan]]).
@@ -60,11 +66,27 @@ de latere stappen aan als dat nodig is.
   van `npm-repo` op en telt per package. Werkt op 20-11, zie `Bevindingen`.
 - [x] 3. **Script in plan-modus.** `scripts/nexus_opruimen.py`: per package wat blijft en wat weg
   gaat, met aantallen. Plan gedraaid op 20-11, nog niets verwijderd.
-- [ ] 4. **Uitvoeren.** Eerst één package met `--pakket @pompkracht/portal-worker-ui --uitvoeren --max 5`, controleren dat `npm view` en de
-  dist-tags kloppen, daarna de rest.
-- [ ] 5. **Taak voor Fien.** Toevoegen aan de runner van Fien zodra die er is (stap 5 van
-  [[logmytime-taken-archiveren-plan]]), met de verwijderde versies in de run-notitie.
-- [ ] 6. **Afronden** volgens het onderhoud in [[vault-roadmap]].
+- [x] 4. **Proefrun.** Gedaan op 20-11: 5 versies van portal-worker-ui weg, maar Nexus zette
+  `latest` daarbij op `1.2.0-develop.fac2038`, zie `Bevindingen`. Terugzetten met
+  `npm dist-tag add` gaf 403 voor Nexus-gebruiker `martijn`; `latest` blijft verkeerd tot stap 6 of
+  tot iemand het met een admin-account terugzet.
+- [ ] 5. **Rechten voor dist-tags in infra.** Uitzoeken welk recht Nexus 3.91 vraagt voor
+  `PUT /repository/npm-repo/-/package/<pkg>/dist-tags/<tag>` (verwacht `edit`, anders `add` op
+  `npm-repo`) en dat toevoegen aan de rol `nx-npm-cleanup` in `helm/charts/sonatype/values.yaml`. Als
+  Task op het bord, net als PKI-1142, met PR's naar develop, staging en master. Martijn doet de
+  `helm secrets upgrade` en kijkt of de configuratie-job slaagt.
+- [ ] 6. **Script herstelt dist-tags.** `nexus.py` krijgt een functie om een dist-tag te zetten.
+  `nexus_opruimen.py` legt per package de dist-tags vast voordat het iets verwijdert, haalt na het
+  verwijderen de npm-metadata opnieuw op en zet elke tag terug die veranderd is, met een regel in de
+  uitvoer per hersteld tag. Lukt het herstellen niet, dan stopt het script met een foutmelding en het
+  commando om het met de hand te doen. Testen met `--pakket @pompkracht/portal-worker-ui --uitvoeren
+  --max 2` en controleren dat `latest` en `develop` daarna kloppen.
+- [ ] 7. **De rest uitvoeren.** Per run hooguit 20 versies, tot het plan leeg is. Na elke run de
+  dist-tags van alle packages controleren.
+- [ ] 8. **Taak voor Fien.** Toevoegen aan de runner van Fien zodra die er is (stap 5 van
+  [[logmytime-taken-archiveren-plan]]), met de verwijderde versies en herstelde dist-tags in de
+  run-notitie.
+- [ ] 9. **Afronden** volgens het onderhoud in [[vault-roadmap]].
 
 ## Bevindingen
 
@@ -85,3 +107,17 @@ de latere stappen aan als dat nodig is.
   naar `2.8.0-develop.af0ee60` in plaats van release `2.7.0`, waarschijnlijk een develop-build die
   zonder `--tag develop` is gepubliceerd. Die versie blijft staan omdat er een dist-tag op zit; de tag
   zelf rechtzetten valt buiten dit plan.
+- **Stap 4, proefrun (20-11-2026):** `repo-cleanup` mag verwijderen: de 5 oudste develop-versies van
+  portal-worker-ui (1.1.0-develop.af2125a, db812d9, cf288b8, 2eca243, b999555) zijn weg, `npm view`
+  en de npm-metadata tonen nog 12 versies, `develop` klopt. Maar `latest` wees daarna naar
+  `1.2.0-develop.fac2038`, de hoogste versie op semver, en niet meer naar release `1.1.0` (dat
+  laatste is afgeleid: de andere zes packages hebben `latest` op hun release, en `fac2038` stond
+  in het plan niet als getagd). Nexus rekent `latest` bij het verwijderen van een versie dus
+  opnieuw uit. Waarschijnlijk is de verkeerde `latest` van pk-react-profile-presentation-design zo
+  ontstaan, door eerder opruimen met de hand. Gevolg voor het script: dist-tags vóór het verwijderen
+  vastleggen en daarna herstellen (`PUT /repository/npm-repo/-/package/<pkg>/dist-tags/<tag>`), en
+  daarvoor heeft `repo-cleanup` waarschijnlijk extra rechten nodig (edit of add op `npm-repo`).
+  `npm dist-tag add @pompkracht/portal-worker-ui@1.1.0 latest` met het npm-token van Martijn
+  (Nexus-gebruiker `martijn`) gaf `403 Forbidden` op
+  `PUT /repository/npm-repo/-/package/@pompkracht%2fportal-worker-ui/dist-tags/latest`: ook die
+  gebruiker heeft het recht voor dist-tags niet.

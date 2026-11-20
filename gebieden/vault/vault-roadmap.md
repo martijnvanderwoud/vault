@@ -21,7 +21,7 @@ Bijgewerkt op 20-11-2026.
 | [[hardlopen-plan]] | Afgesplitst van [[weekplanning-plan]] op 19-11, nog niet begonnen | Stap 1: gelopen trainingen importeren (eerst een Garmin-export van week 47) |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
 | [[logmytime-taken-archiveren-plan]] | Stap 1 t/m 3 klaar op 20-11, stap 4 half: 100 van de 178 taken gearchiveerd | Stap 4 afmaken: de overige 78 vanaf 21-11 met `--uitvoeren --max 100`, daarna stap 5 (agent Fien) |
-| [[npm-develop-versies-opruimen-plan]] | Stap 1 t/m 3 klaar op 20-11: gebruiker `repo-cleanup` in Nexus, `scripts/nexus_opruimen.py` in plan-modus (169 van 189 develop-versies weg) | Stap 4: uitvoeren, eerst één package met `--max 5` |
+| [[npm-develop-versies-opruimen-plan]] | Stap 1 t/m 3 klaar op 20-11: gebruiker `repo-cleanup` in Nexus, `scripts/nexus_opruimen.py` in plan-modus (169 van 189 develop-versies weg) | Stap 5: recht voor dist-tags voor `repo-cleanup` via infra, daarna `latest` van portal-worker-ui terugzetten |
 
 ## Afgerond
 
