@@ -76,10 +76,11 @@ de latere stappen aan als dat nodig is.
   schrijven, dan eerst de rechten in LogMyTime aanpassen (Martijn).
 - [x] 2. **Gedeelde code.** `scripts/youtrack.py` maken, `uren_naar_youtrack.py` erop overzetten en
   controleren dat de uitvoer voor een gevalideerde dag gelijk blijft. `merge()` in `logmytime.py`.
-- [ ] 3. **Script bouwen**, alleen met de plan-modus. De uitvoer naast een handmatige blik op een paar
+- [x] 3. **Script bouwen**, alleen met de plan-modus. De uitvoer naast een handmatige blik op een paar
   taken leggen.
-- [ ] 4. **Eerste run met de hand.** Martijn bekijkt het plan, daarna `--uitvoeren`. Met `--max 100`
-  verspreid over twee dagen.
+- [ ] 4. **Eerste run met de hand.** Eerst `--uitvoeren` en `--max N` inbouwen (het script heeft nu
+  alleen de plan-modus). Martijn bekijkt het plan, daarna `--uitvoeren`. Met `--max 100` verspreid
+  over twee dagen (op 20-11 stonden er 178 klaar).
 - [ ] 5. **Agent Fien.** Runner, run-notitie, plist, agentnotitie, en controleren
   dat het dashboard hem toont. Een paar weken laten draaien.
 - [ ] 6. **Afronden** volgens het onderhoud in [[vault-roadmap]]: map met documentatie, beslissingen
@@ -101,3 +102,16 @@ de latere stappen aan als dat nodig is.
   geen fout, `Active: False`. `youtrack_command.py`, `youtrack_edit_comment.py` en
   `staging_overzicht.py` hebben nog een eigen `token()`. Bewust zo gelaten: de eerste twee draaien
   met `python3 -I`, en dan staat de map van het script niet op `sys.path`.
+- **Stap 3 (20-11-2026):** `scripts/logmytime_taken_archiveren.py` draait in plan-modus en kost twee
+  LogMyTime-requests (actieve taken, time entries sinds de grens) plus één YouTrack-request per 50
+  issues. Uitkomst: 245 actief, 178 archiveren, 44 wacht, 20 open, 0 niet gevonden, 0 zonder ID (de
+  drie vaste taken niet meegeteld). De grens is vandaag min 7 dagen: opgelost op of vóór de grens én
+  geen tijd na de grens telt als archiveren. Opgelost en gelogd op precies 13-11 gaat dus mee (PKI-1126,
+  PPP-85). Steekproef met de hand (PKI-1126, PKP-898, PKI-587, PCATA-618, PKI-1124): `State`,
+  `resolved` en laatste logdatum kloppen met de indeling. In de 44 wachtende taken komt geen enkele
+  voor die lang geleden is opgelost en recent nog tijd kreeg: allemaal opgelost en gelogd na 13-11.
+- Eén onbekend ID in `issue id: A, B, …` laat de hele YouTrack-query mislukken met `400
+  invalid_query`. In `error_children` staat per onbekende waarde `The value "X" isn't used for the
+  issue id field`. Het script haalt die ID's eruit, telt ze als `niet gevonden` en probeert de portie
+  opnieuw. Getest met PKI-999999 en XYZQ-1. Let op: dat staat als JSON in de body, dus eerst parsen (een
+  regex op de ruwe body vindt de waarden niet door de `\"`).
