@@ -48,7 +48,7 @@ ik met de hand op in de Sonatype-UI, en dat is veel klikwerk.
   (`npm publish --tag latest`). Het script meldt wel per package waar `latest` naartoe verschoof.
   Andere tags hoeven niet hersteld te worden, want het script verwijdert nooit een versie met een
   dist-tag. Het recht `edit` uit PKI-1143 gaat daarom weer weg (PKI-1144). Een upgrade van Nexus
-  (de fix zou in 3.92 zitten) kan later als losse Task.
+  (de fix zou in 3.92 zitten) staat als losse Task op het bord: PKI-1146.
 - **Uitvoering:** een script `scripts/nexus_opruimen.py` met een plan-modus, `--uitvoeren` en
   `--max`, zoals `logmytime_taken_archiveren.py`. Later draait agent Fien het als tweede taak
   ([[logmytime-taken-archiveren-plan]]).
