@@ -71,9 +71,10 @@ de latere stappen aan als dat nodig is.
   `npm dist-tag add` gaf 403 voor Nexus-gebruiker `martijn`; `latest` blijft verkeerd tot stap 6 of
   tot iemand het met een admin-account terugzet.
 - [ ] 5. **Rechten voor dist-tags in infra.** Bezig sinds 20-11: Task PKI-1143 op het bord, recht
-  `edit` toegevoegd en gemerged via infra #1017 (develop), #1018 (staging) en #1019 (master), zie
-  `Bevindingen`. Nog te doen: `helm secrets upgrade` door Martijn, dan als `repo-cleanup` `latest`
-  van portal-worker-ui terugzetten op `1.1.0`. Oorspronkelijke opdracht:
+  `edit` toegevoegd en gemerged via infra #1017 (develop), #1018 (staging) en #1019 (master),
+  `helm secrets upgrade` door Martijn op 20-11, zie `Bevindingen`. Het recht werkt (`develop` zetten
+  lukt), maar `latest` weigert Nexus altijd: stap 6 moet anders, beslissing open. Oorspronkelijke
+  opdracht:
   uitzoeken welk recht Nexus 3.91 vraagt voor `PUT /repository/npm-repo/-/package/<pkg>/dist-tags/<tag>` (verwacht `edit`, anders `add` op
   `npm-repo`) en dat toevoegen aan de rol `nx-npm-cleanup` in `helm/charts/sonatype/values.yaml`. Als
   Task op het bord, net als PKI-1142, met PR's naar develop, staging en master. Martijn doet de
@@ -133,3 +134,28 @@ de latere stappen aan als dat nodig is.
   staan alleen in `.env`. Nexus-gebruiker `martijn` heeft waarschijnlijk alleen read en browse,
   zoals de rol `nx-npm-dev` (niet gecontroleerd), wat de 403 uit stap 4 zou verklaren; `npm-ci`
   heeft `*`.
+- **Stap 5, na de upgrade (20-11-2026):** `nexus.py` kreeg `zet_dist_tag()`
+  (`PUT /repository/npm-repo/-/package/<pkg>/dist-tags/<tag>` met de versie als JSON-string). Als
+  `repo-cleanup` lukt `develop` zetten (op de waarde die het al had), dus `edit` is het juiste recht.
+  `latest` zetten geeft altijd `400 {"success":false,"error":"Unable to update latest tag"}`, ook naar
+  de waarde die het al had: Nexus beheert `latest` zelf en staat wijzigen via de dist-tag-API niet
+  toe (niet officieel gedocumenteerd, wel zo beschreven op internet). `latest` van portal-worker-ui
+  staat dus nog op `1.2.0-develop.fac2038`. Gevolg: herstellen na verwijderen kan alleen voor andere
+  tags dan `latest`; het plan voor stap 6 klopt zo niet meer. Let op: scripts in `scripts/` draaien
+  met `/usr/bin/python3`, de pyenv-Python heeft geen SSL.
+- **Wie gebruikt `latest`? (20-11-2026):** niemand in de builds.
+  - `portal` en `iam` halen de frontends in het profiel `develop` op met de dist-tag `develop` en in
+    `pre-release` met vaste versies uit `pom.xml`.
+  - De develop-workflows van portal-employee-ui en portal-worker-ui installeren
+    `portal-ui-common@develop`.
+  - De onderlinge afhankelijkheden zijn ranges (`^4.0.0`, `^2.1.0`, `^2.1.0-develop.c5835e7`) en
+    staan vast in de lock files.
+  - De master-workflows publiceren met `npm publish --tag latest`: elke release zet `latest` dus
+    weer goed.
+  - Dependabot leest wel uit Sonatype en werkt `pk-react-profile-presentation-design` bij in
+    portal-employee-ui en profile-presentation-ui. Op 19-11 stelde het daar `2.6.0` → `2.7.0`
+    voor (portal-employee-ui #276, profile-presentation-ui #210), terwijl `latest` toen
+    waarschijnlijk al op `2.8.0-develop.af0ee60` stond (gepubliceerd 17-11): Dependabot slaat de
+    develop-builds over. Beide lock files staan op `2.7.0`.
+  - Of een admin-account `latest` wel kan zetten, is niet getest: de 400 komt pas na de
+    rechtencontrole (`repo-cleanup` kreeg geen 403), dus waarschijnlijk niet.
