@@ -12,6 +12,9 @@ Per package blijven staan:
 - de versie waar een dist-tag naar wijst (develop, latest).
 Alle andere develop-versies gaan weg, ook als de release nog niet uit is. Zie
 gebieden/vault/npm-develop-versies-opruimen-plan.md. De blob store wordt 's nachts al opgeschoond.
+Nexus rekent bij het verwijderen van een versie de dist-tag latest opnieuw uit (vaak naar een
+develop-build, nexus-public #437) en laat latest niet terugzetten. Dat is geaccepteerd: het script
+meldt per verwijdering waar latest naartoe verschoof. Verandert een andere dist-tag, dan stopt het.
 De servicegebruiker komt uit ~/vault/.env en wordt nooit getoond.
 """
 import argparse
@@ -45,6 +48,11 @@ def plan(versies, publicatie, dist_tags):
     return blijft, weg
 
 
+def veranderde_tags(voor, na):
+    """De dist-tags die verschillen tussen voor en na, als (tag, oud, nieuw); None als de tag ontbreekt."""
+    return [(tag, voor.get(tag), na.get(tag)) for tag in sorted(set(voor) | set(na)) if voor.get(tag) != na.get(tag)]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--pakket', help='alleen dit package, bijvoorbeeld @pompkracht/iam-login-ui')
@@ -61,6 +69,7 @@ def main():
         per_pakket = {args.pakket: per_pakket[args.pakket]}
 
     te_verwijderen = []
+    dist_tags = {}
     totaal = collections.Counter()
     print('Packages in npm-repo: %d%s' % (len(per_pakket), '' if args.uitvoeren else ' (alleen plan)'))
     for naam in sorted(per_pakket):
@@ -72,7 +81,8 @@ def main():
             # Zonder publicatietijd valt de volgorde niet te bepalen: dit package overslaan.
             print('\n%s: overgeslagen, geen publicatietijd voor %s' % (naam, ', '.join(sorted(zonder_tijd))))
             continue
-        blijft, weg = plan(versies, publicatie, meta.get('dist-tags', {}))
+        dist_tags[naam] = meta.get('dist-tags', {})
+        blijft, weg = plan(versies, publicatie, dist_tags[naam])
         totaal.update(blijft=len(blijft), weg=len(weg))
         print('\n%s: %d versies, %d blijven, %d weg' % (naam, len(versies), len(blijft), len(weg)))
         for v, reden in sorted(blijft, key=lambda r: publicatie.get(r[0], '')):
@@ -92,6 +102,13 @@ def main():
     for nummer, (_, naam, versie, component_id) in enumerate(te_doen, 1):
         verwijder(component_id)
         print('  %3d. verwijderd: %s@%s' % (nummer, naam, versie), flush=True)
+        na = packument(naam).get('dist-tags', {})
+        veranderd = veranderde_tags(dist_tags[naam], na)
+        for tag, oud, nieuw in veranderd:
+            print('       %s: %s → %s' % (tag, oud or '(geen)', nieuw or '(geen)'), flush=True)
+        if any(tag != 'latest' for tag, _, _ in veranderd):
+            raise SystemExit('Gestopt: Nexus veranderde een andere dist-tag dan latest bij %s@%s' % (naam, versie))
+        dist_tags[naam] = na
     print('Klaar: %d verwijderd, %d blijven over voor een volgende run.' % (
         len(te_doen), len(te_verwijderen) - len(te_doen)))
 

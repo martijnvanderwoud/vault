@@ -83,11 +83,11 @@ de latere stappen aan als dat nodig is.
   `npm-repo`) en dat toevoegen aan de rol `nx-npm-cleanup` in `helm/charts/sonatype/values.yaml`. Als
   Task op het bord, net als PKI-1142, met PR's naar develop, staging en master. Martijn doet de
   `helm secrets upgrade` en kijkt of de configuratie-job slaagt.
-- [ ] 6. **Script meldt verschoven dist-tags.** `nexus_opruimen.py` legt per package de dist-tags
-  vast voordat het iets verwijdert, haalt na het verwijderen de npm-metadata opnieuw op en geeft per
-  veranderde tag een regel (`latest: 1.1.0 → 1.2.0-develop.fac2038`). Verandert een andere tag dan
-  `latest`, dan stopt het script met een foutmelding: dat hoort niet te gebeuren. Testen met
-  `--pakket @pompkracht/portal-worker-ui --uitvoeren --max 2`.
+- [x] 6. **Script meldt verschoven dist-tags.** `nexus_opruimen.py` legt per package de dist-tags
+  vast, haalt na elke verwijdering de npm-metadata opnieuw op en geeft per veranderde tag een regel
+  (`latest: 1.1.0 → 1.2.0-develop.fac2038`). Verandert een andere tag dan `latest`, dan stopt het
+  script met een foutmelding. Getest op 20-11 met
+  `--pakket @pompkracht/portal-worker-ui --uitvoeren --max 2`, zie `Bevindingen`.
 - [ ] 7. **De rest uitvoeren.** Per run hooguit 20 versies, tot het plan leeg is.
 - [ ] 8. **Taak voor Fien.** Toevoegen aan de runner van Fien zodra die er is (stap 5 van
   [[logmytime-taken-archiveren-plan]]), met de verwijderde versies en verschoven dist-tags in de
@@ -170,3 +170,10 @@ de latere stappen aan als dat nodig is.
   (`appVersion` in `helm/charts/sonatype/Chart.yaml`). Martijn gebruikte `latest` vroeger zelf bij
   het voorbereiden van een release (portal-ui-common van develop naar de laatste release); de RC-skill
   doet dat nu met een expliciete versie (`staging_frontends.py`, `prepare_release`).
+- **Stap 6 (20-11-2026):** het script haalt na elke verwijdering de npm-metadata op (één GET extra
+  per versie), zodat het meteen stopt als een andere tag dan `latest` verandert. De test verwijderde
+  `1.1.0-develop.e2a35b2` en `86176f3` van portal-worker-ui; er veranderde geen tag, want `latest`
+  stond al op `1.2.0-develop.fac2038`, de hoogste versie op semver. De meldregel is dus alleen los
+  getest (`veranderde_tags()`), niet live. portal-worker-ui heeft nu 10 versies, 4 develop-versies
+  gaan nog weg. Verwacht in stap 7: bij packages waar `latest` nog op de release staat, verschuift
+  het bij de eerste verwijdering naar de hoogste develop-versie.
