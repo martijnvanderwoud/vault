@@ -97,8 +97,8 @@ niet storen. Voor de planning gelden vaste ankers:
 ## Technisch afgedwongen
 
 Wat hierboven staat, is zoveel mogelijk ook in `.claude/settings.json` en in de skills vastgelegd:
-force-pushes, pushes naar `develop`/`master` en het lezen van `.env` zijn geweigerd (alleen
-`git -C <repo> push [-u] origin feature/*` is toegestaan), skills voeren alleen uit wat als regel in de
+force-pushes, pushes naar `develop`/`master` en het lezen van `.env` zijn geweigerd (een
+`feature/*`-branch pushen mag alleen via `scripts/push_feature.py`), skills voeren alleen uit wat als regel in de
 skill staat en hebben hun eigen `allowed-tools`, en cijfers komen altijd uit scripts op data in
 `data/`. Een zin in deze notitie is zwakker dan zo'n regel; staat iets hier maar nog niet
 technisch vast, dan is dat een kandidaat.

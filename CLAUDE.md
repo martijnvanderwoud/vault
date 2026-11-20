@@ -28,6 +28,9 @@ je van afblijft: `gebieden/vault/werkafspraken.md` (lees die bij vragen over wat
 - Links tussen notities als `[[notitie]]`.
 - Cijfers (uren, bedragen) nooit uit het hoofd rekenen: altijd via een script in
   `scripts/` op data in `data/`.
+- Geen paden van deze machine (`/Users/martijn/…`) in settings, skills, scripts of notities:
+  gebruik `~/`, een relatief pad of `$HOME`. Uitzonderingen alleen waar het technisch niet anders
+  kan, en dan met de reden erbij.
 - Antwoord in het Nederlands.
 
 ## Gegenereerde bestanden
