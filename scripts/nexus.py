@@ -29,16 +29,11 @@ def gegevens():
     return waarden['NEXUS_USERNAME'], waarden['NEXUS_PASSWORD']
 
 
-def verzoek(url, method='GET', body=None):
-    """Verzoek met basic auth; body wordt als JSON meegestuurd."""
+def verzoek(url, method='GET'):
     gebruiker, wachtwoord = gegevens()
     auth = base64.b64encode(('%s:%s' % (gebruiker, wachtwoord)).encode()).decode()
-    headers = {'Authorization': 'Basic ' + auth, 'Accept': 'application/json'}
-    data = None
-    if body is not None:
-        data = json.dumps(body).encode()
-        headers['Content-Type'] = 'application/json'
-    request = urllib.request.Request(url, data=data, method=method, headers=headers)
+    request = urllib.request.Request(url, method=method,
+                                     headers={'Authorization': 'Basic ' + auth, 'Accept': 'application/json'})
     return urllib.request.urlopen(request)
 
 
@@ -50,12 +45,6 @@ def nexus(pad, params=None):
 def packument(pakket, repo=REPO):
     """De npm-metadata van een package, met onder meer dist-tags en publicatietijden (time)."""
     return json.load(verzoek('%s/repository/%s/%s' % (SONATYPE, repo, urllib.parse.quote(pakket, safe='@'))))
-
-
-def zet_dist_tag(pakket, tag, versie, repo=REPO):
-    """Laat een dist-tag naar versie wijzen, zoals npm dist-tag add (vraagt het recht edit op de repo)."""
-    verzoek('%s/repository/%s/-/package/%s/dist-tags/%s' % (
-        SONATYPE, repo, urllib.parse.quote(pakket, safe='@'), urllib.parse.quote(tag)), method='PUT', body=versie)
 
 
 def verwijder(component_id):

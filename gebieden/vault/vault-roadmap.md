@@ -21,7 +21,7 @@ Bijgewerkt op 20-11-2026.
 | [[hardlopen-plan]] | Afgesplitst van [[weekplanning-plan]] op 19-11, nog niet begonnen | Stap 1: gelopen trainingen importeren (eerst een Garmin-export van week 47) |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
 | [[logmytime-taken-archiveren-plan]] | Stap 1 t/m 3 klaar op 20-11, stap 4 half: 100 van de 178 taken gearchiveerd | Stap 4 afmaken: de overige 78 vanaf 21-11 met `--uitvoeren --max 100`, daarna stap 5 (agent Fien) |
-| [[npm-develop-versies-opruimen-plan]] | Stap 1 t/m 3 klaar op 20-11: gebruiker `repo-cleanup` in Nexus, `scripts/nexus_opruimen.py` in plan-modus (169 van 189 develop-versies weg) | Stap 5: PKI-1143 staat op master (infra #1019), wacht op `helm secrets upgrade` door Martijn; daarna `latest` van portal-worker-ui terugzetten |
+| [[npm-develop-versies-opruimen-plan]] | Stap 1 t/m 5 klaar op 20-11: gebruiker `repo-cleanup`, `scripts/nexus_opruimen.py` in plan-modus, proefrun (5 weg); `latest` niet te herstellen, verschuiven geaccepteerd | Stap 6: script meldt verschoven dist-tags (`latest` verschuiven geaccepteerd); PKI-1144 (recht `edit` weer weg, infra #1020) mergen en uitrollen |
 
 ## Afgerond
 

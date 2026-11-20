@@ -41,12 +41,14 @@ ik met de hand op in de Sonatype-UI, en dat is veel klikwerk.
   `npm-repo`) en gebruiker `repo-cleanup` in `helm/charts/sonatype/values.yaml`, issue PKI-1142.
   Eén gebruiker voor alle opruimtaken, met een rol per repository: een latere Docker-opruiming krijgt
   een eigen rol op dezelfde gebruiker (daarvoor komt een apart plan).
-- **Dist-tags herstellen, met meer rechten voor `repo-cleanup`:** Nexus zet `latest` bij het
-  verwijderen van een versie op de hoogste versie volgens semver, dus vaak op een develop-build.
-  Martijn zag dat eerder ook bij opruimen met de hand en houdt het voor een bug in Nexus (20-11).
-  Het script legt daarom per package de dist-tags vóór het verwijderen vast en zet ze daarna terug.
-  De rol `nx-npm-cleanup` krijgt daarvoor via een infra-PR het recht dat Nexus voor dist-tags vraagt,
-  zodat Fien het later zonder het npm-token van Martijn kan.
+- **Verschuiven van `latest` accepteren, geen extra rechten (20-11):** Nexus zet `latest` bij het
+  verwijderen van een versie op de hoogste versie volgens semver, dus vaak op een develop-build
+  (bug nexus-public #437), en laat `latest` via de dist-tag-API niet terugzetten. Dat accepteren we:
+  de builds, de RC-skill en Dependabot gebruiken `latest` niet, en elke release zet het weer goed
+  (`npm publish --tag latest`). Het script meldt wel per package waar `latest` naartoe verschoof.
+  Andere tags hoeven niet hersteld te worden, want het script verwijdert nooit een versie met een
+  dist-tag. Het recht `edit` uit PKI-1143 gaat daarom weer weg (PKI-1144). Een upgrade van Nexus
+  (de fix zou in 3.92 zitten) kan later als losse Task.
 - **Uitvoering:** een script `scripts/nexus_opruimen.py` met een plan-modus, `--uitvoeren` en
   `--max`, zoals `logmytime_taken_archiveren.py`. Later draait agent Fien het als tweede taak
   ([[logmytime-taken-archiveren-plan]]).
@@ -70,25 +72,24 @@ de latere stappen aan als dat nodig is.
   `latest` daarbij op `1.2.0-develop.fac2038`, zie `Bevindingen`. Terugzetten met
   `npm dist-tag add` gaf 403 voor Nexus-gebruiker `martijn`; `latest` blijft verkeerd tot stap 6 of
   tot iemand het met een admin-account terugzet.
-- [ ] 5. **Rechten voor dist-tags in infra.** Bezig sinds 20-11: Task PKI-1143 op het bord, recht
+- [x] 5. **Rechten voor dist-tags in infra.** Bezig sinds 20-11: Task PKI-1143 op het bord, recht
   `edit` toegevoegd en gemerged via infra #1017 (develop), #1018 (staging) en #1019 (master),
   `helm secrets upgrade` door Martijn op 20-11, zie `Bevindingen`. Het recht werkt (`develop` zetten
-  lukt), maar `latest` weigert Nexus altijd: stap 6 moet anders, beslissing open. Oorspronkelijke
-  opdracht:
+  lukt), maar `latest` weigert Nexus altijd. PKI-1143 is Done; het recht gaat weer weg in PKI-1144
+  (infra #1020 naar develop, nog mergen naar develop, staging en master, dan `helm secrets
+  upgrade`). Oorspronkelijke opdracht:
   uitzoeken welk recht Nexus 3.91 vraagt voor `PUT /repository/npm-repo/-/package/<pkg>/dist-tags/<tag>` (verwacht `edit`, anders `add` op
   `npm-repo`) en dat toevoegen aan de rol `nx-npm-cleanup` in `helm/charts/sonatype/values.yaml`. Als
   Task op het bord, net als PKI-1142, met PR's naar develop, staging en master. Martijn doet de
   `helm secrets upgrade` en kijkt of de configuratie-job slaagt.
-- [ ] 6. **Script herstelt dist-tags.** `nexus.py` krijgt een functie om een dist-tag te zetten.
-  `nexus_opruimen.py` legt per package de dist-tags vast voordat het iets verwijdert, haalt na het
-  verwijderen de npm-metadata opnieuw op en zet elke tag terug die veranderd is, met een regel in de
-  uitvoer per hersteld tag. Lukt het herstellen niet, dan stopt het script met een foutmelding en het
-  commando om het met de hand te doen. Testen met `--pakket @pompkracht/portal-worker-ui --uitvoeren
-  --max 2` en controleren dat `latest` en `develop` daarna kloppen.
-- [ ] 7. **De rest uitvoeren.** Per run hooguit 20 versies, tot het plan leeg is. Na elke run de
-  dist-tags van alle packages controleren.
+- [ ] 6. **Script meldt verschoven dist-tags.** `nexus_opruimen.py` legt per package de dist-tags
+  vast voordat het iets verwijdert, haalt na het verwijderen de npm-metadata opnieuw op en geeft per
+  veranderde tag een regel (`latest: 1.1.0 → 1.2.0-develop.fac2038`). Verandert een andere tag dan
+  `latest`, dan stopt het script met een foutmelding: dat hoort niet te gebeuren. Testen met
+  `--pakket @pompkracht/portal-worker-ui --uitvoeren --max 2`.
+- [ ] 7. **De rest uitvoeren.** Per run hooguit 20 versies, tot het plan leeg is.
 - [ ] 8. **Taak voor Fien.** Toevoegen aan de runner van Fien zodra die er is (stap 5 van
-  [[logmytime-taken-archiveren-plan]]), met de verwijderde versies en herstelde dist-tags in de
+  [[logmytime-taken-archiveren-plan]]), met de verwijderde versies en verschoven dist-tags in de
   run-notitie.
 - [ ] 9. **Afronden** volgens het onderhoud in [[vault-roadmap]].
 
