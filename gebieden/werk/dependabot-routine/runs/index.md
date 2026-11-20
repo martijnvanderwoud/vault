@@ -22,6 +22,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w46-profile-presentation-ui]] — Debbie-run profile-presentation-ui, gestart 2026-11-13 00:26: done (PPP-85)
 - [[2026-w47-ats]] — Debbie-run ats, gestart 2026-11-19 13:10: done (PA-1107)
 - [[2026-w47-axon-stomp-event-publishing]] — Debbie-run axon-stomp-event-publishing, gestart 2026-11-18 19:17: done (PMD-10)
+- [[2026-w47-cata-2]] — Debbie-run cata, gestart 2026-11-20 08:10: done (PCATA-623)
 - [[2026-w47-cata]] — Debbie-run cata, gestart 2026-11-16 22:29: done (PCATA-623)
 - [[2026-w47-iam-login-ui]] — Debbie-run iam-login-ui, gestart 2026-11-20 05:37: done (PKIAM-845)
 - [[2026-w47-iam]] — Debbie-run iam, gestart 2026-11-17 01:02: done (PKIAM-843)
