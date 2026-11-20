@@ -1,5 +1,5 @@
 ---
-description: Acumulus (SIEL), mijn boekhoud- en factuurprogramma - de API, de API-gebruiker en het script waarmee Claude verkoopfacturen als concept aanmaakt en de PDF ophaalt
+description: Acumulus (SIEL), mijn boekhoud- en factuurprogramma - de API, de API-gebruiker en het script waarmee Claude verkoopfacturen als concept aanmaakt, de PDF ophaalt en uitgaven boekt
 tags: [werk, facturatie, administratie, acumulus]
 ---
 
@@ -26,6 +26,14 @@ Valkuilen:
   inloggen.
 - Een bestaand concept aanpassen kan niet via de API. Fout in een concept: ik verwijder het en
   het wordt opnieuw aangemaakt.
+- Uitgaven (inkoopfacturen) gaan via `expenses/expense_add.php`. Ook daar hoort `<expense>`
+  **binnen** `<supplier>`; staat het ernaast, dan krijg je een misleidende HTTP 400 "Ongeldige
+  numerieke waarde voor accountnumber". Een uitgave heeft geen concept: hij is meteen definitief.
+  Er is geen veld voor het factuurnummer van de leverancier en geen bijlage-upload (de PDF gaat
+  naar Drive, zie [[facturen-archief]]).
+- `contacts/contact_invoices_incoming.php` (ontvangen facturen per relatie) verwisselt
+  `costcenterid` en `costheadingid`. De juiste waarden staan in `entry_info`.
+- Inactieve relaties komen gewoon mee in `contacts_list` (`contactstatus` 0). Neem de actieve.
 
 ## API-gebruiker
 
@@ -42,13 +50,20 @@ Een API beheerder mag alles.
 
 `scripts/acumulus.py`:
 
-- `klanten <zoekterm>`, `sjablonen`, `kostenplaatsen`: opzoeken van de vaste id's.
+- `klanten <zoekterm>` (met actief/inactief), `sjablonen`, `kostenplaatsen`: opzoeken van de vaste id's.
 - `factuur <json> [--test]`: maakt een conceptfactuur uit een bestand in `data/facturen/`, en
   toont de regels en de totalen (btw per regel afgerond, zoals Acumulus dat doet). Met `--test`
   verandert er niets.
 - `pdf <conceptid>`: na het definitief maken nummer en token opzoeken en de PDF opslaan als
   `verkoop/<jaar>/Factuur_<nummer>.pdf`. Controleert dat het echt een PDF is en overschrijft
   geen bestaand bestand.
+- `ontvangen <contactid>`: de laatste ontvangen facturen van een leverancier, met omschrijving,
+  rekening, kostensoort en kostenplaats. Het voorbeeld voor een nieuwe boeking.
+- `uitgave <json>`: boekt een uitgave uit `data/uitgaven/<Leverancier>-<factuurnummer>.json`
+  (zelfde naam als de PDF in het archief) en zet het `entryid` in het bestand. Staat er al een
+  `entryid` in, dan boekt het alleen opnieuw als ik dat boekstuk in Acumulus heb verwijderd (zo
+  corrigeer ik een boeking: verwijderen, databestand aanpassen, opnieuw boeken). Geen testmode:
+  ik kijk de boeking zelf na in Acumulus.
 
 ## Vaste id's
 
@@ -57,5 +72,8 @@ Een API beheerder mag alles.
 | Klant Arbeidskracht Personeelsdiensten B.V. | contactid 2318938 |
 | Sjabloon Standaard / UK | 2982 / 134714 |
 | Kostenplaats Hosting / Consultancy / Contracting / Web Development / Algemeen | 9418 / 104381 / 9419 / 9421 / 9410 |
+| Leverancier Ziggo B.V. (actief) | contactid 10445127 |
+| Rekening NL79 INGB 0005 0608 34 / ING Businesscard | accountnumber 13039 / 25072 |
+| Kostensoort Telefoon en internet | costheading 6 |
 
-Gebruikt door de skill `hostingfactuur-flow` (zie [[hosting-transip]]).
+Gebruikt door de skills `hostingfactuur-flow` (zie [[hosting-transip]]) en `inkoopfactuur`.

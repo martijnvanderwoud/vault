@@ -1,11 +1,11 @@
-"""Toegang tot de Acumulus API (SIEL), voor het maken van verkoopfacturen.
+"""Toegang tot de Acumulus API (SIEL), voor het maken van verkoopfacturen en het boeken van uitgaven.
 
 De inloggegevens komen uit ACUMULUS_CONTRACTCODE, ACUMULUS_USERNAME, ACUMULUS_PASSWORD en
 ACUMULUS_EMAILONERROR in ~/vault/.env en worden nooit getoond.
 Documentatie: https://www.siel.nl/acumulus/API/
 
 Gebruik:
-  acumulus.py klanten <zoekterm>   contacten zoeken (contactid, naam, e-mail)
+  acumulus.py klanten <zoekterm>   contacten zoeken (contactid, naam, actief/inactief, e-mail)
   acumulus.py sjablonen            factuursjablonen (invoicetemplateid, naam)
   acumulus.py kostenplaatsen       kostenplaatsen (costcenterid, naam)
   acumulus.py factuur <json> [--test]
@@ -13,6 +13,11 @@ Gebruik:
                                    met --test alleen controleren (testmode), er verandert niets
   acumulus.py pdf <conceptid>      na het definitief maken: nummer en token opzoeken en de PDF
                                    opslaan in de verkoopmap op Google Drive
+  acumulus.py ontvangen <contactid>
+                                   de laatste ontvangen facturen (uitgaven) van een leverancier,
+                                   als voorbeeld voor een nieuwe boeking
+  acumulus.py uitgave <json>       een uitgave (inkoopfactuur) boeken uit een bestand in
+                                   data/uitgaven/ en het entryid in dat bestand zetten
 """
 import json
 import os
@@ -97,7 +102,8 @@ def lijst(antwoord, *sleutels):
 def klanten(zoekterm):
     antwoord = call('contacts/contacts_list.php', {'filter': zoekterm, 'rowcount': 50})
     for c in lijst(antwoord, 'contacts', 'contact'):
-        print('%s\t%s\t%s' % (c.get('contactid'), c.get('contactname'), c.get('contactemail') or ''))
+        status = 'actief' if str(c.get('contactstatus')) == '1' else 'inactief'
+        print('%s\t%s\t%s\t%s' % (c.get('contactid'), c.get('contactname'), status, c.get('contactemail') or ''))
 
 
 def sjablonen():
@@ -163,6 +169,51 @@ def pdf(conceptid):
           % (nummer, entryids[0], entry.get('totalvalue'), pad))
 
 
+def ontvangen(contactid):
+    """Toont de laatste ontvangen facturen van een leverancier, met de details per boeking.
+
+    contact_invoices_incoming verwisselt costcenterid en costheadingid, daarom komen die uit entry_info.
+    """
+    antwoord = call('contacts/contact_invoices_incoming.php', {'contactid': contactid})
+    facturen = sorted(lijst(antwoord, 'contact', 'invoice'), key=lambda f: str(f.get('entrydate')))
+    print('entryid\tdatum\tomschrijving\tincl. btw\texcl. btw\trekening\tkostensoort\tkostenplaats\tbetaalstatus')
+    for f in facturen[-6:]:
+        e = call('entry/entry_info.php', {'entryid': f['entryid']})['entry']
+        print('\t'.join(str(e.get(k)) for k in ('entryid', 'entrydate', 'entrydescription', 'totalvalue',
+                                                 'totalvalueexclvat', 'accountnumber', 'costheadingid',
+                                                 'costcenterid', 'paymentstatus')))
+
+
+def uitgave(bestand):
+    """Boekt een uitgave en zet het entryid in het bestand. Het bedrag komt als string uit het bestand (geen floats)."""
+    u = json.load(open(bestand))
+    if u.get('entryid'):
+        # Opnieuw boeken mag alleen als ik de vorige boeking in Acumulus heb verwijderd.
+        oud = call('entry/entry_info.php', {'entryid': u['entryid']})['entry']
+        if not oud.get('deleted'):
+            raise SystemExit('%s is al geboekt als boekstuk %s. Verwijder dat eerst in Acumulus om opnieuw '
+                             'te boeken.' % (bestand, u['entryid']))
+        print('Boekstuk %s is verwijderd op %s; opnieuw boeken.' % (u['entryid'], oud['deleted']))
+    expense = {k: u[k] for k in ('description', 'amountinclvat', 'vatrate', 'issuedate', 'costheading',
+                                 'costcenter', 'accountnumber', 'paymentstatus')}
+    antwoord = call('expenses/expense_add.php', {
+        'supplier': {'contactid': u['contactid'], 'overwriteifexists': 0, 'expense': expense},
+    })
+    # Zoals Acumulus het splitst: excl. btw afgerond op centen, btw is het verschil.
+    incl = Decimal(u['amountinclvat'])
+    excl = (incl * 100 / (100 + Decimal(u['vatrate']))).quantize(CENT, ROUND_HALF_UP)
+    print('%s %s: %s\tincl. btw %s, excl. btw %s, btw %s (%s%%)'
+          % (u['issuedate'], u['contactid'], u['description'], incl, excl, incl - excl, u['vatrate']))
+    entryid = (antwoord.get('expense') or {}).get('entryid')
+    if not entryid:
+        raise SystemExit('Acumulus gaf geen entryid terug; kijk in Acumulus of de uitgave is geboekt.')
+    u['entryid'] = int(entryid)
+    with open(bestand, 'w') as uit:
+        json.dump(u, uit, indent=2, ensure_ascii=False)
+        uit.write('\n')
+    print('Geboekt als boekstuk (entryid) %s; entryid staat in %s' % (entryid, bestand))
+
+
 if __name__ == '__main__':
     args = sys.argv[1:]
     if args[:1] == ['klanten'] and len(args) == 2:
@@ -175,5 +226,9 @@ if __name__ == '__main__':
         factuur(args[1], args[2:] == ['--test'])
     elif args[:1] == ['pdf'] and len(args) == 2:
         pdf(args[1])
+    elif args[:1] == ['ontvangen'] and len(args) == 2:
+        ontvangen(args[1])
+    elif args[:1] == ['uitgave'] and len(args) == 2:
+        uitgave(args[1])
     else:
         raise SystemExit(__doc__)
