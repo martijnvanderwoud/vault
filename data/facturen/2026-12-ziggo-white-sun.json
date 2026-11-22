@@ -1,0 +1,19 @@
+{
+  "contactid": 72640,
+  "template": 2982,
+  "costcenter": 9410,
+  "description": "Ziggo Internet",
+  "bronnen": [
+    "Ziggo-320246829314.pdf"
+  ],
+  "regels": [
+    {
+      "product": "Internet Xtra - 01-12-2026 t/m 31-12-2026",
+      "unitprice": "15.32",
+      "vatrate": 21,
+      "quantity": 1
+    }
+  ],
+  "conceptid": 1345141,
+  "factuurnummer": "20260086"
+}

@@ -51,7 +51,8 @@ Een API beheerder mag alles.
 `scripts/acumulus.py`:
 
 - `klanten <zoekterm>` (met actief/inactief), `sjablonen`, `kostenplaatsen`: opzoeken van de vaste id's.
-- `factuur <json> [--test]`: maakt een conceptfactuur uit een bestand in `data/facturen/`, en
+- `factuur <json> [--test]`: maakt een conceptfactuur uit een bestand in `data/facturen/`, met
+  betaalstatus niet betaald (tenzij het bestand `"paymentstatus": 2` heeft), en
   toont de regels en de totalen (btw per regel afgerond, zoals Acumulus dat doet). Met `--test`
   verandert er niets.
 - `pdf <conceptid>`: na het definitief maken nummer en token opzoeken en de PDF opslaan als

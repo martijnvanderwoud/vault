@@ -123,8 +123,9 @@ def factuur(bestand, testmode):
     f = json.load(open(bestand))
     regels = [{'product': r['product'], 'unitprice': r['unitprice'], 'vatrate': r['vatrate'],
                'quantity': r['quantity']} for r in f['regels']]
+    # Betaalstatus 1 (niet betaald) is de standaard; 2 (betaald) alleen als het bestand dat zegt.
     invoice = {'concept': 1, 'description': f['description'], 'template': f['template'],
-               'costcenter': f['costcenter'], 'line': regels}
+               'costcenter': f['costcenter'], 'paymentstatus': f.get('paymentstatus', 1), 'line': regels}
     if f.get('issuedate'):
         invoice['issuedate'] = f['issuedate']
     antwoord = call('invoices/invoice_add.php', {

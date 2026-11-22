@@ -23,3 +23,4 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[uren-overzicht]] — Urenoverzicht 2026 (weekgebaseerd jaar) met jaardoel, weektarget, deze week, de weken tot nu en de vrije dagen
 - [[urenregistratie]] — Urenregistratie in LogMyTime, de logica van de urenstand (voorheen Excel) en de LogMyTime API
 - [[youtrack-bord-pompkracht]] — Het Pompkracht Kanban Board in YouTrack - swimlanes, welke issue types hoofdissue en subtaak zijn, en hoe je een issue op het bord zet
+- [[ziggo-doorbelasting]] — Hoe ik het Ziggo-abonnement (internet en tv) verdeel over The Crimson Cricket, White Sun Qigong en ons huishouden, met de vaste bedragen en wanneer die opnieuw moeten
