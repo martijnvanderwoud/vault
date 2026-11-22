@@ -6,7 +6,7 @@ tags: [werk, uren]
 # Urenoverzicht 2026
 
 > Gegenereerd door `scripts/uren.py --schrijf` (skill `/uren`) uit LogMyTime. Niet met de hand bewerken.
-> Peildatum **vr 20-11-2026**. Achtergrond en logica: [[urenregistratie]].
+> Peildatum **zo 22-11-2026**. Achtergrond en logica: [[urenregistratie]].
 
 ## Jaar
 
@@ -17,9 +17,9 @@ Week 2 (ma 05-01-2026) t/m week 53 (zo 03-01-2027): 52 weken.
 | Declarabel | 1132,05 |
 | Jaardoel (52 × 28 − 196) | 1260,00 |
 | Nog te gaan | 127,95 |
-| Nog gereserveerd | 39,20 |
+| Nog gereserveerd | 44,80 |
 | Weken over | 6,00 |
-| **Weektarget** | **27,86** |
+| **Weektarget** | **28,79** |
 
 Weektarget = (nog te gaan + nog gereserveerd) / weken over. Het weektarget van een week staat vast vanaf de zondag ervoor (`--zet-week`).
 
@@ -30,7 +30,7 @@ Weektarget = (nog te gaan + nog gereserveerd) / weken over. Het weektarget van e
 | Weektarget | 27,00 |
 | Vrije dagen | 0 |
 | Declarabel doel | 27,00 |
-| Gewerkt t/m vr 20-11-2026 | 27,25 |
+| Gewerkt t/m zo 22-11-2026 | 27,25 |
 | **Nog te gaan** | **-0,25** |
 
 ## Weken tot nu
@@ -90,6 +90,7 @@ Weken zonder weektarget liggen voor het weektarget (sinds week 47). Bron: `data/
 
 | Datum | Omschrijving | Dag |
 |---|---|---:|
+| vr 11-12-2026 | Voorbereiding 21 dinner Matthies | 1 |
 | do 24-12-2026 | Dag voor kerst | 1 |
 | vr 25-12-2026 | Kerstvakantie | 1 |
 | ma 28-12-2026 | Kerstvakantie | 1 |
