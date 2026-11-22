@@ -1,0 +1,12 @@
+{
+  "toelichting": "Naam van de betaler zoals die op het Knab-overzicht van White Sun staat (in de omschrijving of als tegenrekeninghouder) en de relatie in Franca's Acumulus. Zie gebieden/werk/betalingen-white-sun.md.",
+  "betalers": [
+    {"bank": "Hr MJJ Gauthier", "contactid": 9247824, "relatie": "Michel Gauthier"},
+    {"bank": "Mw HE Tollenaar", "contactid": 9456515, "relatie": "Rike Tollenaar"},
+    {"bank": "P.A.J. de Korte e/o I. de Korte-Grundlehner", "contactid": 10646009, "relatie": "Piet de Korte"},
+    {"bank": "T.M. de Vaal", "contactid": 11078477, "relatie": "Tal de Vaal"},
+    {"bank": "B OTT", "contactid": 10411520, "relatie": "Brenda Ott"},
+    {"bank": "SM Van Ipkens", "contactid": 10930199, "relatie": "Sanne van Ipkens"},
+    {"bank": "J.L.M. Ulrich e/o A.R. van Korlaar", "omschrijving": "Leonne proefles", "contactid": 11170681, "relatie": "Leonne van Korlaar"}
+  ]
+}

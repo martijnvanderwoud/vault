@@ -1,0 +1,25 @@
+{
+  "administratie": "white-sun",
+  "contactid": 10930199,
+  "template": 133249,
+  "costcenter": 10213,
+  "accountnumber": 227201,
+  "description": "Qigong",
+  "issuedate": "2026-11-22",
+  "concept": 0,
+  "bron": {
+    "bank": "Knab",
+    "referentie": "C6K16PGOBQ8Q27AW",
+    "omschrijving": "les buiten van SM Van Ipkens"
+  },
+  "regels": [
+    {
+      "product": "Qigong | les buiten",
+      "unitprice": "12.3967",
+      "vatrate": 21,
+      "quantity": 1
+    }
+  ],
+  "factuurnummer": "20260318",
+  "entryid": "63633387"
+}

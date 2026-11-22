@@ -37,6 +37,13 @@ Valkuilen:
 - `contacts/contact_invoices_incoming.php` (ontvangen facturen per relatie) verwisselt
   `costcenterid` en `costheadingid`. De juiste waarden staan in `entry_info`.
 - Inactieve relaties komen gewoon mee in `contacts_list` (`contactstatus` 0). Neem de actieve.
+- `contacts/contact_manage.php`: de velden horen **binnen** `<contact>`. Staan ze ernaast, dan
+  maakt Acumulus een lege relatie aan, en dat gebeurt ook in testmode (die negeert dit endpoint).
+  Een update met `contactid` wist elk veld dat je niet meestuurt.
+- Een nieuwe klant via `invoice_add` zonder `contactid` en zonder e-mail geeft HTTP 400
+  "Ongeldige relatie". Maak de relatie eerst aan met `contact_manage`.
+- Een factuurregel kan niet naar een standaard product (`picklist_products`) verwijzen; neem
+  omschrijving, prijs exclusief btw (vier decimalen) en btw over.
 
 ## API-gebruikers
 
@@ -63,10 +70,15 @@ administratie. `pdf` kan alleen voor The Crimson Cricket.
 - `klanten <zoekterm>` (met actief/inactief), `sjablonen`, `kostenplaatsen`, `kostensoorten`,
   `rekeningen`: opzoeken van de vaste id's. Het veld `accountnumber` in een uitgave is de
   `accountid` uit `rekeningen`, niet het rekeningnummer.
+- `openstaand`: onbetaalde verkoop- en inkoopfacturen. `producten`: de actieve standaard
+  producten met prijs excl. (vier decimalen) en incl. btw. `relatie <naam>`: een particuliere
+  klant aanmaken met de naam als contactpersoon en zonder aanhef (voor White Sun, zie
+  [[betalingen-white-sun]]).
 - `factuur <json> [--test]`: maakt een conceptfactuur uit een bestand in `data/facturen/`, met
   betaalstatus niet betaald (tenzij het bestand `"paymentstatus": 2` heeft), en
   toont de regels en de totalen (btw per regel afgerond, zoals Acumulus dat doet). Met `--test`
-  verandert er niets.
+  verandert er niets. Met `"concept": 0` maakt het de factuur meteen definitief en zet het
+  factuurnummer en entryid in het bestand; `"accountnumber"` kiest de rekening.
 - `pdf <conceptid>`: na het definitief maken nummer en token opzoeken en de PDF opslaan als
   `verkoop/<jaar>/Factuur_<nummer>.pdf`. Controleert dat het echt een PDF is en overschrijft
   geen bestaand bestand.
@@ -100,5 +112,7 @@ Aanvullen bij nieuwe leveranciers (`--administratie white-sun` met `klanten`, `k
 | Kostenplaats Algemeen (de enige) | costcenter 10213 |
 | Rekening Knab (NL11 KNAB …) | accountnumber 227201 |
 | Kostensoort Telefoon en internet | costheading 6 |
+| Rekening Mollie | accountnumber 227282 |
+| Sjabloon White Sun Qigong | 133249 |
 
-Gebruikt door de skills `hostingfactuur-flow` (zie [[hosting-transip]]), `inkoopfactuur` en `ziggo-doorbelasting`.
+Gebruikt door de skills `hostingfactuur-flow` (zie [[hosting-transip]]), `inkoopfactuur`, `ziggo-doorbelasting` en `betalingen-white-sun`.

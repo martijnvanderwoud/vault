@@ -1,0 +1,25 @@
+{
+  "administratie": "white-sun",
+  "contactid": 10411520,
+  "template": 133249,
+  "costcenter": 10213,
+  "accountnumber": 227201,
+  "description": "Qigong",
+  "issuedate": "2026-11-22",
+  "concept": 0,
+  "bron": {
+    "bank": "Knab",
+    "referentie": "C6K16PGBS57Q9MQK",
+    "omschrijving": "les Jaartraject van B OTT"
+  },
+  "regels": [
+    {
+      "product": "Qigong | les buiten - abonnement",
+      "unitprice": "4.1322",
+      "vatrate": 21,
+      "quantity": 1
+    }
+  ],
+  "factuurnummer": "20260316",
+  "entryid": "63633385"
+}

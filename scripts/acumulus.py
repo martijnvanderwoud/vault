@@ -14,9 +14,17 @@ Gebruik:
   acumulus.py kostenplaatsen       kostenplaatsen (costcenterid, naam)
   acumulus.py kostensoorten        kostensoorten (costheadingid, naam)
   acumulus.py rekeningen           rekeningen (de id voor accountnumber in een uitgave, en meer)
+  acumulus.py openstaand           onbetaalde verkoop- en inkoopfacturen (entryid, nummer, datum,
+                                   relatie, rekening, bedrag)
+  acumulus.py producten            actieve standaard producten en diensten (productid, prijs
+                                   excl. en incl. btw, omschrijving)
+  acumulus.py relatie <naam>       een particuliere klant (debiteur) aanmaken, met de naam als
+                                   contactpersoon en zonder aanhef; weigert als de naam al bestaat
   acumulus.py factuur <json> [--test]
                                    conceptfactuur aanmaken uit een bestand in data/facturen/;
-                                   met --test alleen controleren (testmode), er verandert niets
+                                   met --test alleen controleren (testmode), er verandert niets;
+                                   met "concept": 0 in het bestand meteen definitief, en het
+                                   factuurnummer en entryid komen in het bestand
   acumulus.py pdf <conceptid>      na het definitief maken: nummer en token opzoeken en de PDF
                                    opslaan in de verkoopmap op Google Drive (alleen crimson-cricket)
   acumulus.py ontvangen <contactid>
@@ -141,6 +149,44 @@ def rekeningen():
         print('\t'.join('%s=%s' % (k, v) for k, v in r.items()))
 
 
+def openstaand():
+    """Onbetaalde verkoop- en inkoopfacturen, om betalingen op de bank aan te koppelen."""
+    for soort, pad, sleutel in (('verkoop', 'reports/report_unpaid_debtors.php', 'unpaiddebtorinvoices'),
+                                ('inkoop', 'reports/report_unpaid_creditors.php', 'unpaidcreditorinvoices')):
+        for e in lijst(call(pad), sleutel, 'entry'):
+            omschrijving = e.get('invoicenote') or e.get('entrydescription') or ''
+            print('\t'.join(str(v) for v in (soort, e.get('entryid'), e.get('number') or '-', e.get('issuedate'),
+                                              e.get('contactid'), e.get('contactname'), e.get('accountnumber'),
+                                              e.get('amount'), omschrijving)))
+
+
+def producten():
+    """Actieve standaard producten. De prijs in Acumulus is excl. btw (vier decimalen); incl. btw is berekend."""
+    antwoord = call('picklists/picklist_products.php', {'producttagid': 0})
+    for p in lijst(antwoord, 'products', 'product'):
+        excl, btw = Decimal(p['productprice']), Decimal(p['productvatrate'])
+        incl = (excl * (100 + btw) / 100).quantize(CENT, ROUND_HALF_UP)
+        print('%s\t%s\t%s%%\tincl. %s\t%s' % (p['productid'], excl, btw.normalize(), incl, p['productdescription']))
+
+
+def relatie(naam):
+    """Maakt een particuliere klant aan zoals Franca dat doet: naam als contactpersoon, geen aanhef.
+
+    De velden horen binnen <contact>; ernaast maakt Acumulus een lege relatie aan, ook in testmode.
+    """
+    bestaand = [c for c in lijst(call('contacts/contacts_list.php', {'filter': naam, 'rowcount': 50}),
+                                 'contacts', 'contact') if str(c.get('contactname')).lower() == naam.lower()]
+    if bestaand:
+        raise SystemExit('Er is al een relatie %s: contactid %s.' % (naam, ', '.join(c['contactid'] for c in bestaand)))
+    antwoord = call('contacts/contact_manage.php', {'contact': {
+        'contactperson': naam, 'contactsalutation': '', 'contacttype': 1, 'contactvattypeid': 1,
+        'contactcountrycode': 'NL'}})
+    c = antwoord.get('contact') or {}
+    if c.get('contactproc') != 'added' or c.get('contactperson') != naam:
+        raise SystemExit('Acumulus gaf %s terug; kijk in Acumulus of de relatie goed is aangemaakt.' % c)
+    print('Relatie %s aangemaakt, contactid %s' % (naam, c.get('contactid')))
+
+
 def databestand(bestand):
     """Leest een databestand en controleert dat het bij de gekozen administratie hoort."""
     d = json.load(open(bestand))
@@ -151,29 +197,41 @@ def databestand(bestand):
 
 
 def factuur(bestand, testmode):
-    """Maakt een conceptfactuur aan. Bedragen komen als string uit het bestand (geen floats)."""
+    """Maakt een (concept)factuur aan. Bedragen komen als string uit het bestand (geen floats)."""
     f = databestand(bestand)
     regels = [{'product': r['product'], 'unitprice': r['unitprice'], 'vatrate': r['vatrate'],
                'quantity': r['quantity']} for r in f['regels']]
     # Betaalstatus 1 (niet betaald) is de standaard; 2 (betaald) alleen als het bestand dat zegt.
-    invoice = {'concept': 1, 'description': f['description'], 'template': f['template'],
+    # Standaard een concept; "concept": 0 maakt de factuur meteen definitief.
+    concept = f.get('concept', 1)
+    if concept == 0 and f.get('entryid') and not testmode:
+        raise SystemExit('%s is al aangemaakt als factuur %s.' % (bestand, f.get('factuurnummer')))
+    invoice = {'concept': concept, 'description': f['description'], 'template': f['template'],
                'costcenter': f['costcenter'], 'paymentstatus': f.get('paymentstatus', 1), 'line': regels}
-    if f.get('issuedate'):
-        invoice['issuedate'] = f['issuedate']
+    for veld in ('issuedate', 'accountnumber'):
+        if f.get(veld):
+            invoice[veld] = f[veld]
     antwoord = call('invoices/invoice_add.php', {
         'customer': {'contactid': f['contactid'], 'overwriteifexists': 0, 'invoice': invoice},
     }, testmode)
     for r in regels:
         print('%s\t%s x %s\t%s%% btw' % (r['product'], r['quantity'], r['unitprice'], r['vatrate']))
-    # Zoals Acumulus het op de factuur zet: btw per regel afgerond, daarna opgeteld.
-    subtotalen = [(Decimal(str(r['unitprice'])) * Decimal(str(r['quantity']))).quantize(CENT, ROUND_HALF_UP)
-                  for r in regels]
-    btw = sum((s * Decimal(r['vatrate']) / 100).quantize(CENT, ROUND_HALF_UP) for s, r in zip(subtotalen, regels))
-    print('Totaal excl. btw %s, btw %s, totaal %s' % (sum(subtotalen), btw, sum(subtotalen) + btw))
+    # Zoals Acumulus het op de factuur zet: btw per regel afgerond, daarna opgeteld. De btw gaat over
+    # het onafgeronde bedrag, wat telt bij prijzen met vier decimalen (8.2645 wordt 8.26 + 1.74).
+    exact = [Decimal(str(r['unitprice'])) * Decimal(str(r['quantity'])) for r in regels]
+    subtotaal = sum(s.quantize(CENT, ROUND_HALF_UP) for s in exact)
+    btw = sum((s * Decimal(r['vatrate']) / 100).quantize(CENT, ROUND_HALF_UP) for s, r in zip(exact, regels))
+    print('Totaal excl. btw %s, btw %s, totaal %s' % (subtotaal, btw, subtotaal + btw))
+    resultaat = antwoord.get('invoice') or {}
     if testmode:
         print('Testmode: geen fouten, er is niets aangemaakt.')
+    elif concept == 0:
+        f['factuurnummer'], f['entryid'] = resultaat.get('invoicenumber'), resultaat.get('entryid')
+        with open(bestand, 'w') as uit:
+            uit.write(json.dumps(f, indent=2, ensure_ascii=False) + '\n')
+        print('Factuur %s aangemaakt, entryid %s' % (f['factuurnummer'], f['entryid']))
     else:
-        print('Concept aangemaakt, conceptid %s' % (antwoord.get('invoice') or {}).get('conceptid'))
+        print('Concept aangemaakt, conceptid %s' % resultaat.get('conceptid'))
 
 
 def pdf(conceptid):
@@ -265,6 +323,12 @@ if __name__ == '__main__':
         kostensoorten()
     elif args == ['rekeningen']:
         rekeningen()
+    elif args == ['openstaand']:
+        openstaand()
+    elif args == ['producten']:
+        producten()
+    elif args[:1] == ['relatie'] and len(args) == 2:
+        relatie(args[1])
     elif args[:1] == ['factuur'] and len(args) in (2, 3) and args[2:] in ([], ['--test']):
         factuur(args[1], args[2:] == ['--test'])
     elif args[:1] == ['pdf'] and len(args) == 2:

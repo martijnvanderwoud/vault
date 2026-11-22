@@ -1,0 +1,26 @@
+{
+  "administratie": "white-sun",
+  "contactid": 11170681,
+  "template": 133249,
+  "costcenter": 10213,
+  "accountnumber": 227201,
+  "description": "Qigong",
+  "issuedate": "2026-11-22",
+  "concept": 0,
+  "bron": {
+    "bank": "Knab",
+    "referentie": "C6K17IP4J2000001",
+    "omschrijving": "Leonne proefles",
+    "tegenrekeninghouder": "J.L.M. Ulrich e/o A.R. van Korlaar"
+  },
+  "regels": [
+    {
+      "product": "Qigong | Proefles",
+      "unitprice": "8.2645",
+      "vatrate": 21,
+      "quantity": 1
+    }
+  ],
+  "factuurnummer": "20260319",
+  "entryid": "63633401"
+}

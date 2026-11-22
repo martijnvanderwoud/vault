@@ -1,0 +1,25 @@
+{
+  "administratie": "white-sun",
+  "contactid": 10646009,
+  "template": 133249,
+  "costcenter": 10213,
+  "accountnumber": 227201,
+  "description": "Qigong",
+  "issuedate": "2026-11-22",
+  "concept": 0,
+  "bron": {
+    "bank": "Knab",
+    "referentie": "C6K16PGBEZ8S5X56",
+    "omschrijving": "les buiten van P.A.J. de Korte e/o I. de Korte-Grundlehner"
+  },
+  "regels": [
+    {
+      "product": "Qigong | les buiten",
+      "unitprice": "12.3967",
+      "vatrate": 21,
+      "quantity": 1
+    }
+  ],
+  "factuurnummer": "20260313",
+  "entryid": "63633382"
+}
