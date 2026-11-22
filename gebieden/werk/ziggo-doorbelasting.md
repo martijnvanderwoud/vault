@@ -54,4 +54,9 @@ bedragen en hoe je eraan kwam hier vast.
 
 - **Familie**: geen mail; die factuur wordt niet verstuurd.
 
+## Inboeken bij White Sun
+
+De factuur aan White Sun boek ik ook als uitgave in Franca's Acumulus, en de PDF gaat naar haar
+inkoopmap als `The-Crimson-Cricket-<nummer>.pdf` (zie [[acumulus]] en [[facturen-archief]]).
+
 De skill `ziggo-doorbelasting` voert dit uit. Zie ook [[facturen-archief]].

@@ -1,6 +1,6 @@
 ---
 name: ziggo-doorbelasting
-description: Belast na een Ziggo-factuur het privé- en het White Sun-deel door - zet de factuur aan Familie van der Woud - de Jonge (tv en een derde internet) en die aan White Sun Qigong (een derde internet) als conceptfactuur in Acumulus, haalt na mijn akkoord de PDF's op naar Google Drive en zet de mail aan Franca als concept in Gmail. Gebruik deze skill zodra ik vraag om de Ziggo-factuur te verdelen, te verrekenen of door te belasten, de Ziggo-facturen voor de familie of White Sun te maken, of een gepauzeerde Ziggo-doorbelasting af te maken, ook als ik het woord skill niet gebruik. Niet voor het boeken van de Ziggo-factuur zelf (dat is inkoopfactuur) en niet voor de Vodafone-facturen.
+description: Belast na een Ziggo-factuur het privé- en het White Sun-deel door - zet de factuur aan Familie van der Woud - de Jonge (tv en een derde internet) en die aan White Sun Qigong (een derde internet) als conceptfactuur in Acumulus, haalt na mijn akkoord de PDF's op naar Google Drive, zet de mail aan Franca als concept in Gmail en boekt de White Sun-factuur als uitgave in Franca's Acumulus (via inkoopfactuur). Gebruik deze skill zodra ik vraag om de Ziggo-factuur te verdelen, te verrekenen of door te belasten, de Ziggo-facturen voor de familie of White Sun te maken, of een gepauzeerde Ziggo-doorbelasting af te maken, ook als ik het woord skill niet gebruik. Niet voor het boeken van de Ziggo-factuur zelf (dat is inkoopfactuur) en niet voor de Vodafone-facturen.
 allowed-tools: Bash(/usr/bin/python3 -I ~/vault/scripts/acumulus.py*), Bash(ls*), Read, Write, mcp__claude_ai_Gmail__search_threads, mcp__claude_ai_Gmail__get_thread, mcp__claude_ai_Gmail__create_draft
 ---
 
@@ -103,6 +103,13 @@ Alleen voor White Sun Qigong; de familiefactuur wordt niet verstuurd. Maak met `
 me dat ik `Factuur_<nummer>.pdf` zelf moet bijvoegen, met het volledige pad en de link naar het
 concept.
 
+## 7. Inboeken bij White Sun
+
+Alleen de White Sun-factuur. Volg de skill `inkoopfactuur` voor administratie White Sun Qigong,
+met als bron mijn eigen factuur `verkoop/<JJJJ>/Factuur_<nummer>.pdf` (leverancier
+`The-Crimson-Cricket`). Die skill heeft een eigen stoppunt voor het voorstel; boek pas na mijn
+akkoord.
+
 ## Hervatten
 
 Bestaan de databestanden al, dan per bestand:
@@ -111,9 +118,12 @@ Bestaan de databestanden al, dan per bestand:
 - **Wel een `conceptid`, geen `factuurnummer`**: vraag of de factuur definitief is en ga verder
   bij stap 5.
 - **Wel een `factuurnummer`** (White Sun): kijk in Gmail of er al een concept of verzonden mail
-  met dat nummer is. Zo niet, ga verder bij stap 6.
+  met dat nummer is. Zo niet, ga verder bij stap 6. Bestaat
+  `data/uitgaven/white-sun/The-Crimson-Cricket-<nummer>.json` niet of zonder `entryid`, ga dan
+  verder bij stap 7.
 
 ## Antwoord
 
 Kort, in het Nederlands: beide factuurnummers en totalen uit de uitvoer, de paden van de PDF's,
-de link naar het concept in Gmail en de herinnering om de PDF bij te voegen.
+de link naar het concept in Gmail, de herinnering om de PDF bij te voegen en het boekstuknummer
+in Franca's Acumulus.

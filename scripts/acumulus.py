@@ -1,18 +1,24 @@
 """Toegang tot de Acumulus API (SIEL), voor het maken van verkoopfacturen en het boeken van uitgaven.
 
-De inloggegevens komen uit ACUMULUS_CONTRACTCODE, ACUMULUS_USERNAME, ACUMULUS_PASSWORD en
-ACUMULUS_EMAILONERROR in ~/vault/.env en worden nooit getoond.
+Twee administraties: crimson-cricket (standaard, The Crimson Cricket) en white-sun (White Sun
+Qigong, van Franca), te kiezen met --administratie <naam> voor het commando. De inloggegevens komen
+uit ~/vault/.env, met prefix ACUMULUS_ resp. ACUMULUS_WHITESUN_ voor CONTRACTCODE, USERNAME,
+PASSWORD en EMAILONERROR, en worden nooit getoond. Een databestand voor white-sun heeft
+"administratie": "white-sun"; factuur en uitgave weigeren een bestand van de andere administratie.
 Documentatie: https://www.siel.nl/acumulus/API/
 
 Gebruik:
+  acumulus.py [--administratie white-sun] <commando> ...
   acumulus.py klanten <zoekterm>   contacten zoeken (contactid, naam, actief/inactief, e-mail)
   acumulus.py sjablonen            factuursjablonen (invoicetemplateid, naam)
   acumulus.py kostenplaatsen       kostenplaatsen (costcenterid, naam)
+  acumulus.py kostensoorten        kostensoorten (costheadingid, naam)
+  acumulus.py rekeningen           rekeningen (de id voor accountnumber in een uitgave, en meer)
   acumulus.py factuur <json> [--test]
                                    conceptfactuur aanmaken uit een bestand in data/facturen/;
                                    met --test alleen controleren (testmode), er verandert niets
   acumulus.py pdf <conceptid>      na het definitief maken: nummer en token opzoeken en de PDF
-                                   opslaan in de verkoopmap op Google Drive
+                                   opslaan in de verkoopmap op Google Drive (alleen crimson-cricket)
   acumulus.py ontvangen <contactid>
                                    de laatste ontvangen facturen (uitgaven) van een leverancier,
                                    als voorbeeld voor een nieuwe boeking
@@ -31,6 +37,9 @@ from xml.sax.saxutils import escape
 BASE = 'https://api.sielsystems.nl/acumulus/stable/'
 CENT = Decimal('0.01')
 VERKOOP = os.path.expanduser('~/Mijn Drive/crimsoncricket-documents/verkoop')
+# Administratie en de prefix van haar inloggegevens in .env.
+ADMINISTRATIES = {'crimson-cricket': 'ACUMULUS_', 'white-sun': 'ACUMULUS_WHITESUN_'}
+administratie = 'crimson-cricket'
 
 
 def env(naam):
@@ -55,13 +64,14 @@ def xml(velden):
 
 def call(pad, velden=None, testmode=False):
     """Roept een API-pad aan (bijv. 'contacts/contacts_list.php') en geeft het response-deel terug."""
+    prefix = ADMINISTRATIES[administratie]
     bericht = {
         'contract': {
-            'contractcode': env('ACUMULUS_CONTRACTCODE'),
-            'username': env('ACUMULUS_USERNAME'),
-            'password': env('ACUMULUS_PASSWORD'),
-            'emailonerror': env('ACUMULUS_EMAILONERROR'),
-            'emailonwarning': env('ACUMULUS_EMAILONERROR'),
+            'contractcode': env(prefix + 'CONTRACTCODE'),
+            'username': env(prefix + 'USERNAME'),
+            'password': env(prefix + 'PASSWORD'),
+            'emailonerror': env(prefix + 'EMAILONERROR'),
+            'emailonwarning': env(prefix + 'EMAILONERROR'),
         },
         'format': 'json',
         'testmode': 1 if testmode else 0,
@@ -118,9 +128,31 @@ def kostenplaatsen():
         print('%s\t%s' % (k.get('costcenterid'), k.get('costcentername')))
 
 
+def kostensoorten():
+    antwoord = call('picklists/picklist_costheadings.php')
+    for k in lijst(antwoord, 'costheadings', 'costheading'):
+        print('%s\t%s' % (k.get('costheadingid'), k.get('costheadingname')))
+
+
+def rekeningen():
+    """Toont alle velden per rekening: welke daarvan accountnumber in een uitgave is, staat in acumulus.md."""
+    antwoord = call('picklists/picklist_accounts.php')
+    for r in lijst(antwoord, 'accounts', 'account'):
+        print('\t'.join('%s=%s' % (k, v) for k, v in r.items()))
+
+
+def databestand(bestand):
+    """Leest een databestand en controleert dat het bij de gekozen administratie hoort."""
+    d = json.load(open(bestand))
+    if d.get('administratie', 'crimson-cricket') != administratie:
+        raise SystemExit('%s hoort bij administratie %s, niet bij %s.'
+                         % (bestand, d.get('administratie', 'crimson-cricket'), administratie))
+    return d
+
+
 def factuur(bestand, testmode):
     """Maakt een conceptfactuur aan. Bedragen komen als string uit het bestand (geen floats)."""
-    f = json.load(open(bestand))
+    f = databestand(bestand)
     regels = [{'product': r['product'], 'unitprice': r['unitprice'], 'vatrate': r['vatrate'],
                'quantity': r['quantity']} for r in f['regels']]
     # Betaalstatus 1 (niet betaald) is de standaard; 2 (betaald) alleen als het bestand dat zegt.
@@ -146,6 +178,8 @@ def factuur(bestand, testmode):
 
 def pdf(conceptid):
     """Zoekt bij een definitief gemaakt concept het nummer en de token op en slaat de PDF op."""
+    if administratie != 'crimson-cricket':
+        raise SystemExit('pdf kan alleen voor crimson-cricket: de verkoopmap is die van The Crimson Cricket.')
     concept = call('invoices/invoice_concept_info.php', {'conceptid': conceptid})
     entryids = lijst(concept, 'concept', 'entryid')
     if not entryids:
@@ -187,7 +221,7 @@ def ontvangen(contactid):
 
 def uitgave(bestand):
     """Boekt een uitgave en zet het entryid in het bestand. Het bedrag komt als string uit het bestand (geen floats)."""
-    u = json.load(open(bestand))
+    u = databestand(bestand)
     if u.get('entryid'):
         # Opnieuw boeken mag alleen als ik de vorige boeking in Acumulus heb verwijderd.
         oud = call('entry/entry_info.php', {'entryid': u['entryid']})['entry']
@@ -217,12 +251,20 @@ def uitgave(bestand):
 
 if __name__ == '__main__':
     args = sys.argv[1:]
+    if args[:1] == ['--administratie']:
+        if args[1:2] == [] or args[1] not in ADMINISTRATIES:
+            raise SystemExit('Kies een administratie: %s' % ', '.join(ADMINISTRATIES))
+        administratie, args = args[1], args[2:]
     if args[:1] == ['klanten'] and len(args) == 2:
         klanten(args[1])
     elif args == ['sjablonen']:
         sjablonen()
     elif args == ['kostenplaatsen']:
         kostenplaatsen()
+    elif args == ['kostensoorten']:
+        kostensoorten()
+    elif args == ['rekeningen']:
+        rekeningen()
     elif args[:1] == ['factuur'] and len(args) in (2, 3) and args[2:] in ([], ['--test']):
         factuur(args[1], args[2:] == ['--test'])
     elif args[:1] == ['pdf'] and len(args) == 2:

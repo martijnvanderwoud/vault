@@ -13,7 +13,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
 ## Notities
 
-- [[acumulus]] — Acumulus (SIEL), mijn boekhoud- en factuurprogramma - de API, de API-gebruiker en het script waarmee Claude verkoopfacturen als concept aanmaakt, de PDF ophaalt en uitgaven boekt
+- [[acumulus]] — Acumulus (SIEL), het boekhoud- en factuurprogramma van mij en van White Sun Qigong (Franca) - de API, de API-gebruikers en het script waarmee Claude verkoopfacturen als concept aanmaakt, de PDF ophaalt en uitgaven boekt
 - [[facturen-archief]] — Waar mijn inkoop- en verkoopfacturen staan en hoe ik ze lees
 - [[git-flow-branchregels-pompkracht]] — De organisatiebrede git-flow-regels van Flow-Cloud-Systems - welke branchnamen een PR naar develop, master, release en hotfix mogen hebben, waar de check vandaan komt en voor welke repo's hij geldt
 - [[hosting-transip]] — Welke TransIP-producten ik gebruik, aan welke klant ik ze doorbelast en waar de facturen staan

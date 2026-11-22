@@ -14,6 +14,10 @@ Alle facturen van The Crimson Cricket Internet Services staan in Google Drive:
   zie je niet voor welke klant de factuur is, dus je moet de PDF openen. Uren- en hostingfacturen
   aan dezelfde klant zijn losse facturen. Ik maak ze in Acumulus; `scripts/acumulus.py pdf`
   zet de PDF hier neer (zie [[acumulus]]).
+- **Inkoop White Sun Qigong** (Franca): `~/Mijn Drive/studiodesta/05-ALGEMEEN/03-administratie/inkoop/JJJJ/<Leverancier>-<factuurnummer>.pdf`.
+  Het is Franca's map, gespiegeld op mijn Drive. Facturen zonder nummer staan er met de
+  factuurdatum (`Tempofix-2026-01-14.pdf`); mijn eigen facturen aan haar als
+  `The-Crimson-Cricket-<nummer>.pdf`.
 - PDF's lees ik met de Read-tool. `pdftotext`, `pypdf` en vergelijkbare tools zijn niet
   geïnstalleerd.
 

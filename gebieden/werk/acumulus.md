@@ -1,5 +1,5 @@
 ---
-description: Acumulus (SIEL), mijn boekhoud- en factuurprogramma - de API, de API-gebruiker en het script waarmee Claude verkoopfacturen als concept aanmaakt, de PDF ophaalt en uitgaven boekt
+description: Acumulus (SIEL), het boekhoud- en factuurprogramma van mij en van White Sun Qigong (Franca) - de API, de API-gebruikers en het script waarmee Claude verkoopfacturen als concept aanmaakt, de PDF ophaalt en uitgaven boekt
 tags: [werk, facturatie, administratie, acumulus]
 ---
 
@@ -8,6 +8,9 @@ tags: [werk, facturatie, administratie, acumulus]
 Mijn verkoopfacturen maak ik in Acumulus (van SIEL; ik schrijf het zelf vaak als "Accumulus").
 Ik verstuur nooit facturen vanuit Acumulus: ik download de PDF, zet die in de verkoopmap op
 Google Drive (zie [[facturen-archief]]) en stuur hem als bijlage in een mail die ik zelf opstel.
+
+Franca heeft een eigen Acumulus voor White Sun Qigong, waarin ik beheerrechten heb. Daarin boek
+ik haar inkoopfacturen, ook de facturen die ik haar zelf stuur (zoals [[ziggo-doorbelasting]]).
 
 ## API
 
@@ -35,11 +38,15 @@ Valkuilen:
   `costcenterid` en `costheadingid`. De juiste waarden staan in `entry_info`.
 - Inactieve relaties komen gewoon mee in `contacts_list` (`contactstatus` 0). Neem de actieve.
 
-## API-gebruiker
+## API-gebruikers
 
-Aparte gebruiker voor Claude, sinds 17-11-2026, met de rol **API gebruiker**. Gegevens in
-`~/vault/.env` (`ACUMULUS_*`, namen in `.env.example`). Fouten en waarschuwingen mailt Acumulus
-naar `ACUMULUS_EMAILONERROR`.
+Per administratie een aparte gebruiker voor Claude, met de rol **API gebruiker**. Gegevens in
+`~/vault/.env` (namen in `.env.example`):
+
+- **The Crimson Cricket**: sinds 17-11-2026, `ACUMULUS_*`.
+- **White Sun Qigong**: `ACUMULUS_WHITESUN_*`. Maak ik zelf aan in Franca's Acumulus.
+
+Fouten en waarschuwingen mailt Acumulus naar het adres in `..._EMAILONERROR`.
 
 De rollen zijn anders dan je zou denken: een **API invoerder** mag minder dan een API gebruiker.
 Een invoerder mag facturen toevoegen, maar geen klanten opzoeken (`contacts_list`) en geen
@@ -48,9 +55,14 @@ Een API beheerder mag alles.
 
 ## Script
 
-`scripts/acumulus.py`:
+`scripts/acumulus.py`. Standaard werkt het op The Crimson Cricket; met `--administratie
+white-sun` vóór het commando op White Sun Qigong. Een databestand voor White Sun heeft
+`"administratie": "white-sun"`, en `factuur` en `uitgave` weigeren een bestand van de andere
+administratie. `pdf` kan alleen voor The Crimson Cricket.
 
-- `klanten <zoekterm>` (met actief/inactief), `sjablonen`, `kostenplaatsen`: opzoeken van de vaste id's.
+- `klanten <zoekterm>` (met actief/inactief), `sjablonen`, `kostenplaatsen`, `kostensoorten`,
+  `rekeningen`: opzoeken van de vaste id's. Het veld `accountnumber` in een uitgave is de
+  `accountid` uit `rekeningen`, niet het rekeningnummer.
 - `factuur <json> [--test]`: maakt een conceptfactuur uit een bestand in `data/facturen/`, met
   betaalstatus niet betaald (tenzij het bestand `"paymentstatus": 2` heeft), en
   toont de regels en de totalen (btw per regel afgerond, zoals Acumulus dat doet). Met `--test`
@@ -61,12 +73,12 @@ Een API beheerder mag alles.
 - `ontvangen <contactid>`: de laatste ontvangen facturen van een leverancier, met omschrijving,
   rekening, kostensoort en kostenplaats. Het voorbeeld voor een nieuwe boeking.
 - `uitgave <json>`: boekt een uitgave uit `data/uitgaven/<Leverancier>-<factuurnummer>.json`
-  (zelfde naam als de PDF in het archief) en zet het `entryid` in het bestand. Staat er al een
+  (White Sun: `data/uitgaven/white-sun/`; zelfde naam als de PDF in het archief) en zet het `entryid` in het bestand. Staat er al een
   `entryid` in, dan boekt het alleen opnieuw als ik dat boekstuk in Acumulus heb verwijderd (zo
   corrigeer ik een boeking: verwijderen, databestand aanpassen, opnieuw boeken). Geen testmode:
   ik kijk de boeking zelf na in Acumulus.
 
-## Vaste id's
+## Vaste id's The Crimson Cricket
 
 | Wat | Id |
 |---|---|
@@ -77,4 +89,16 @@ Een API beheerder mag alles.
 | Rekening NL79 INGB 0005 0608 34 / ING Businesscard | accountnumber 13039 / 25072 |
 | Kostensoort Telefoon en internet | costheading 6 |
 
-Gebruikt door de skills `hostingfactuur-flow` (zie [[hosting-transip]]) en `inkoopfactuur`.
+## Vaste id's White Sun Qigong
+
+Aanvullen bij nieuwe leveranciers (`--administratie white-sun` met `klanten`, `kostensoorten`,
+`kostenplaatsen` en `rekeningen`).
+
+| Wat | Id |
+|---|---|
+| Leverancier The Crimson Cricket Internet Services (actief) | contactid 141521 |
+| Kostenplaats Algemeen (de enige) | costcenter 10213 |
+| Rekening Knab (NL11 KNAB …) | accountnumber 227201 |
+| Kostensoort Telefoon en internet | costheading 6 |
+
+Gebruikt door de skills `hostingfactuur-flow` (zie [[hosting-transip]]), `inkoopfactuur` en `ziggo-doorbelasting`.
