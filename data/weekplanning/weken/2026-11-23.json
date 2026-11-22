@@ -1,7 +1,14 @@
 {
-  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/) en de afspraken uit de agenda; het declarabele doel komt uit data/weekplanning/weektargets.csv. Reistijd en omschakelen staan voor en na de afspraak. Voorlopig met de trainingen van Wind week 1, tot week 2 in de vault staat.",
+  "toelichting": "Invoer voor scripts/weekplanning.py: de trainingsweek (data/hardlopen/trainingen/), de afspraken uit de agenda; het declarabele doel komt uit data/weekplanning/weektargets.csv (week 48: 28,79 u, vastgezet op zo 22-11). Trainingen van Wind week 2 uit een screenshot van TrainingPeaks (22-11); kracht op di en zo staat er weer in. Vr is zwaar (8 km at 85% 5k), maar zonder kracht: die staat op vr niet in TrainingPeaks. Ortho-nacontrole: 20 min voor en na, zoals de reistijdblokken in de privé-agenda (bevestigd 22-11). Droge boodschappen di met Franca: 13:00-15:00 inclusief reistijd en uitruimen, dus zonder aparte reistijd. Werken aan speech do: thuis, geen werktijd. M❤️F do: thuis. Week(end) bespreken en Ellie bellen staan al in weekdagen.json. Ma zelf gekozen 20 min later op (06:20), doorgegeven op zo 22-11. Ma 07:35 5 min Franca helpen een tafel te sjouwen, ergens tussen 07:15 en 08:30 (mag in hardloopkleding, tussen andere blokken door). Ma ontbijt, fysio oefeningen en tanden poetsen voor het werk (bij het opstaan; fysio direct na het ontbijt, dus niet meer bij de warming-up), lunch na het douchen op de plek van het ontbijt; de lunch van 12:00 vervalt (op 22-11 gevraagd). Do 40 graden was opruimen om 14:00, na het werken aan de speech in plaats van na de lunch. Ma geen brood halen: er is nog genoeg brood (doorgegeven op 22-11). Di na de boodschappen direct naar de sportschool, zonder eerst te werken (werk_erna: false, doorgegeven op 22-11).",
   "maandag": "2026-11-23",
-  "trainingen": "wind-90-week-01.json",
+  "trainingen": "wind-90-week-02.json",
+  "vervalt": [
+    {
+      "dag": "vr",
+      "soort": "kracht",
+      "reden": "geen kracht op vr in TrainingPeaks"
+    }
+  ],
   "afspraken": [
     {
       "dag": "ma",
@@ -10,6 +17,81 @@
       "tot": "10:15",
       "reistijd_min": 10,
       "omschakelen_min": 10
+    },
+    {
+      "dag": "ma",
+      "activiteit": "Franca helpen een tafel te sjouwen",
+      "van": "07:35",
+      "tot": "07:40",
+      "thuis": true
+    },
+    {
+      "dag": "di",
+      "activiteit": "Droge boodschappen (met Franca)",
+      "van": "13:00",
+      "tot": "15:00",
+      "thuis": true,
+      "werk_erna": false
+    },
+    {
+      "dag": "do",
+      "activiteit": "Werken aan speech 21 dinner Matthies",
+      "van": "12:30",
+      "tot": "14:00",
+      "thuis": true
+    },
+    {
+      "dag": "do",
+      "activiteit": "M❤️F",
+      "van": "19:30",
+      "tot": "21:30",
+      "thuis": true
+    }
+  ],
+  "aanpassen": [
+    {
+      "dag": "ma",
+      "activiteit": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven",
+      "wordt": "Opstaan, wegen, hardloopkleding aantrekken, katten eten geven, ontbijt, fysio oefeningen, tanden poetsen",
+      "duur_min": 75
+    },
+    {
+      "dag": "ma",
+      "activiteit": "Snack, fysio oefeningen, warming up, schoenen aan en naar buiten",
+      "wordt": "Snack, warming up, schoenen aan en naar buiten",
+      "duur_min": 30
+    },
+    {
+      "dag": "ma",
+      "activiteit": "Lunch",
+      "vervalt": true
+    },
+    {
+      "dag": "ma",
+      "activiteit": "Ontbijt",
+      "wordt": "Lunch",
+      "duur_min": 30
+    },
+    {
+      "dag": "ma",
+      "activiteit": "Tanden poetsen",
+      "vervalt": true
+    },
+    {
+      "dag": "do",
+      "activiteit": "40 graden was opruimen",
+      "om": "14:00"
+    },
+    {
+      "dag": "ma",
+      "activiteit": "Bakker brood halen",
+      "vervalt": true
+    }
+  ],
+  "opstaan": [
+    {
+      "dag": "ma",
+      "om": "06:20"
     }
   ]
 }

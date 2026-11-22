@@ -104,7 +104,9 @@ neem over wat nog klopt en vervang de rest.
 /usr/bin/python3 -I ~/vault/scripts/weekplanning.py ~/vault/data/weekplanning/weken/<maandag>.json --schrijf
 ```
 
-Altijd met `--schrijf`: dat zet de notitie in `gebieden/weekplanning/<maandag>.md`. Geeft het script een
+Altijd met `--schrijf`: dat zet de notitie in `gebieden/weekplanning/<maandag>.md`. Het verwijdert ook de
+notities van eerdere weken: die tonen alleen de laatste herplanning, en git bewaart elke versie. De
+weekbestanden in `data/weekplanning/weken/` blijven staan. Geeft het script een
 fout, meld die letterlijk en zoek de oorzaak in de invoer.
 
 ## Antwoord

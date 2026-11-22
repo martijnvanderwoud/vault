@@ -307,6 +307,8 @@ van de rest van de week gelijk verlaagt.
   `rust`. Duur van `Hardlopen` = berekende duur (midden) naar boven op een kwartier: easy 45 min
   (Excel 60), zwaar 60 (Excel 75), lang 1:45 (Excel 2:30). De werkdagen worden daardoor korter, de
   werkuren blijven gelijk.
+  Sinds 22-11 naar boven op 5 min (`kleinste_blok_min`) in plaats van een kwartier: een kwartier
+  is te grof (een run van 59:25 werd 1:00, een van 1:02 werd 1:15).
 - **Zware dag:** het werkblok vóór de training is `vul`; `Hardlopen` heeft `minstens_na` 120 min na
   het ontbijt. Geeft nu 1 u, zoals de Excel, en schuift mee als er iets tussenkomt.
 - **Klusjes en avond** blijven aan de weekdag vast, ook bij een andere soort dag. Ontbreekt het blok
@@ -333,7 +335,27 @@ van de rest van de week gelijk verlaagt.
   geeft vrije tijd voor het eten. Avondblokken die niet meer voor een avondafspraak af zijn, gaan eerst
   naar een vrij gat voor een vast blok, anders erna. Een afspraak kan een andere terugreis hebben
   (`reistijd_terug_min`), en `aanpassen` in het weekbestand wijzigt een blok voor één dag (di 17-11:
-  eten zonder afwas, die doet Franca).
+  eten zonder afwas, die doet Franca). Sinds 22-11 kan een blok met `"vervalt": true` voor één dag wegvallen (ma 23-11:
+  ontbijt bij het opstaan, lunch op de plek van het ontbijt, de lunch van 12:00 vervalt; ook een
+  klusje, zoals brood halen als er nog genoeg is), en krijgt
+  een klusje met `om` via `aanpassen` alleen die tijd (niet ook nog zijn `na`-plek). Klusjes met een
+  vaste tijd komen na de afspraken in de dag, zodat een klusje direct na een afspraak (do 26-11: was
+  opruimen om 14:00, na de speech) het werkblok erna knipt.
+- **Fysio-oefeningen (22-11):** altijd direct na het ontbijt (en de vaatwasser), voor het tanden
+  poetsen; ontbijt Martijn pas na de training, dan voor de warming-up. Zo staan ze in
+  `dagsoorten.json`; verschuift het ontbijt op een dag (ma 23-11: voor het werk), dan gaan de
+  fysio-oefeningen mee.
+- **Aansluitend na een afspraak (22-11):** `"werk_erna": false` in een afspraak: wat van het
+  werkblok met vaste uren over is, gaat naar het werk aan het eind van de dag, en de dag gaat na de
+  afspraak verder met het blok erna. Di 24-11: na de boodschappen direct naar de sportschool.
+- **Oude weeknotities (22-11):** `--schrijf` verwijdert de notities van weken voor de geschreven week.
+  Door het herplannen toont een notitie alleen de laatste stand (van de week van 16-11 nog do en vr),
+  dus als archief zegt hij weinig; git bewaart elke versie. De weekbestanden blijven: daarin staan
+  de beslissingen en de reistijden die de skill als voorstel gebruikt.
+- **Gelijk trekken (22-11):** vervalt er een stabiliteitsroutine om de week passend te krijgen, dan
+  kon die dag meer ruimte overhouden dan nodig (week van 23-11: wo 0:25, de rest 0:00). Daarna gaat
+  er nu werk van de dagen met minder ruimte naar die dag, per 5 min, zolang de ruimte daardoor dichter
+  bij elkaar komt. Week van 23-11: elke werkdag 0:05. Vorige week gaf dezelfde uitkomst.
 - **Reistijd** zoekt Claude niet zelf op (9292 en Google Maps laden het reisadvies via JavaScript):
   Martijn maakt een screenshot van Google Maps, met de aankomsttijd ingesteld. Heen telt vanaf het
   vertrek van huis tot het begin van de afspraak, wachten meegerekend.

@@ -2,6 +2,12 @@
   "items": [
     {
       "type": "file",
+      "ctime": 1795348921591,
+      "path": "gebieden/weekplanning/2026-11-23.md",
+      "title": "Weekplanning"
+    },
+    {
+      "type": "file",
       "ctime": 1795015779448,
       "path": "gebieden/agents/dashboard.md",
       "title": "Agents Dashboard"
