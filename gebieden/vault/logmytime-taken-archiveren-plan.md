@@ -78,10 +78,10 @@ de latere stappen aan als dat nodig is.
   controleren dat de uitvoer voor een gevalideerde dag gelijk blijft. `merge()` in `logmytime.py`.
 - [x] 3. **Script bouwen**, alleen met de plan-modus. De uitvoer naast een handmatige blik op een paar
   taken leggen.
-- [ ] 4. **Eerste run met de hand.** Eerst `--uitvoeren` en `--max N` inbouwen (het script heeft nu
+- [x] 4. **Eerste run met de hand.** Eerst `--uitvoeren` en `--max N` inbouwen (het script heeft nu
   alleen de plan-modus). Martijn bekijkt het plan, daarna `--uitvoeren`. Met `--max 100` verspreid
-  over twee dagen (op 20-11 stonden er 178 klaar). *Dag 1 klaar (20-11, 100 taken); nog open: de
-  overige 78 op 21-11 of later met `--uitvoeren --max 100`, daarna afvinken.*
+  over twee dagen (op 20-11 stonden er 178 klaar). Dag 1 op 20-11 (100 taken), dag 2 op 23-11
+  (94 taken).
 - [ ] 5. **Agent Fien.** Runner, run-notitie, plist, agentnotitie, en controleren
   dat het dashboard hem toont. Een paar weken laten draaien.
 - [ ] 6. **Afronden** volgens het onderhoud in [[vault-roadmap]]: map met documentatie, beslissingen
@@ -122,3 +122,8 @@ de latere stappen aan als dat nodig is.
   `--uitvoeren --max 100`: 100 keer `204`, PA-1102 t/m PKP-870. De plan-modus erna gaf 145 actief en
   78 te archiveren. Draai het script met `/usr/bin/python3` (of via de shebang): de `python3` van
   pyenv heeft geen SSL en faalt met `unknown url type: https`.
+- **Stap 4, dag 2 (23-11-2026):** de plan-modus gaf 149 actief en 94 te archiveren: de 78 van dag 1
+  plus 16 taken die sinds 20-11 aan het criterium voldoen (vooral PKP-914 t/m PKP-925, PCATA-618/619,
+  PN-66, RPAAS-520/522, allemaal opgelost op 16-11). Daarna `--uitvoeren --max 100`: 94 gearchiveerd,
+  0 over. De plan-modus erna: 55 actief, 0 archiveren, 31 wacht, 21 open, 0 niet gevonden (plus de
+  drie vaste taken). Vanaf nu gaat het per week om een handvol taken, ruim binnen `--max 100`.
