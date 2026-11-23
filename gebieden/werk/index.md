@@ -8,6 +8,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 ## Submappen
 
 - [[gebieden/werk/dependabot-routine/index|dependabot-routine]]
+- [[gebieden/werk/logmytime-archiveren/index|logmytime-archiveren]]
 - [[gebieden/werk/release-candidates-staging/index|release-candidates-staging]]
 - [[gebieden/werk/ward-bewaking/index|ward-bewaking]]
 

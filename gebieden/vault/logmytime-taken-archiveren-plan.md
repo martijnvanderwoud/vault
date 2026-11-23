@@ -83,7 +83,9 @@ de latere stappen aan als dat nodig is.
   over twee dagen (op 20-11 stonden er 178 klaar). Dag 1 op 20-11 (100 taken), dag 2 op 23-11
   (94 taken).
 - [ ] 5. **Agent Fien.** Runner, run-notitie, plist, agentnotitie, en controleren
-  dat het dashboard hem toont. Een paar weken laten draaien.
+  dat het dashboard hem toont. Een paar weken laten draaien. Gebouwd en geladen op 23-11; de eerste
+  geplande run is maandag 30-11 om 8:00. Afvinken als een paar maandagruns goed gingen: kijk dan
+  naar de run-notities in `gebieden/werk/logmytime-archiveren/runs/` en naar `~/.fien/logs/runner.log`.
 - [ ] 6. **Afronden** volgens het onderhoud in [[vault-roadmap]]: map met documentatie, beslissingen
   en logboek, en een regel onder `Afgerond`.
 
@@ -127,3 +129,17 @@ de latere stappen aan als dat nodig is.
   PN-66, RPAAS-520/522, allemaal opgelost op 16-11). Daarna `--uitvoeren --max 100`: 94 gearchiveerd,
   0 over. De plan-modus erna: 55 actief, 0 archiveren, 31 wacht, 21 open, 0 niet gevonden (plus de
   drie vaste taken). Vanaf nu gaat het per week om een handvol taken, ruim binnen `--max 100`.
+- **Stap 5, bouwen (23-11-2026):** `logmytime_taken_archiveren.py` heeft nu `plan()` en `archiveren()`,
+  zodat de runner ze kan aanroepen; de plan-uitvoer was voor en na byte voor byte gelijk.
+  `scripts/fien_runner.py` schrijft per week één run-notitie (`fien-<jaar>-w<week>.md`, onderwerp
+  `taken`) in `gebieden/werk/logmytime-archiveren/runs/`, met `running`, dan `done` of `failed` (elke
+  fout, met `step` `plan` of `archiveren`). Plist in `scripts/fien/`, gekopieerd naar
+  `~/Library/LaunchAgents/` en geladen: maandag 8:00. Agentnotitie [[fien]] met `interval: 8d` en
+  `proces: Python`. Getest met `--dry-run`, één echte run met de hand, één via `launchctl kickstart`
+  (allebei `done`, 0 gearchiveerd, het dashboard toont Fien) en een nagemaakt plan met een fout
+  halverwege (`failed`, met wat al gearchiveerd was en wat bleef liggen).
+- Anders dan in het ontwerp staan de wachtende taken **niet** bij de aandachtspunten, alleen in de
+  tekst van de run-notitie. Het zijn er elke week zo'n 30, ze vragen niets van mij, en elke nieuwe
+  regel geeft een melding van de watcher. Aandachtspunten zijn: gearchiveerd, issue niet gevonden,
+  geen issue-ID en blijft liggen (door `--max` of een fout). Een week zonder die punten wacht niet op
+  mij.

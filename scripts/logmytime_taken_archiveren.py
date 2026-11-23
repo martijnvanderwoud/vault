@@ -68,13 +68,11 @@ def volgorde(regel):
     return project, int(nummer)
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('--uitvoeren', action='store_true', help='archiveer de taken ook echt in LogMyTime')
-    ap.add_argument('--max', type=int, default=100, help='hooguit zoveel taken archiveren (standaard 100)')
-    args = ap.parse_args()
-    grens = date.today() - timedelta(days=DAGEN)
-
+def plan(vandaag=None):
+    """(aantal actieve taken, grens, regels, zonder_id). `regels` heeft per status een lijst
+    (issue, naam, toelichting, taak_id), gesorteerd op project en issuenummer. Kost twee
+    LogMyTime-requests en één YouTrack-request per 50 issues. Ook gebruikt door fien_runner.py."""
+    grens = (vandaag or date.today()) - timedelta(days=DAGEN)
     taken = get_all('Tasks', {'$filter': 'Active eq true', '$select': 'ID,Description'})
     entries = get_all('TimeEntries', {
         '$filter': 'StartTime ge %s' % odata_datum(grens),
@@ -110,26 +108,45 @@ def main():
             regels['wacht'].append((issue, naam, ', '.join(redenen), taak_id))
         else:
             regels['archiveren'].append((issue, naam, 'opgelost %s' % opgelost[issue].strftime('%d-%m-%Y'), taak_id))
+    for lijst in regels.values():
+        lijst.sort(key=volgorde)
+    return len(taken), grens, regels, sorted(zonder_id)
+
+
+def archiveren(regels, maximum):
+    """Archiveert hooguit `maximum` taken uit regels['archiveren'], in volgorde, en geeft per
+    gearchiveerde taak (issue, naam, toelichting, taak_id). Een fout stopt halverwege: wat al
+    gearchiveerd is, is dan al gegeven."""
+    for regel in regels['archiveren'][:maximum]:
+        merge('Tasks', regel[3], {'Active': False})
+        yield regel
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--uitvoeren', action='store_true', help='archiveer de taken ook echt in LogMyTime')
+    ap.add_argument('--max', type=int, default=100, help='hooguit zoveel taken archiveren (standaard 100)')
+    args = ap.parse_args()
+    aantal, grens, regels, zonder_id = plan()
 
     print('Actieve LogMyTime-taken: %d, grens %s%s' % (
-        len(taken), grens.strftime('%d-%m-%Y'), '' if args.uitvoeren else ' (alleen plan)'))
+        aantal, grens.strftime('%d-%m-%Y'), '' if args.uitvoeren else ' (alleen plan)'))
     for status, lijst in regels.items():
         print('\n%s: %d' % (status, len(lijst)))
-        for issue, naam, toelichting, _ in sorted(lijst, key=volgorde):
+        for issue, naam, toelichting, _ in lijst:
             print('  %-50.50s %s' % (naam, toelichting))
     print('\ngeen ID: %d' % len(zonder_id))
-    for naam in sorted(zonder_id):
+    for naam in zonder_id:
         print('  %s' % naam)
 
     if not args.uitvoeren:
         return
-    te_doen = sorted(regels['archiveren'], key=volgorde)[:args.max]
-    print('\nArchiveren: %d van %d (--max %d)' % (len(te_doen), len(regels['archiveren']), args.max))
-    for nummer, (issue, naam, _, taak_id) in enumerate(te_doen, 1):
-        merge('Tasks', taak_id, {'Active': False})
-        print('  %3d. gearchiveerd: %s' % (nummer, naam), flush=True)
-    print('Klaar: %d gearchiveerd, %d blijven over voor een volgende run.' % (
-        len(te_doen), len(regels['archiveren']) - len(te_doen)))
+    totaal = len(regels['archiveren'])
+    print('\nArchiveren: %d van %d (--max %d)' % (min(totaal, args.max), totaal, args.max))
+    gedaan = 0
+    for gedaan, (issue, naam, _, taak_id) in enumerate(archiveren(regels, args.max), 1):
+        print('  %3d. gearchiveerd: %s' % (gedaan, naam), flush=True)
+    print('Klaar: %d gearchiveerd, %d blijven over voor een volgende run.' % (gedaan, totaal - gedaan))
 
 
 if __name__ == '__main__':

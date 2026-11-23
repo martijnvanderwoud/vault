@@ -9,4 +9,5 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 
 - [[scripts/agent-watcher/index|agent-watcher]]
 - [[scripts/dependabot-runner/index|dependabot-runner]]
+- [[scripts/fien/index|fien]]
 - [[scripts/ward/index|ward]]
