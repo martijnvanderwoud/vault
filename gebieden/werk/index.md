@@ -20,6 +20,7 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[git-flow-branchregels-pompkracht]] — De organisatiebrede git-flow-regels van Flow-Cloud-Systems - welke branchnamen een PR naar develop, master, release en hotfix mogen hebben, waar de check vandaan komt en voor welke repo's hij geldt
 - [[hosting-transip]] — Welke TransIP-producten ik gebruik, aan welke klant ik ze doorbelast en waar de facturen staan
 - [[hostingklanten]] — Klanten met een vaste maandelijkse hostingfactuur (Construct, Afke Hennus), hun tarieven, prijsgeschiedenis en hoe ik een prijsverhoging doorreken
+- [[membirds]] — MemBirds, het platform van White Sun Qigong (Franca) voor bestellingen en betaalpagina's - de MCP-koppeling, het aparte beheerdersaccount voor Claude en hoe dat Franca's eigen koppeling niet raakt
 - [[pull-requests-mergen-pompkracht]] — Hoe ik bij Pompkracht een pull request merge - altijd een eigen onderwerpregel, nooit de standaardregel "Merge pull request #n from ..." van GitHub
 - [[schrijfstem]] — Hoe Martijn schrijft in mail, pull requests en YouTrack - aanhef, groet en toon per relatie, met voorbeeldzinnen uit zijn eigen mails
 - [[uren-overzicht]] — Urenoverzicht 2026 (weekgebaseerd jaar) met jaardoel, weektarget, deze week, de weken tot nu en de vrije dagen
