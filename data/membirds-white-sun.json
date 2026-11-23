@@ -1,0 +1,13 @@
+{
+  "toelichting": "Koppelingen voor scripts/membirds.py: MemBirds-lidnummer naar de relatie in Franca's Acumulus, MemBirds-productnaam naar het Acumulus-standaardproduct (naam en prijs excl. btw uit acumulus.py producten), en de vaste factuurgegevens. Zie gebieden/werk/membirds.md.",
+  "factuur": {"template": 133249, "costcenter": 10213, "accountnumber": 227282},
+  "producten": {
+    "Jaartraject | Doorlopend | 60 min - 60 min lessen": {"acumulus": "Qigong | Jaartraject 60 min - per maand", "unitprice": "34.9587", "vatrate": 21},
+    "Jaartraject | Doorlopend | 90 min - 90 min lessen": {"acumulus": "Qigong | Jaartraject 90 min - per maand", "unitprice": "44.6281", "vatrate": 21}
+  },
+  "leden": {
+    "24": {"relatie": "Brenda Ott", "contactid": 10411520},
+    "43": {"relatie": "Cynthia van Zelm", "contactid": 11038009},
+    "12": {"relatie": "Lucinda Heikamp", "contactid": 10268050}
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "administratie": "white-sun",
+  "contactid": 11038009,
+  "template": 133249,
+  "costcenter": 10213,
+  "accountnumber": 227282,
+  "description": "Membirds bestelling MB2026-00000151",
+  "issuedate": "2026-11-23",
+  "concept": 0,
+  "bron": {
+    "systeem": "MemBirds",
+    "bestelnummer": "MB2026-00000151",
+    "besteldatum": "2026-11-20",
+    "order_id": "427c9f95-210e-47cb-972e-ee4542d4bb96",
+    "lid": "43",
+    "klant": "Cynthia van Zelm"
+  },
+  "regels": [
+    {
+      "product": "Qigong | Jaartraject 90 min - per maand",
+      "unitprice": "44.6281",
+      "vatrate": 21,
+      "quantity": 1
+    }
+  ],
+  "factuurnummer": "20260321",
+  "entryid": "63639574"
+}

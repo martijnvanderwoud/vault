@@ -1,0 +1,28 @@
+{
+  "administratie": "white-sun",
+  "contactid": 10411520,
+  "template": 133249,
+  "costcenter": 10213,
+  "accountnumber": 227282,
+  "description": "Membirds bestelling MB2026-00000150",
+  "issuedate": "2026-11-23",
+  "concept": 0,
+  "bron": {
+    "systeem": "MemBirds",
+    "bestelnummer": "MB2026-00000150",
+    "besteldatum": "2026-11-20",
+    "order_id": "68fecd06-2c56-4862-9a18-e55db364abe7",
+    "lid": "24",
+    "klant": "Brenda Ott"
+  },
+  "regels": [
+    {
+      "product": "Qigong | Jaartraject 60 min - per maand",
+      "unitprice": "34.9587",
+      "vatrate": 21,
+      "quantity": 1
+    }
+  ],
+  "factuurnummer": "20260320",
+  "entryid": "63639573"
+}

@@ -1,0 +1,28 @@
+{
+  "administratie": "white-sun",
+  "contactid": 10268050,
+  "template": 133249,
+  "costcenter": 10213,
+  "accountnumber": 227282,
+  "description": "Membirds bestelling MB2026-00000152",
+  "issuedate": "2026-11-23",
+  "concept": 0,
+  "bron": {
+    "systeem": "MemBirds",
+    "bestelnummer": "MB2026-00000152",
+    "besteldatum": "2026-11-20",
+    "order_id": "11e19b1c-454d-489f-b65f-251eada093b5",
+    "lid": "12",
+    "klant": "Lucinda Heikamp"
+  },
+  "regels": [
+    {
+      "product": "Qigong | Jaartraject 60 min - per maand",
+      "unitprice": "34.9587",
+      "vatrate": 21,
+      "quantity": 1
+    }
+  ],
+  "factuurnummer": "20260322",
+  "entryid": "63639575"
+}

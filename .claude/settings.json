@@ -47,6 +47,9 @@
       "WebFetch",
       "WebSearch"
     ],
+    "ask": [
+      "mcp__membirds__execute_tools"
+    ],
     "deny": [
       "Bash(git*push*--force*)",
       "Bash(git*push* -f*)",
