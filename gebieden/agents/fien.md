@@ -15,9 +15,11 @@ Een script doet het werk, zonder model: `scripts/fien_runner.py` gebruikt
 
 - Run-notities: `gebieden/werk/logmytime-archiveren/runs/`, één per week (`fien-<jaar>-w<week>.md`,
   onderwerp `taken`). Daarin wat gearchiveerd is, wat wacht en wat nog open is.
-- Aandachtspunten: de gearchiveerde taken, taken waarvan het issue niet gevonden is, taken zonder
-  issue-ID en taken die door `--max 100` bleven liggen. Een run zonder aandachtspunten wacht niet op
-  mij. Heb ik ze bekeken, dan zet ik `status: resolved`; de run van de week erna vervangt hem ook.
+- Aandachtspunten: alleen taken die door `--max 100` of een fout bleven liggen, en taken met een
+  issue-ID vooraan dat YouTrack niet kent. Gearchiveerde taken zijn verwacht gedrag en taken zonder
+  issue-ID (zoals Reistijd) geen probleem: die staan alleen in de tekst. Een run zonder
+  aandachtspunten wacht niet op mij. Heb ik ze bekeken, dan zet ik `status: resolved`; de run van de
+  week erna vervangt hem ook.
 - Een vergissing terugzetten: in LogMyTime de taak weer actief maken. Een heropend issue zet ik ook
   zelf terug, Fien doet daar niets mee.
 - `interval: 8d`: is er langer dan acht dagen geen run begonnen, dan staat Fien onder `Stil`.

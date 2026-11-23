@@ -140,6 +140,8 @@ de latere stappen aan als dat nodig is.
   halverwege (`failed`, met wat al gearchiveerd was en wat bleef liggen).
 - Anders dan in het ontwerp staan de wachtende taken **niet** bij de aandachtspunten, alleen in de
   tekst van de run-notitie. Het zijn er elke week zo'n 30, ze vragen niets van mij, en elke nieuwe
-  regel geeft een melding van de watcher. Aandachtspunten zijn: gearchiveerd, issue niet gevonden,
-  geen issue-ID en blijft liggen (door `--max` of een fout). Een week zonder die punten wacht niet op
-  mij.
+  regel geeft een melding van de watcher. Daarna besloot Martijn (23-11) ook gearchiveerde taken
+  (verwacht gedrag; een vergissing ziet hij vanzelf) en taken zonder issue-ID (geen probleem) geen
+  aandachtspunt te maken. Aandachtspunten zijn alleen: blijft liggen (door `--max` of een fout) en
+  issue niet gevonden, alleen voor taken met een issue-ID vooraan. Een week zonder die punten wacht
+  niet op mij.

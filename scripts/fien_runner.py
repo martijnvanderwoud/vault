@@ -9,9 +9,9 @@ Draait het plan en archiveert met logmytime_taken_archiveren.py (hooguit --max t
 Voor het agents-dashboard schrijft de runner per run een run-notitie in
 gebieden/werk/logmytime-archiveren/runs/ (gebieden/agents/agent-runs.md), één per week
 (`fien-<jaar>-w<week>.md`, onderwerp `taken`): bij de start `running`, aan het eind `done` of
-`failed`. Aandachtspunten zijn de gearchiveerde taken (om een vergissing terug te kunnen zetten), de
-taken waarvan het issue niet gevonden is, de taken zonder issue-ID en de taken die door `--max`
-blijven liggen. Zonder aandachtspunten wacht de run niet op mij. De melding komt van de watcher.
+`failed`. Aandachtspunten zijn alleen de taken die door `--max` of een fout blijven liggen en de
+taken met een issue-ID dat YouTrack niet kent. Gearchiveerde taken en taken zonder issue-ID staan
+alleen in de tekst. Zonder aandachtspunten wacht de run niet op mij. De melding komt van de watcher.
 Een tweede run in dezelfde week schrijft dezelfde notitie opnieuw.
 
 `--dry-run` toont alleen het plan, zonder run-notitie en zonder te archiveren. launchd start de
@@ -80,13 +80,13 @@ def verslag(moment, aantal, grens, regels, zonder_id, gedaan, maximum, fout):
     return '\n'.join(delen) + '\n'
 
 
-def aandacht(regels, zonder_id, gedaan, fout):
+def aandacht(regels, gedaan, fout):
+    """Alleen wat iets van mij vraagt. `niet gevonden` bevat alleen taken met een issue-ID vooraan
+    (de titel suggereert een YouTrack-issue); taken zonder ID en gearchiveerde taken zijn verwacht."""
     over = regels['archiveren'][len(gedaan):]
     reden = 'door de fout' if fout else '--max'
-    return (['gearchiveerd: %s' % naam for _, naam, _, _ in gedaan]
-            + ['blijft liggen (%s): %s' % (reden, naam) for _, naam, _, _ in over]
-            + ['issue niet gevonden: %s' % naam for _, naam, _, _ in regels['niet gevonden']]
-            + ['geen issue-ID: %s' % naam for naam in zonder_id])
+    return (['blijft liggen (%s): %s' % (reden, naam) for _, naam, _, _ in over]
+            + ['issue niet gevonden: %s' % naam for _, naam, _, _ in regels['niet gevonden']])
 
 
 def main():
@@ -132,7 +132,7 @@ def main():
               'reason': fout, 'step': stap if fout else None, 'resume': RESUME if fout else None}
     if plan:
         aantal, grens, regels, zonder_id = plan
-        velden.update(aandacht=aandacht(regels, zonder_id, gedaan, fout), gearchiveerd=len(gedaan),
+        velden.update(aandacht=aandacht(regels, gedaan, fout), gearchiveerd=len(gedaan),
                       wacht=len(regels['wacht']), open=len(regels['open']))
         tekst = verslag(moment, aantal, grens, regels, zonder_id, gedaan, args.max, fout)
     else:
