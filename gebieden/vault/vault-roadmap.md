@@ -21,7 +21,7 @@ Bijgewerkt op 20-11-2026.
 | [[hardlopen-plan]] | Afgesplitst van [[weekplanning-plan]] op 19-11, nog niet begonnen | Stap 1: gelopen trainingen importeren (eerst een Garmin-export van week 47) |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
 | [[logmytime-taken-archiveren-plan]] | Stap 1 t/m 4 klaar op 23-11 (194 taken gearchiveerd); stap 5: agent Fien gebouwd en geladen op 23-11, elke maandag 8:00 | Stap 5 afvinken na een paar maandagruns (eerste op 30-11), daarna stap 6 (afronden) |
-| [[npm-develop-versies-opruimen-plan]] | Stap 1 t/m 7 klaar op 20-11: gebruiker `repo-cleanup`, `scripts/nexus_opruimen.py`, 166 develop-versies weg (52 versies over); `latest` verschuiven geaccepteerd | Stap 8: taak voor Fien, haar runner is er sinds 23-11 (`scripts/fien_runner.py`); hoofdtaak PKI-1145 (infra-subtaken klaar) |
+| [[npm-develop-versies-opruimen-plan]] | Stap 1 t/m 8 klaar: gebruiker `repo-cleanup`, `scripts/nexus_opruimen.py`, 169 develop-versies weg; `latest` verschuiven geaccepteerd; sinds 23-11 taak `npm` van Fien (elke dag 8:05) | Stap 9 (afronden) na een week dagelijkse runs van Fien zonder aandachtspunten; hoofdtaak PKI-1145 (infra-subtaken klaar) |
 
 ## Afgerond
 

@@ -49,6 +49,15 @@ Waarom [[agents-dashboard]] werkt zoals het werkt. Hoe het zo gekomen is, staat 
   notities.
 - **Een agent zonder runs blijft staan** (`Geen runs.`), en een agent die te lang stil is, komt
   onder `Stil` (`interval` in de notitie per agent). Ook stilte is een signaal.
+- **`interval` per onderwerp mag ook (23-11-2026).** Een lijst `<onderwerp> <duur>`, zoals Fiens
+  `[taken 8d, npm 4d]`, naast één duur voor de hele agent. Aanleiding: Fiens npm-taak draait sinds
+  23-11 dagelijks en `taken` wekelijks, en één interval per agent liet een stilgevallen taak niet
+  zien. Een lijst in plaats van een geneste mapping, omdat Obsidian lijsten als property goed
+  toont en `agentruns.py` ze al leest. Overwogen en nu niet gedaan: een apart veld `taak` in de
+  run-notities, naast `onderwerp`, met een interval per taak. Dat is pas nodig als een agent
+  meerdere taken op meerdere onderwerpen doet (zoals Debbie die per repo ook iets anders zou gaan
+  doen). Overstappen is dan goedkoop: het formaat van `interval` blijft gelijk, alleen de sleutel
+  wordt de taak in plaats van het onderwerp.
 - **Alleen schrijven als de inhoud verandert,** zonder de regel `Bijgewerkt` mee te tellen. Anders
   herlaadt Obsidian elke paar seconden.
 - **`dashboard.md` niet in git.** Het is afgeleid, net als `index.md`, maar wijzigt bij elke run.

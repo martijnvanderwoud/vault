@@ -90,10 +90,14 @@ de latere stappen aan als dat nodig is.
   `--pakket @pompkracht/portal-worker-ui --uitvoeren --max 2`, zie `Bevindingen`.
 - [x] 7. **De rest uitvoeren.** Per run hooguit 20 versies, tot het plan leeg is. Gedaan op 20-11 in
   8 runs (159 versies weg), zie `Bevindingen`.
-- [ ] 8. **Taak voor Fien.** Toevoegen aan de runner van Fien zodra die er is (stap 5 van
-  [[logmytime-taken-archiveren-plan]]), met de verwijderde versies en verschoven dist-tags in de
-  run-notitie.
-- [ ] 9. **Afronden** volgens het onderhoud in [[vault-roadmap]].
+- [x] 8. **Taak voor Fien.** Gedaan op 23-11: `fien_runner.py` draait na `taken` de taak `npm`
+  (hooguit 50 versies, `--max-npm`), met een eigen run-notitie `fien-<jaar>-w<week>-npm.md`
+  (onderwerp `npm`) met de verwijderde versies en verschoven dist-tags. Eerste run met de hand op
+  23-11: 3 versies weg, zie `Bevindingen`. Dezelfde dag op verzoek van Martijn dagelijks gemaakt:
+  eigen launchd-job `nl.crimsoncricket.fien-npm`, elke dag om 8:05, één notitie per dag
+  (`fien-<jjjj-mm-dd>-npm.md`).
+- [ ] 9. **Afronden** volgens het onderhoud in [[vault-roadmap]], na een week dagelijkse runs van
+  Fien zonder aandachtspunten.
 
 ## Bevindingen
 
@@ -187,3 +191,25 @@ de latere stappen aan als dat nodig is.
   (`2.0.0 → 2.1.0-develop.fc146ae`). Daarmee wijst `latest` nu bij alle zeven packages naar een
   develop-build, tot de volgende release het rechtzet. Tussen de runs door kwamen er nieuwe
   develop-builds bij (het totaal schommelde tussen 50 en 52 blijvers).
+- **Stap 8 (23-11-2026):** `nexus_opruimen.py` kreeg de functies `opruimplan()` en `verwijderen()`
+  (een generator die per versie de veranderde dist-tags teruggeeft en `AndereTagVeranderd` geeft als
+  er een andere tag dan `latest` verandert); de commandoregel werkt als voorheen. De runner van Fien
+  draait beide taken los van elkaar: mislukt `taken`, dan draait `npm` toch, en de exitcode is 1 als
+  er één mislukte. Beide run-notities staan in dezelfde map (`runs` in [[fien]] is één map per
+  agent), met elk een eigen onderwerp, en verschijnen zo apart op het dashboard. Aandachtspunten bij
+  `npm`: versies die door `--max-npm` of een fout blijven liggen, en overgeslagen packages; een
+  verschoven `latest` staat alleen in de tekst. `--alleen taken|npm` draait één taak. De eerste run
+  (`--alleen npm`, 23-11 08:30) verwijderde 3 develop-versies van react-notifications, en `latest`
+  verschoof daarbij van release `4.6.0` (die dag uitgebracht) naar `4.7.0-develop.1993e65`. Er staan
+  nu 53 versies, niets meer weg. Het plist hoefde niet te veranderen: launchd start dezelfde runner.
+- **Stap 8, dagelijks (23-11-2026):** Martijn wil de npm-taak dagelijks in plaats van wekelijks. De
+  runner draait onder launchd nu per taak apart (`--alleen`): `nl.crimsoncricket.fien` doet `taken`
+  op maandag om 8:00, de nieuwe `nl.crimsoncricket.fien-npm` doet `npm` elke dag om 8:05 (log
+  `~/.fien/logs/npm.log`). `resume` wijst per taak naar de eigen job. De npm-notitie is er per dag,
+  want een notitie per week zou elke dag de verwijderde versies van de vorige dag overschrijven. Het
+  `interval` van [[fien]] gaat van `8d` naar `4d`: het geldt per agent, en 4 dagen overbrugt een
+  weekend met de laptop uit. Getest met `launchctl kickstart`: 0 versies weg. Die run overschreef de
+  notitie van de eerste run van 8:30 (3 versies), die alleen hier in de bevindingen staat.
+- **Interval per onderwerp (23-11-2026):** het `interval` van één duur per agent liet een
+  stilgevallen `taken`-job niet zien. Het dashboard kent nu ook een interval per onderwerp; Fien
+  heeft `interval: [taken 8d, npm 4d]`. Beslissing en afweging in [[agents-dashboard-beslissingen]].

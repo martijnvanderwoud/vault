@@ -70,6 +70,10 @@ Eigen velden van een agent mogen erbij, zoals `prs` en `session_id` bij Debbie. 
   bij het opnieuw schrijven een lijst blijft
 - `interval`: optioneel, de langste tijd tussen twee runs, zoals `8d`, `12h` of `30m`. Is er
   langer dan dat geen run begonnen en loopt er geen, dan zet het dashboard de agent onder `Stil`.
+  Heeft een agent onderwerpen met een eigen ritme, dan kan het ook een lijst `<onderwerp> <duur>`
+  zijn, zoals `[taken 8d, npm 4d]` bij Fien: dan telt het per onderwerp, en wordt een onderwerp dat
+  niet in de lijst staat niet gecontroleerd. Eén duur blijft gelden voor de hele agent, zoals bij
+  Debbie, wier onderwerpen repo's zijn die wisselen.
 - `proces`: optioneel, de naam van het proces achter `pid` (standaard `claude`). Een `pid` dat
   intussen een ander proces is, telt zo niet als levend.
 

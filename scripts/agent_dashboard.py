@@ -129,25 +129,40 @@ def interval(value):
     return timedelta(**{EENHEDEN[m.group(2)]: int(m.group(1))}) if m else None
 
 
+def intervallen(value):
+    """`interval` uit de notitie van een agent als lijst van (onderwerp, duur, origineel). Eén duur, zoals
+    `8d`, geldt voor de hele agent (onderwerp None). Een lijst, zoals `[taken 8d, npm 4d]`, geeft per
+    onderwerp een duur; onderwerpen die er niet in staan, worden niet gecontroleerd."""
+    if not isinstance(value, list):
+        return [(None, interval(value), str(value))]
+    result = []
+    for item in value:
+        onderwerp, _, duur = str(item).strip().rpartition(' ')
+        result.append((onderwerp.strip() or None, interval(duur) if onderwerp.strip() else None, str(item)))
+    return result
+
+
 def stil_blok(agents, runs, nu):
-    """Agents met een `interval` die langer dan dat geen run zijn begonnen, en geen run bezig hebben."""
+    """Agents (of onderwerpen van een agent) met een `interval` die langer dan dat geen run zijn
+    begonnen, en geen run bezig hebben."""
     stil = []
     for naam, agent in agents.items():
         if not agent.get('interval'):
             continue
-        eigen = [r[2] for r in runs if r[0] == naam]
-        if any(fm.get('status') == 'running' for fm in eigen):
-            continue
-        maximaal = interval(agent['interval'])
-        if maximaal is None:
-            stil.append('> - %s · `interval` onleesbaar: %s' % (wikilink(naam, naam.capitalize()), tekst(agent['interval'])))
-            continue
-        laatste = max((t for t in (tijd(fm.get('started')) for fm in eigen) if t), default=None)
-        if laatste is None:
-            stil.append('> - %s · nog nooit gedraaid (verwacht elke %s)' % (wikilink(naam, naam.capitalize()), agent['interval']))
-        elif nu - laatste > maximaal:
-            stil.append('> - %s · laatste run %s (verwacht elke %s)' % (
-                wikilink(naam, naam.capitalize()), wanneer(laatste.isoformat()), agent['interval']))
+        for onderwerp, maximaal, origineel in intervallen(agent['interval']):
+            label = wikilink(naam, naam.capitalize()) + (' · %s' % tekst(onderwerp) if onderwerp else '')
+            if maximaal is None:
+                stil.append('> - %s · `interval` onleesbaar: %s' % (wikilink(naam, naam.capitalize()), tekst(origineel)))
+                continue
+            eigen = [r[2] for r in runs if r[0] == naam and (onderwerp is None or str(r[2].get('onderwerp')) == onderwerp)]
+            if any(fm.get('status') == 'running' for fm in eigen):
+                continue
+            verwacht = origineel.rpartition(' ')[2]
+            laatste = max((t for t in (tijd(fm.get('started')) for fm in eigen) if t), default=None)
+            if laatste is None:
+                stil.append('> - %s · nog nooit gedraaid (verwacht elke %s)' % (label, verwacht))
+            elif nu - laatste > maximaal:
+                stil.append('> - %s · laatste run %s (verwacht elke %s)' % (label, wanneer(laatste.isoformat()), verwacht))
     return ['> [!warning] Stil (%d)' % len(stil)] + stil + [''] if stil else []
 
 

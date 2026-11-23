@@ -9,9 +9,9 @@
         <!-- launchd breidt ~ en $HOME niet uit, de shell wel: zo staan er geen absolute paden in -->
         <string>/bin/sh</string>
         <string>-c</string>
-        <string>mkdir -p "$HOME/.fien/logs" &amp;&amp; exec /usr/bin/python3 -I "$HOME/vault/scripts/fien_runner.py" &gt;&gt; "$HOME/.fien/logs/runner.log" 2&gt;&amp;1</string>
+        <string>mkdir -p "$HOME/.fien/logs" &amp;&amp; exec /usr/bin/python3 -I "$HOME/vault/scripts/fien_runner.py" --alleen taken &gt;&gt; "$HOME/.fien/logs/runner.log" 2&gt;&amp;1</string>
     </array>
-    <!-- Elke maandag om 8:00. Na slaapstand haalt launchd een gemiste run in, niet als de laptop uit stond. -->
+    <!-- Alleen de taak `taken`, elke maandag om 8:00 (de taak `npm` draait dagelijks via nl.crimsoncricket.fien-npm). Na slaapstand haalt launchd een gemiste run in, niet als de laptop uit stond. -->
     <key>StartCalendarInterval</key>
     <dict>
         <key>Weekday</key>

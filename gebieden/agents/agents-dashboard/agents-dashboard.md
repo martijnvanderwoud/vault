@@ -41,7 +41,8 @@ Van boven naar beneden:
 - **Aandacht nodig** (rood): elke run die op mij wacht, met de reden of de aandachtspunten, het issue
   en het commando om te hervatten. Staat er niets, dan **Niets wacht op jou** (groen).
 - **Stil** (oranje): een agent die langer dan zijn `interval` geen run is begonnen, zoals Debbie na
-  8 dagen. Dan draait er waarschijnlijk iets niet.
+  8 dagen, of bij een interval per onderwerp een onderwerp dat te lang stil is, zoals
+  `Fien · npm` na 4 dagen. Dan draait er waarschijnlijk iets niet.
 - **Nu bezig** (blauw): de lopende runs, met sinds wanneer.
 - **Afgelopen 7 dagen**: per agent een tabel met de laatste run per onderwerp (status als icoon,
   start, issue, kosten). ⚠️ is een `done`-run met aandachtspunten op een open issue.
