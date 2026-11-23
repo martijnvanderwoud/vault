@@ -20,8 +20,8 @@ Bijgewerkt op 20-11-2026.
 | [[weekplanning-plan]] | Alle stappen klaar op 19-11 (skill `/weekplanning`, weektarget en ruimte); wacht op de eerste echte zondagrun | Zo 22-11 de week plannen met de skill, daarna afronden naar `gebieden/weekplanning/` |
 | [[hardlopen-plan]] | Afgesplitst van [[weekplanning-plan]] op 19-11, nog niet begonnen | Stap 1: gelopen trainingen importeren (eerst een Garmin-export van week 47) |
 | [[gmail-zakelijk-concepten-plan]] | Vastgelegd 17-11, nog niet begonnen | Stap 1: voorwerk in de Google Cloud-console (Martijn) |
-| [[logmytime-taken-archiveren-plan]] | Stap 1 t/m 3 klaar op 20-11, stap 4 half: 100 van de 178 taken gearchiveerd | Stap 4 afmaken: de overige 78 vanaf 21-11 met `--uitvoeren --max 100`, daarna stap 5 (agent Fien) |
-| [[npm-develop-versies-opruimen-plan]] | Stap 1 t/m 7 klaar op 20-11: gebruiker `repo-cleanup`, `scripts/nexus_opruimen.py`, 166 develop-versies weg (52 versies over); `latest` verschuiven geaccepteerd | Stap 8: taak voor Fien zodra haar runner er is; hoofdtaak PKI-1145 (infra-subtaken klaar) |
+| [[logmytime-taken-archiveren-plan]] | Stap 1 t/m 4 klaar op 23-11 (194 taken gearchiveerd); stap 5: agent Fien gebouwd en geladen op 23-11, elke maandag 8:00 | Stap 5 afvinken na een paar maandagruns (eerste op 30-11), daarna stap 6 (afronden) |
+| [[npm-develop-versies-opruimen-plan]] | Stap 1 t/m 7 klaar op 20-11: gebruiker `repo-cleanup`, `scripts/nexus_opruimen.py`, 166 develop-versies weg (52 versies over); `latest` verschuiven geaccepteerd | Stap 8: taak voor Fien, haar runner is er sinds 23-11 (`scripts/fien_runner.py`); hoofdtaak PKI-1145 (infra-subtaken klaar) |
 
 ## Afgerond
 
