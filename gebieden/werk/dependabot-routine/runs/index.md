@@ -45,3 +45,6 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w47-rostering-engine]] — Debbie-run rostering-engine, gestart 2026-11-18 10:39: done (RPAAS-529)
 - [[2026-w47-rostering-ui-2]] — Debbie-run rostering-ui, gestart 2026-11-16 10:14: done (RPAAS-522)
 - [[2026-w47-rostering-ui]] — Debbie-run rostering-ui, gestart 2026-11-16 09:37: done (RPAAS-522)
+- [[2026-w48-cata]] — Debbie-run cata, gestart 2026-11-23 00:25: done (PCATA-627)
+- [[2026-w48-react-notifications]] — Debbie-run react-notifications, gestart 2026-11-23 07:13: done (PRC-65)
+- [[2026-w48-rostering-application]] — Debbie-run rostering-application, gestart 2026-11-23 01:58: done (RPAAS-533)
