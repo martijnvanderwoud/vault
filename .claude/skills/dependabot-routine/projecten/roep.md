@@ -1,5 +1,5 @@
 ---
-description: Aanvullingen op de Dependabot-routine voor roep (YouTrack-gegevens, Maven, webjars negeren, Maven-versie in de workflows)
+description: Aanvullingen op de Dependabot-routine voor roep (YouTrack-gegevens, Maven, webjars negeren)
 repo: Flow-Cloud-Systems/roep
 autonoom: true
 ---
@@ -16,14 +16,6 @@ repo.
 - Board: `Pompkracht Kanban Board`, sprint `Kanban workflow`.
 - Titel parent: `Dependabot upgrades <jaar> w<bereik>`.
 - Titel subtask: `Apply Dependabot upgrades <jaar> w<week>`.
-
-## Stap 3. `.sdkmanrc` bijwerken
-
-Wijzigt de Maven-versie, werk dan ook `maven_version` bij in `.github/workflows/*.yml`.
-
-Autonoom kan dat niet: het token van de run mag `.github/workflows/` niet pushen. Laat de
-Maven-versie in `.sdkmanrc` dan staan en werk alleen de andere SDK's bij. Autonoom: verslag,
-met de nieuwe Maven-versie en de bestanden die ik met de hand moet bijwerken.
 
 ## Stap 4. Schone install
 
