@@ -48,6 +48,8 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w48-cata-2]] — Debbie-run cata, gestart 2026-11-23 22:17: done (PCATA-627)
 - [[2026-w48-cata]] — Debbie-run cata, gestart 2026-11-23 00:25: done (PCATA-627)
 - [[2026-w48-iam]] — Debbie-run iam, gestart 2026-11-24 01:27: done (PKIAM-846)
+- [[2026-w48-insights-2]] — Debbie-run insights, gestart 2026-11-24 23:31: done (PI-208)
+- [[2026-w48-insights]] — Debbie-run insights, gestart 2026-11-24 22:40: done (PI-208)
 - [[2026-w48-notifications]] — Debbie-run notifications, gestart 2026-11-23 18:21: done (PN-68)
 - [[2026-w48-profile-presentation-design]] — Debbie-run profile-presentation-design, gestart 2026-11-24 15:35: done (PRC-66)
 - [[2026-w48-react-notifications]] — Debbie-run react-notifications, gestart 2026-11-23 07:13: done (PRC-65)
