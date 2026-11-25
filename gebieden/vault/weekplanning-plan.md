@@ -540,6 +540,12 @@ van de rest van de week gelijk verlaagt.
   `uren.py --tot <dag voor vanaf>`. In het weekbestand, zodat opnieuw doorrekenen hetzelfde geeft. Gewerkt per
   voorbije dag komt voor de notitie nog live uit LogMyTime (alleen met `/usr/bin/python3`; de `python3` van
   Homebrew heeft geen https).
+- **Nog te gaan wijkt af van `uren.py` (uitgezocht 25-11):** `weekplanning.py` rekent in hele minuten
+  en rondt het declarabele doel en wat er nog te gaan is naar boven af op `kleinste_blok_min` (5 min, via
+  `op_blok`). Daardoor noemt het script bij herplannen soms iets meer dan "Nog te gaan" uit `uren.py`
+  (25-11: 10,50 u in plaats van 10,44 u), en komt het weektotaal net boven het declarabele doel uit
+  (28,85 u tegen 28,79 u). Dat is zo bedoeld: de planning heeft hooguit een paar minuten te veel, nooit te
+  weinig. De cijfers van `uren.py` zijn de bron.
 - **Proeven:** week van 21-12 (Wind week 1, geen afspraken, voorlopig 28 u): do 24-12 en vr 25-12 vrij,
   declarabel doel 16,80 u, ma 6:05 / di 5:00 / wo 5:45, ruimte 1:10 / 1:15 / 1:15. Herpland vanaf di na
   4,5 u op ma: di 5:50 / wo 6:30, ruimte 0:25 / 0:30, beide ongeveer 50 min lager. Week van 23-11 met de
