@@ -56,4 +56,5 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[2026-w48-roep]] — Debbie-run roep, gestart 2026-11-23 19:38: done (ROEP-1088)
 - [[2026-w48-rostering-api]] — Debbie-run rostering-api, gestart 2026-11-23 19:02: done (RPAAS-535)
 - [[2026-w48-rostering-application]] — Debbie-run rostering-application, gestart 2026-11-23 01:58: done (RPAAS-533)
+- [[2026-w48-rostering-engine]] — Debbie-run rostering-engine, gestart 2026-11-25 06:40: done (RPAAS-536)
 - [[2026-w48-rostering-ui]] — Debbie-run rostering-ui, gestart 2026-11-23 09:48: done (RPAAS-534)
