@@ -20,7 +20,7 @@ kosten: 1.63
 beurten: 75
 geweigerd: 0
 log: "~/dependabot-runs/.logs/2026-w48-insights.jsonl"
-issue_state: "In Progress"
+issue_state: "Done"
 ---
 # Debbie-run insights
 
