@@ -490,7 +490,7 @@ def dag_plannen(dagsoort, weekdag, regels, werkdoel, hardlopen_min=None, afsprak
     # Na de afspraken: klusjes met een vaste tijd knippen het werkblok waar ze in beginnen; is de werkdag dan al klaar,
     # dan staat het klusje op zijn tijd in de ruimte.
     for k in weekdag["klusjes"]:
-        if "om" not in k:
+        if "om" not in k or k.get("vervalt"):
             continue
         klusje = {"activiteit": k["activiteit"], "van": k["om"],
                   "tot": min_naar_hhmm(hhmm_naar_min(k["om"]) + k["duur_min"])}
