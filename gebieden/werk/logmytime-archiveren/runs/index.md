@@ -11,4 +11,5 @@ _Gegenereerd door scripts/build_index.py, niet met de hand bewerken._
 - [[fien-2026-11-24-npm]] — Fien-run npm, gestart 2026-11-24 08:05: done
 - [[fien-2026-11-25-npm]] — Fien-run npm, gestart 2026-11-25 08:05: done
 - [[fien-2026-11-26-npm]] — Fien-run npm, gestart 2026-11-26 08:05: done
+- [[fien-2026-11-27-npm]] — Fien-run npm, gestart 2026-11-27 08:05: done
 - [[fien-2026-w48]] — Fien-run taken, gestart 2026-11-23 08:20: done
